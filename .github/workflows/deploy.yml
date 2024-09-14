@@ -1,0 +1,40 @@
+name: Deploy to production
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.PROD_IP }} >> ~/.ssh/known_hosts
+
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy code to DigitalOcean
+        run: |
+          ssh -i ~/.ssh/id_rsa frappe@${{ secrets.PROD_IP }} << 'EOF'
+          cd /home/frappe/frappe-bench/apps/raplbaddi
+          git pull origin production
+          PULL_STATUS=$?
+
+          if [ $PULL_STATUS -eq 0 ]; then
+            echo "Already up-to-date, no need to migrate or restart."
+          else
+            echo "Changes detected, running bench migrate and restart."
+            cd /home/frappe/frappe-bench
+            bench migrate
+            bench restart
+          fi
