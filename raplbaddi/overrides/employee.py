@@ -7,13 +7,14 @@ def autoname(doc, method):
     if not doc.department or doc.branch == None:
         frappe.throw("Department and branch is Mandatory")
 
-    last_employee = frappe.get_last_doc("Employee").name.split("-")
-    try:
+    if len(frappe.get_all("Employee")) == 0:
+        middle_no = 1
+    else:
+        last_employee = frappe.get_last_doc("Employee").name.split("-")
+
         middle_no = get_middle_no(last_employee[1])
         if int(last_employee[2]) == 30:
             middle_no += + 1
-    except ValueError as e:
-        middle_no = 0
 
     doc.naming_series = f"E-{get_middle_no(middle_no)}-.#"
 
