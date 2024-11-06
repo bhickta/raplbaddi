@@ -29,7 +29,7 @@ def on_submit(doc, method):
     create_reverse_entry_for_internal_customers(doc)
 
 def create_reverse_entry_for_internal_customers(doc):
-    internal_customers = ["REAL APPLIANCES PRIVATE LIMITED"]
+    internal_customers = ["Real Appliances Pvt Ltd (RAPL-Unit 1)"]
     
     if doc.customer not in internal_customers:
         return
