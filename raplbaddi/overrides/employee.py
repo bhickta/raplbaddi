@@ -39,3 +39,29 @@ def get_middle_no(value):
         return result
     else:
         raise ValueError("Input must be an integer or a string.")
+
+def validate(doc, method):
+    validate_mandatory(doc)
+    set_salary(doc)
+
+def validate_mandatory(doc):
+    if not doc.ctc:
+        frappe.throw("CTC is mandatory")
+
+import calendar
+from frappe.utils.data import now_datetime
+def set_salary(doc):
+    if frappe.db.exists("Employee Salary", {"employee": doc.name, "year": now_datetime().year}):
+        return
+
+    employee_salary_doc = frappe.get_doc({"doctype": "Employee Salary", "employee": doc.name, "year": now_datetime().year})
+    all_months = calendar.month_name[1:]
+    items = []
+    for month in all_months:
+        key = frappe._dict({
+            "month": month,
+            "value": doc.ctc,
+        })
+        items.append(key)
+    employee_salary_doc.update({"items": items})
+    employee_salary_doc.insert().submit()

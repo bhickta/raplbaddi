@@ -148,6 +148,9 @@ doc_events = {
         "autoname": [
             "raplbaddi.overrides.employee.autoname",
         ],
+        "validate": [
+            "raplbaddi.overrides.employee.validate",
+        ],
     },
 }
 
