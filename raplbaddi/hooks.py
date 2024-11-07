@@ -125,6 +125,9 @@ doc_events = {
         "on_submit": [
             "raplbaddi.overrides.delivery_note.on_submit",
         ],
+        "before_cancel": [
+            "raplbaddi.overrides.delivery_note.before_cancel",
+        ],
         "on_cancel": [
             "raplbaddi.overrides.delivery_note.on_cancel",
         ],

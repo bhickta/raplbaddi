@@ -30,7 +30,6 @@ def on_submit(doc, method):
 
 def create_reverse_entry_for_internal_customers(doc):
     internal_customers = ["Real Appliances Pvt Ltd (RAPL-Unit 1)"]
-    
     if doc.customer not in internal_customers:
         return
     
@@ -53,6 +52,9 @@ def create_reverse_entry_for_internal_customers(doc):
         internal_receipt = frappe.get_doc(stock_entry).insert().submit()
         doc.internal_receipt = internal_receipt.name
         doc.save()
+
+def before_cancel(doc, method):
+    doc.internal_receipt = None
 
 def on_cancel(doc, method):
     cancel_reverse_entry_for_internal_customers(doc)
