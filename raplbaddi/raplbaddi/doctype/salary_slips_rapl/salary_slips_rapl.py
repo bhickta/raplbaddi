@@ -76,7 +76,7 @@ class SalarySlipsRapl(Document):
         for attendance_name in attendances:
             attendance = frappe.get_doc("Attendance Rapl Item", attendance_name)
             bundle_item = {
-                "attendance": attendance.parent,
+                "attendance_rapl": attendance.parent,
                 "attendance_item": attendance.name,
                 "duration": attendance.duration,
                 "date": attendance.date,
@@ -108,6 +108,8 @@ class SalarySlipsRapl(Document):
             )[attendance.date.strftime("%B")],
             "date": attendance.date,
             "salary": salary,
+            "duration": attendance.duration,
+            "attendance": attendance.attendance,
             "is_holiday": is_holiday,
             "shift_duration": shift_duration * 3600,
         }

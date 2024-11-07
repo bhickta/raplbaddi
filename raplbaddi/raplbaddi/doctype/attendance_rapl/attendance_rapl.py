@@ -46,6 +46,9 @@ class AttendanceRapl(Document):
 			if item.duration and item.duration < 0:
 				frappe.throw(_("Duration of {0} must be greater than or equal to 0").format(item.name))
 			item.duration = time_diff_in_seconds(item.check_out, item.check_in)
+			if item.attendance == "Absent":
+				item.duration = 0
+				item.check_in = item.check_out = "06:00:00"
 			if not item.duration:
 				item.attendance = "Absent"
 			else:

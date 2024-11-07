@@ -14,9 +14,11 @@ class AttendanceSalaryBundleItem(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		attendance: DF.Link | None
+		attendance: DF.Literal["Present", "Absent", "On Leave", "Half Day", "Work From Home"]
 		attendance_item: DF.Data | None
+		attendance_rapl: DF.Link | None
 		date: DF.Date | None
+		duration: DF.Duration | None
 		hourly_rate: DF.Float
 		is_holiday: DF.Check
 		monthly_salary: DF.Float
