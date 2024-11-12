@@ -18,6 +18,13 @@ custom_fields = {
             "fieldtype": "Data",
             "reqd": 1,
         },
+        {
+            "is_system_generated": 1,
+            "label": "Account Holder Name",
+            "fieldname": "account_holder_name",
+            "insert_after": "bank_name",
+            "fieldtype": "Data",
+        }
     ],
     "Shift Type": [
         {
@@ -52,7 +59,7 @@ def execute():
 
 def get_property_setters():
     property_setters = []
-    for field in ["bank_name", "bank_ac_no", "iban"]:
+    for field in ["bank_name", "bank_ac_no", "ifsc_code", "micr_code"]:
         property_setters.append(
                 {
             "name": f"Employee-{field}-depends_on",

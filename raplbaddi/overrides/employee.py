@@ -41,6 +41,7 @@ def get_middle_no(value):
         raise ValueError("Input must be an integer or a string.")
 
 def validate(doc, method):
+    set_account_holder_name(doc)
     validate_mandatory(doc)
     set_salary(doc)
 
@@ -65,3 +66,7 @@ def set_salary(doc):
         items.append(key)
     employee_salary_doc.update({"items": items})
     employee_salary_doc.insert().submit()
+
+def set_account_holder_name(doc):
+    if not doc.account_holder_name:
+        doc.account_holder_name = doc.employee_name
