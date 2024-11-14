@@ -6,6 +6,7 @@ frappe.ui.form.on("Purchase Order", {
   },
   refresh: function (frm) {
     frm.events.queries(frm);
+    frm.events.make_date_and_time_not_change_on_change(frm);
   },
   queries(frm) {
     frm.set_query("billing_rule", function () {
@@ -16,5 +17,9 @@ frappe.ui.form.on("Purchase Order", {
         },
       };
     });
+  },
+
+  make_date_and_time_not_change_on_change: function (frm) {
+    frm.toggle_display("set_posting_time", false)
   },
 });
