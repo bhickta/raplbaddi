@@ -54,6 +54,13 @@ custom_fields = {
             "insert_after": "is_billed",
             "fieldtype": "Section Break",
         },
+        {
+            "is_system_generated": 1,
+            "label": "Remarks",
+            "fieldname": "buying_remarks",
+            "insert_after": "supplier_name",
+            "fieldtype": "Small Text",
+        },
     ],
     "Purchase Receipt": [
         {
@@ -124,6 +131,13 @@ custom_fields = {
             "fieldname": "supplier_section_rapl_2",
             "insert_after": "bill_attachment",
             "fieldtype": "Section Break",
+        },
+        {
+            "is_system_generated": 1,
+            "label": "Remarks",
+            "fieldname": "buying_remarks",
+            "insert_after": "supplier_name",
+            "fieldtype": "Small Text",
         },
     ],
 }
