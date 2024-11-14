@@ -1,4 +1,9 @@
 frappe.ui.form.on("Purchase Order", {
+  onload: function (frm) {
+    // if (frm.doc.docstatus == 0) {
+    //   frm.toggle_reqd("supplier", false);
+    // }
+  },
   refresh: function (frm) {
     frm.events.queries(frm);
   },

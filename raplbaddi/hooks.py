@@ -31,6 +31,7 @@ app_license = "MIT"
 # include js in doctype views
 doctype_js = {
     "Purchase Order": "public/js/purchase_order.js",
+    "Purchase Receipt": "public/js/purchase_receipt.js",
     "Sales Order": "public/js/sales_order.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -98,9 +99,10 @@ doctype_js = {
 # Override standard doctype classes
 
 
-# override_doctype_class = {
-# 	"Stock Entry": "raplbaddi.overrides.StockEntry"
-# }
+override_doctype_class = {
+	"Purchase Receipt": "raplbaddi.overrides.purchase_receipt.PurchaseReceipt",
+	# "Purchase Order": "raplbaddi.overrides.purchase_order.PurchaseOrder",
+}
 
 # Document Events
 # ---------------
