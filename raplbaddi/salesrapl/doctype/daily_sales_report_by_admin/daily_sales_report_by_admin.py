@@ -1,11 +1,28 @@
 # Copyright (c) 2023, Nishant Bhickta and contributors
 # For license information, please see license.txt
 
-# import frappe
+import frappe
 from frappe.model.document import Document
 
 class DailySalesReportByAdmin(Document):
 	def validate(self):
+		self.set_km_travelled()
+		self.set_total_amount()
+	
+	def set_km_travelled(self):
+		if self.start_reading > self.end_reading:
+			frappe.throw("Start Reading should be less than End Reading")
+		self.km_travelled = self.get('end_reading', 0) - self.get('start_reading', 0)
+		self.amount_for_travel = self.km_travelled * self.get_travel_rate()
+  
+	def get_travel_rate(self):
+		user = frappe.session.user
+		rate = 7
+		if user == "saleraplbaddi@gmail.com": #pushpendra
+			rate = 9
+		return rate
+  
+	def set_total_amount(self):
 		amt = self.get('amount_for_travel', 0)
 		if self.get('daily_sales_expenses_by_admin', []):
 			for x in self.get('daily_sales_expenses_by_admin', []):
