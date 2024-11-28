@@ -7,3 +7,4 @@ execute:from raplbaddi.constants.property_setters import execute; execute() #3
 execute:from raplbaddi.patches.user_access_control import execute; execute() #1
 execute:from raplbaddi.patches.naming_series_mrn_dn_branch import execute; execute() #1
 execute:from raplbaddi.data import execute; execute() #1
+execute:from raplbaddi.patches.pushpendra_rates_change_dsr_km import execute; execute() #1
