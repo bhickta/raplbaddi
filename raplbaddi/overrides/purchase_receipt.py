@@ -18,6 +18,16 @@ def set_naming_series(doc):
 
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import PurchaseReceipt
 from frappe.model.document import frappe, msgprint
+from frappe.utils.dateutils import get_datetime
+
+def validate(doc, method):
+    posting_datetime_same_as_creation(doc)
+
+def posting_datetime_same_as_creation(doc):
+    creation_date = get_datetime(doc.creation)
+    doc.posting_date = creation_date.date()
+    doc.posting_time = creation_date.time()
+    doc.set_posting_time = 1
 
 class PurchaseReceipt(PurchaseReceipt):
     

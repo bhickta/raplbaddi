@@ -1,4 +1,5 @@
 from .delivery_note import set_naming_series
+from .purchase_receipt import posting_datetime_same_as_creation
 
 def before_insert(doc, method):
     set_naming_series(doc)
@@ -15,6 +16,9 @@ def set_naming_series(doc):
 
     if doc.branch in naming_series_map:
         doc.naming_series = naming_series_map[doc.branch][False]
+        
+def validate(doc, method):
+    posting_datetime_same_as_creation(doc)
 
 from erpnext.buying.doctype.purchase_order.purchase_order import PurchaseOrder
 from frappe.model.document import frappe, msgprint

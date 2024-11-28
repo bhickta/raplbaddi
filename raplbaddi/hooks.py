@@ -143,10 +143,16 @@ doc_events = {
         "before_insert": [
             "raplbaddi.overrides.purchase_order.before_insert",
         ],
+        "validate": [
+            "raplbaddi.overrides.purchase_order.validate",
+        ],
     },
     "Purchase Receipt": {
         "before_insert": [
             "raplbaddi.overrides.purchase_receipt.before_insert",
+        ],
+        "validate": [
+            "raplbaddi.overrides.purchase_receipt.validate",
         ],
     },
     "Employee": {
