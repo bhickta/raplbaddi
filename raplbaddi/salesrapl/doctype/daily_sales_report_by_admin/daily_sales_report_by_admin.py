@@ -10,9 +10,11 @@ class DailySalesReportByAdmin(Document):
 		self.set_total_amount()
 	
 	def set_km_travelled(self):
-		if self.start_reading > self.end_reading:
+		starting_reading = self.start_reading or 0
+		ending_reading = self.end_reading or 0
+		if starting_reading > ending_reading:
 			frappe.throw("Start Reading should be less than End Reading")
-		self.km_travelled = self.get('end_reading', 0) - self.get('start_reading', 0)
+		self.km_travelled = ending_reading - starting_reading
 		self.amount_for_travel = self.km_travelled * self.get_travel_rate()
   
 	def get_travel_rate(self):
