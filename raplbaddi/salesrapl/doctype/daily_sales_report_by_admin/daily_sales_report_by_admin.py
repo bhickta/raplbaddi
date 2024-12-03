@@ -18,9 +18,9 @@ class DailySalesReportByAdmin(Document):
 		self.amount_for_travel = self.km_travelled * self.get_travel_rate()
   
 	def get_travel_rate(self):
-		user = frappe.session.user
+		sales_persons = ["Puspendra"]
 		rate = 7
-		if user == "saleraplbaddi@gmail.com": #pushpendra
+		if self.sales_person in sales_persons:
 			rate = 9
 		return rate
   
