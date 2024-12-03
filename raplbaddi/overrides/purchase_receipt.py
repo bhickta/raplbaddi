@@ -24,6 +24,7 @@ def validate(doc, method):
     posting_datetime_same_as_creation(doc)
 
 def posting_datetime_same_as_creation(doc):
+    return
     creation_date = get_datetime(doc.creation)
     doc.posting_date = creation_date.date()
     doc.posting_time = creation_date.time()
