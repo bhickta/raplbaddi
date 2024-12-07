@@ -16,8 +16,8 @@ class EmployeeSalary(Document):
 		from raplbaddi.raplbaddi.doctype.month_item.month_item import MonthItem
 
 		amended_from: DF.Link | None
-		data_wlnj: DF.Data | None
 		employee: DF.Link
+		employee_name: DF.Data | None
 		items: DF.Table[MonthItem]
 		year: DF.Int
 	# end: auto-generated types
