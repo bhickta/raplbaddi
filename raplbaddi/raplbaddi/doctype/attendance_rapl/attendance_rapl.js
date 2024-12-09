@@ -6,7 +6,7 @@ frappe.ui.form.on("Attendance Rapl", {
         fill_items_onload(frm);
     },
     branch: function(frm) {
-        fill_items_onload(frm);
+        fill_items_onload(frm)
     }
 });
 
