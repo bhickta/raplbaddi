@@ -60,6 +60,7 @@ def get_employee_shift_info(doc):
 	doc = frappe.parse_json(doc)
 	filters = {
 		'status': 'Active',
+		'designation': ["NOT IN", ["Contractor"]]
 	}
 	for field in ["branch", "department"]:
 		if field in doc:
