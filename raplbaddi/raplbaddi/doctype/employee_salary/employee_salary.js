@@ -31,6 +31,21 @@ frappe.ui.form.on("Employee Salary", {
     }
 });
 
+frappe.ui.form.on("Month Item", {
+    value(frm, cdt, cdn) {
+        let d = locals[cdt][cdn]
+        let cl = frm.doc.items
+        let currentIndex = cl.findIndex(item => item.name === d.name);
+        
+        for (let i = currentIndex + 1; i < cl.length; i++) {
+            cl[i].value = d.value;
+        }
+
+        frm.refresh_field('items');
+    }
+});
+
+
 cur_frm.cscript.value = function (doc, cdt, cdn) {
 	erpnext.utils.copy_value_in_all_rows(doc, cdt, cdn, "items", "value");
 };
