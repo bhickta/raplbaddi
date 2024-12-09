@@ -168,7 +168,12 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
+scheduler_events = {
+    "crons": {
+        "0 0 1 1 *": [
+            "raplbaddi.jobs.salary.yearly",    
+        ],
+    },
 # 	"all": [
 # 		"raplbaddi.tasks.all"
 # 	],
@@ -184,7 +189,7 @@ doc_events = {
 # 	"monthly": [
 # 		"raplbaddi.tasks.monthly"
 # 	],
-# }
+}
 
 # Testing
 # -------
