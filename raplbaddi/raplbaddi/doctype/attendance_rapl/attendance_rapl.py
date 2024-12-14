@@ -46,20 +46,16 @@ class AttendanceRapl(Document):
 	def remove_lunch_time(self, row, lunch_end):
 		check_out = get_datetime(row.check_out)
 		lunch_end = get_datetime(lunch_end)
-		
-		# Check if the checkout time is after the lunch end time
-		if check_out.time() > lunch_end.time():
-			print(f"Original Duration: {row.duration}")
-			lunch_time_duration = 0.5 * 60 * 60  # 30 minutes in seconds
+		if check_out > lunch_end:
+			lunch_time_duration = 0.5 * 60 * 60
 			row.duration -= lunch_time_duration
-			print(f"Updated Duration: {row.duration}")
 
 	def validate_employee_duration(self):
 		for item in self.items:
 			if item.duration and item.duration < 0:
 				frappe.throw(_("Duration of {0} must be greater than or equal to 0").format(item.name))
 			item.duration = time_diff_in_seconds(item.check_out, item.check_in)
-			# self.remove_lunch_time(item, "01:30:00")
+			self.remove_lunch_time(item, "13:30:00")
 			if item.attendance == "Absent":
 				item.duration = 0
 				item.check_in = item.check_out = "06:00:00"
