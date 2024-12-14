@@ -42,6 +42,7 @@ class AttendanceRapl(Document):
 
 	def validate(self):
 		self.validate_employee_duration()
+		self.add_attendance_for_sales_based_on_dsra()
 	
 	def remove_lunch_time(self, row, lunch_end):
 		check_out = get_datetime(row.check_out)
@@ -49,6 +50,35 @@ class AttendanceRapl(Document):
 		if check_out > lunch_end:
 			lunch_time_duration = 0.5 * 60 * 60
 			row.duration -= lunch_time_duration
+   
+	def add_attendance_for_sales_based_on_dsra(self):
+		dsra_list = frappe.get_all(
+			"Daily Sales Report By Admin",
+			filters={
+				"docstatus": 1,
+				"date": ["=", self.date],
+			},
+			fields=["sales_person"],
+			pluck="sales_person",
+		)
+		for sp in dsra_list:
+			employee = frappe.get_doc("Sales Person", sp).employee
+			if not employee:
+				continue
+			employee_doc = frappe.get_doc("Employee", employee)
+			if employee:
+				self.append(
+					"items",
+					{
+						"employee": employee_doc.name,
+						"employee_name": employee_doc.employee_name,
+						"check_in": "06:00:00",
+						"shift_type": "Marketing",
+						"check_out": "06:00:00",
+						"attendance": "Present",
+						"duration": 0,
+					}
+				)
 
 	def validate_employee_duration(self):
 		for item in self.items:
