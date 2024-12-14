@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe import _
-from frappe.utils import time_diff_in_seconds
+from frappe.utils import time_diff_in_seconds, get_datetime
 
 
 class AttendanceRapl(Document):
@@ -33,7 +33,9 @@ class AttendanceRapl(Document):
 		elif self.branch == "Red Star Unit 2":
 			branch_name = "RSI"
 
-		department_abbreviation = frappe.get_value("Department", self.department, "abbriviation") or self.department[:3]
+		department_abbreviation = frappe.get_value("Department", self.department, "abbriviation") or None
+		if not department_abbreviation:
+			department_abbreviation = "NODP"
 		formatted_date = self.date
 
 		self.name = f"{branch_name} {department_abbreviation} {formatted_date}"
@@ -41,11 +43,23 @@ class AttendanceRapl(Document):
 	def validate(self):
 		self.validate_employee_duration()
 	
+	def remove_lunch_time(self, row, lunch_end):
+		check_out = get_datetime(row.check_out)
+		lunch_end = get_datetime(lunch_end)
+		
+		# Check if the checkout time is after the lunch end time
+		if check_out.time() > lunch_end.time():
+			print(f"Original Duration: {row.duration}")
+			lunch_time_duration = 0.5 * 60 * 60  # 30 minutes in seconds
+			row.duration -= lunch_time_duration
+			print(f"Updated Duration: {row.duration}")
+
 	def validate_employee_duration(self):
 		for item in self.items:
 			if item.duration and item.duration < 0:
 				frappe.throw(_("Duration of {0} must be greater than or equal to 0").format(item.name))
 			item.duration = time_diff_in_seconds(item.check_out, item.check_in)
+			# self.remove_lunch_time(item, "01:30:00")
 			if item.attendance == "Absent":
 				item.duration = 0
 				item.check_in = item.check_out = "06:00:00"
