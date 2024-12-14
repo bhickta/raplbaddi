@@ -169,11 +169,11 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
-    "crons": {
-        "0 0 1 1 *": [
-            "raplbaddi.jobs.salary.yearly",    
-        ],
-    },
+    # "crons": {
+    #     "0 0 1 1 *": [
+    #         "raplbaddi.jobs.salary.yearly",    
+    #     ],
+    # },
 # 	"all": [
 # 		"raplbaddi.tasks.all"
 # 	],

@@ -12,6 +12,14 @@ custom_fields = {
         },
         {
             "is_system_generated": 1,
+            "label": "ESIC Number",
+            "fieldname": "esic_number",
+            "insert_after": "provident_fund_account",
+            "fieldtype": "Data",
+            "reqd": 0,
+        },
+        {
+            "is_system_generated": 1,
             "label": "Aadhar Card",
             "fieldname": "aadhar_card",
             "insert_after": "father_name",
@@ -75,5 +83,22 @@ def get_property_setters():
             "value": "",
             "doctype": "Property Setter",
         })
+    
+    property_setters.extend([
+        {
+            "name": f"Employee-provident_fund_account-label",
+            "owner": "Administrator",
+            "docstatus": 0,
+            "idx": 0,
+            "is_system_generated": 1,
+            "doctype_or_field": "DocField",
+            "doc_type": "Employee",
+            "field_name": f"provident_fund_account",
+            "property": "label",
+            "property_type": "Data",
+            "value": "PF Number",
+            "doctype": "Property Setter",
+        }
+    ])
 
     return property_setters
