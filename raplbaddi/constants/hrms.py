@@ -4,6 +4,15 @@ custom_fields = {
     "Employee": [
         {
             "is_system_generated": 1,
+            "label": "Sub Department",
+            "fieldname": "sub_department",
+            "insert_after": "department",
+            "fieldtype": "Link",
+            "options": "Sub Department",
+            "reqd": 0,
+        },
+        {
+            "is_system_generated": 1,
             "label": "Father's Name",
             "fieldname": "father_name",
             "insert_after": "gender",
