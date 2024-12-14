@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe import _
-from frappe.utils import time_diff_in_seconds, get_datetime
+from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
 
 
 class AttendanceRapl(Document):
@@ -35,7 +35,7 @@ class AttendanceRapl(Document):
 
 		department_abbreviation = frappe.get_value("Department", self.department, "abbriviation") or None
 		if not department_abbreviation:
-			department_abbreviation = "NODP"
+			department_abbreviation = generate_hash(length=4)
 		formatted_date = self.date
 
 		self.name = f"{branch_name} {department_abbreviation} {formatted_date}"
