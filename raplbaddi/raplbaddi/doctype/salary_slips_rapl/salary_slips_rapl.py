@@ -18,13 +18,13 @@ class SalarySlipsRapl(Document):
         self.naming_series = "SSR-.YY.-.#"
 
     def on_submit(self):
-        AttendanceBundleHandler.submit_all(self.items)
+        AttendanceSalaryBundleHandler.submit_all(self.items)
 
     def on_cancel(self):
-        AttendanceBundleHandler.cancel_all(self.items)
+        AttendanceSalaryBundleHandler.cancel_all(self.items)
 
     def on_trash(self):
-        AttendanceBundleHandler.delete_all(self.items)
+        AttendanceSalaryBundleHandler.delete_all(self.items)
 
 class AttendanceSalaryBundleHandler:
 
@@ -62,6 +62,26 @@ class AttendanceSalaryBundleHandler:
             "is_holiday": is_holiday,
             "shift_duration": shift_duration * 3600
         }
+
+    @staticmethod
+    def submit_all(items):
+        for item in items:
+            attendance_salary_bundle = frappe.get_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
+            attendance_salary_bundle.submit()
+    @staticmethod
+    def cancel_all(items):
+        for item in items:
+            attendance_salary_bundle = frappe.get_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
+            for bundle_item in attendance_salary_bundle.items:
+                bundle_item.attendance = None
+                bundle_item.attendance_item = None
+            attendance_salary_bundle.save()
+            attendance_salary_bundle.cancel()
+            item.attendance_salary_bundle = None
+    @staticmethod
+    def delete_all(items):
+        for item in items:
+            frappe.delete_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
 
 class SalaryValidator:
 
@@ -151,28 +171,6 @@ class MonthlySalaryFetcher:
         salary_doc = frappe.get_doc("Employee Salary", salary_doc[0])
         return {item.month: item.value for item in salary_doc.items}
 
-
-class AttendanceBundleHandler:
-
-    @staticmethod
-    def submit_all(items):
-        for item in items:
-            attendance_salary_bundle = frappe.get_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
-            attendance_salary_bundle.submit()
-    @staticmethod
-    def cancel_all(items):
-        for item in items:
-            attendance_salary_bundle = frappe.get_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
-            for bundle_item in attendance_salary_bundle.items:
-                bundle_item.attendance = None
-                bundle_item.attendance_item = None
-            attendance_salary_bundle.save()
-            attendance_salary_bundle.cancel()
-            item.attendance_salary_bundle = None
-    @staticmethod
-    def delete_all(items):
-        for item in items:
-            frappe.delete_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
 
 def hr(seconds: int) -> float:
     return seconds / 3600
