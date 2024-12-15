@@ -6,16 +6,29 @@ from datetime import datetime
 
 class SalarySlipsRapl(Document):
 
+    def autoname(self):
+        self.naming_series = "SSR-.YY.-.#"
+
     def validate(self):
         for item in self.items:
             attendance_salary_bundle = AttendanceSalaryBundleHandler.create_or_update(item, self.from_date, self.to_date)
-            SalaryValidator.ensure_not_duplicate(item.employee, self.from_date, self.to_date)
+            self.ensure_not_duplicate(item.employee, self.from_date, self.to_date)
             item.attendance_salary_bundle = attendance_salary_bundle.name
             item.salary = attendance_salary_bundle.total_salary
             item.holidays = attendance_salary_bundle.total_holiday
 
-    def autoname(self):
-        self.naming_series = "SSR-.YY.-.#"
+    def ensure_not_duplicate(employee, from_date, to_date):
+        asbi = frappe.db.sql(
+            """
+                SELECT asb.name
+                FROM `tabAttendance Salary Bundle Item` asbi
+                JOIN `tabAttendance Salary Bundle` asb ON asb.name = asbi.parent
+                WHERE asb.employee = %s
+                AND asbi.date BETWEEN %s AND %s
+                AND asb.docstatus = 1
+            """, (employee, from_date, to_date))
+        if asbi:
+            frappe.throw(f"Salary is already created for the employee {employee} between {from_date} and {to_date} </br>" + "</br>".join([item[0] for item in asbi]))
 
     def on_submit(self):
         AttendanceSalaryBundleHandler.submit_all(self.items)
@@ -157,19 +170,3 @@ class MonthlySalaryFetcher:
 
 def hr(seconds: int) -> float:
     return seconds / 3600
-
-class SalaryValidator:
-
-    @staticmethod
-    def ensure_not_duplicate(employee, from_date, to_date):
-        asbi = frappe.db.sql(
-            """
-                SELECT asb.name
-                FROM `tabAttendance Salary Bundle Item` asbi
-                JOIN `tabAttendance Salary Bundle` asb ON asb.name = asbi.parent
-                WHERE asb.employee = %s
-                AND asbi.date BETWEEN %s AND %s
-                AND asb.docstatus = 1
-            """, (employee, from_date, to_date))
-        if asbi:
-            frappe.throw(f"Salary is already created for the employee {employee} between {from_date} and {to_date} </br>" + "</br>".join([item[0] for item in asbi]))
