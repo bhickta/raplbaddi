@@ -27,5 +27,6 @@ class AttendanceSalaryBundleItem(Document):
 		parenttype: DF.Data
 		salary: DF.Float
 		shift_duration: DF.Duration | None
+		shift_type: DF.Link | None
 	# end: auto-generated types
 	pass

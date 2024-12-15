@@ -1,9 +1,7 @@
 import frappe
 from frappe.model.document import Document
-from typing import List, Dict
-import calendar
-from datetime import datetime
-
+from typing import List
+from raplbaddi.raplbaddi.doctype.attendance_salary_bundle.attendance_salary_bundle import Attendance
 
 class SalarySlipsRapl(Document):
     # begin: auto-generated types
@@ -84,30 +82,20 @@ class AttendanceSalaryBundleHandler:
             attendance = frappe.get_doc("Attendance Rapl Item", attendance_name)
             bundle_item = AttendanceSalaryBundleHandler.create_bundle_item(attendance)
             attendance_salary_bundle.append("items", bundle_item)
+        attendance_salary_bundle.from_date = from_date
+        attendance_salary_bundle.to_date = to_date
 
         attendance_salary_bundle.save()
         return attendance_salary_bundle
 
     @staticmethod
     def create_bundle_item(attendance):
-        is_holiday = Holiday.is_holiday(attendance.employee, attendance.date)
-        shift_duration = Attendance.get_duration(attendance)
-        hourly_rate = Salary.get_hourly_rate(
-            attendance.employee, attendance.date, is_holiday, shift_duration
-        )
-
         return {
             "attendance_rapl": attendance.parent,
+            "shift_type": attendance.shift_type,
             "attendance_item": attendance.name,
             "duration": attendance.duration,
             "date": attendance.date,
-            "hourly_rate": hourly_rate,
-            "monthly_salary": Salary.get_monthly(
-                attendance.employee, attendance.date.year
-            )[attendance.date.strftime("%B")],
-            "salary": Salary.calculate(hourly_rate, attendance.duration),
-            "is_holiday": is_holiday,
-            "shift_duration": shift_duration * 3600,
         }
 
     @staticmethod
@@ -134,101 +122,3 @@ class AttendanceSalaryBundleHandler:
     def delete_all(items):
         for item in items:
             frappe.delete_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
-
-
-class Attendance:
-
-    @staticmethod
-    def get_attendances(employee, from_date, to_date) -> List[str]:
-        return frappe.get_all(
-            "Attendance Rapl Item",
-            filters={
-                "date": ["between", (from_date, to_date)],
-                "docstatus": 1,
-                "employee": employee,
-            },
-            pluck="name",
-        )
-
-    @staticmethod
-    def get_duration(attendance) -> float:
-        start_time, end_time, time_allowance = frappe.get_cached_value(
-            "Shift Type",
-            attendance.shift_type,
-            ["start_time", "end_time", "time_allowance"],
-        )
-        shift_duration = (end_time - start_time).total_seconds()
-        return (
-            hr(shift_duration)
-            if abs(attendance.duration - time_allowance) < shift_duration
-            else hr(attendance.duration)
-        )
-
-
-class Holiday:
-
-    @staticmethod
-    def is_holiday(employee, date):
-        holiday_list = Holiday.get_list(employee)
-        holiday_list = holiday_list.keys()
-        return date in holiday_list
-
-    @staticmethod
-    def get_list(employee) -> Dict:
-        holiday_list, company, default_shift = frappe.get_cached_value(
-            "Employee", employee, ["holiday_list", "company", "default_shift"]
-        )
-        if not holiday_list and default_shift:
-            holiday_list = frappe.get_cached_value(
-                "Shift Type", default_shift, "holiday_list"
-            )
-        if not holiday_list:
-            holiday_list = frappe.get_cached_value(
-                "Company", company, "default_holiday_list"
-            )
-        if not holiday_list:
-            frappe.throw(
-                f"Please set a default Holiday List for Employee {employee} or Company {company}"
-            )
-        return {
-            holiday["holiday_date"]: holiday["description"]
-            for holiday in frappe.get_all(
-                "Holiday",
-                filters={"parent": holiday_list},
-                fields=["holiday_date", "description"],
-            )
-        }
-
-
-class Salary:
-
-    @staticmethod
-    def get_hourly_rate(employee, date, is_holiday, shift_duration):
-        year, month = date.year, date.strftime("%B")
-        monthly_salary = Salary.get_monthly(employee, year)
-        no_of_days = calendar.monthrange(year, date.month)[1]
-        daily_salary = monthly_salary[month] / no_of_days
-        hourly_salary = daily_salary / shift_duration
-        return hourly_salary * 2 if is_holiday else hourly_salary
-
-    @staticmethod
-    def calculate(hourly_rate: float, duration: float) -> float:
-        return hourly_rate * hr(duration)
-
-    @staticmethod
-    def get_monthly(employee, year):
-        salary_doc = frappe.get_all(
-            "Employee Salary",
-            filters={"employee": employee, "year": year, "docstatus": 1},
-            pluck="name",
-        )
-        if not salary_doc:
-            frappe.throw(f"Please set monthly salary for employee {employee}")
-        if len(salary_doc) > 1:
-            frappe.throw(f"Please set only one monthly salary for employee {employee}")
-        salary_doc = frappe.get_doc("Employee Salary", salary_doc[0])
-        return {item.month: item.value for item in salary_doc.items}
-
-
-def hr(seconds: int) -> float:
-    return seconds / 3600
