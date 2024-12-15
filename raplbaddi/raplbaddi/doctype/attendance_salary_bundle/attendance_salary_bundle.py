@@ -23,5 +23,14 @@ class AttendanceSalaryBundle(Document):
 	# end: auto-generated types
 	pass
 
+	def validate(self):
+		self.validate_salary()
+
+	def validate_salary(self):
+		self.total_salary = sum(item.salary for item in self.items)
+
+	def validate_holiday(self):
+		self.total_salary = sum(item.salary for item in self.items)
+
 	def on_trash(self):
 		pass
