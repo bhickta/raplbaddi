@@ -109,12 +109,12 @@ def get_employee_shift_info(doc):
 		'designation': ["NOT IN", ["Contractor"]],
 		'default_shift': ["NOT IN", ["Marketing"]],
 	}
+
 	for field in ["branch", "department"]:
-		if field in doc:
+		if bool(doc.get(field)):
 			filters.update({
 				field: doc.get(field)
 			})
-	
 	employees = frappe.get_all('Employee', fields=['name', 'employee_name', 'default_shift'], filters=filters, order_by="creation")
 	shift_info = []
 
