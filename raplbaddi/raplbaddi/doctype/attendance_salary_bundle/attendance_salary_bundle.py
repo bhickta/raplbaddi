@@ -5,6 +5,7 @@ import calendar
 from typing import Dict, List
 
 import frappe.utils
+import frappe.utils.dateutils
 
 
 class AttendanceSalaryBundle(Document):
@@ -40,8 +41,7 @@ class AttendanceSalaryBundle(Document):
     
     def calculate_salary(self):
         for item in self.items:
-            date = getdate(item.date)
-            salary = Salary(self.employee, date)
+            salary = Salary(self.employee, item.date)
             item.is_holiday = Holiday.is_holiday(self.employee, item.date)
             if not item.attendance_item:
                 default_shift = frappe.get_value("Employee", self.employee, "default_shift")
@@ -53,13 +53,17 @@ class AttendanceSalaryBundle(Document):
                 shift_end = attendance_item.end_time
                 shift_start = attendance_item.start_time
                 item.attendance = attendance_item.attendance
+                item.duration = attendance_item.duration
 
             shift_duration = frappe.utils.time_diff_in_hours(shift_end, shift_start)
-            item.duration = attendance_item.duration
             item.hourly_rate = salary.get_hourly_rate(item, shift_duration)
+
+            if item.is_holiday and item.attendance == "Absent" and not item.duration:
+                item.duration = frappe.utils.time_diff_in_seconds(shift_end, shift_start)
+
             item.update(
                 {
-                    "monthly_salary": salary.get_monthly_salary(date),
+                    "monthly_salary": salary.get_monthly_salary(item.date),
                     "salary": salary.calculate(item.hourly_rate, item.duration),
                 }
             )
