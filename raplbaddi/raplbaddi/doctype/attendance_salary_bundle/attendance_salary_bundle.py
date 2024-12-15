@@ -57,7 +57,6 @@ class AttendanceSalaryBundle(Document):
 
             shift_duration = frappe.utils.time_diff_in_hours(shift_end, shift_start)
             item.hourly_rate = salary.get_hourly_rate(item, shift_duration)
-
             if item.is_holiday and item.attendance == "Absent" and not item.duration:
                 item.duration = frappe.utils.time_diff_in_seconds(shift_end, shift_start)
 
@@ -69,21 +68,7 @@ class AttendanceSalaryBundle(Document):
             )
 
     def add_holidays_item_not_present(self):
-        if not self.from_date or not self.to_date:
-            frappe.throw("From Date and To Date must be specified.")
-
-        from_date = datetime.strptime(self.from_date, "%Y-%m-%d").date()
-        to_date = datetime.strptime(self.to_date, "%Y-%m-%d").date()
-
-        all_dates = {
-            from_date + timedelta(days=i) for i in range((to_date - from_date).days + 1)
-        }
-
-        item_dates = {item.date for item in self.items if item.date}
-
-        missing_dates = all_dates - item_dates
-
-        
+        missing_dates = self._get_missing_dates()
         self.extend(
             "items",
             [
@@ -97,6 +82,22 @@ class AttendanceSalaryBundle(Document):
                 if Holiday.is_holiday(self.employee, date)
             ],
         )
+
+    def _get_missing_dates(self):
+        if not self.from_date or not self.to_date:
+            frappe.throw("From Date and To Date must be specified.")
+
+        from_date = datetime.strptime(self.from_date, "%Y-%m-%d").date()
+        to_date = datetime.strptime(self.to_date, "%Y-%m-%d").date()
+
+        all_dates = {
+            from_date + timedelta(days=i) for i in range((to_date - from_date).days + 1)
+        }
+
+        item_dates = {item.date for item in self.items if item.date}
+
+        missing_dates = all_dates - item_dates
+        return missing_dates
 
     def validate_salary(self):
         self.total_salary = sum(item.salary for item in self.items)
