@@ -64,8 +64,12 @@ class AttendanceRapl(Document):
 		for sp in dsra_list:
 			employee = frappe.get_doc("Sales Person", sp).employee
 			if not employee:
-				continue
+				frappe.throw("Sales Person {0} should be linked with {1} in Sales Person Master".format(sp, "Employee"))
 			employee_doc = frappe.get_doc("Employee", employee)
+			if employee_doc.default_shift not in ["Marketing"]:
+				frappe.throw("Default Shift Type must be Marketing in {0}: {1} Master".format(employee_doc.employee, employee_doc.employee_name))
+			if employee_doc.name in [item.employee for item in self.items]:
+				continue
 			if employee:
 				self.append(
 					"items",
@@ -82,6 +86,8 @@ class AttendanceRapl(Document):
 
 	def validate_employee_duration(self):
 		for item in self.items:
+			if item.shift_type in ["Marketing"]:
+				continue
 			if item.duration and item.duration < 0:
 				frappe.throw(_("Duration of {0} must be greater than or equal to 0").format(item.name))
 			item.duration = time_diff_in_seconds(item.check_out, item.check_in)
@@ -100,7 +106,8 @@ def get_employee_shift_info(doc):
 	doc = frappe.parse_json(doc)
 	filters = {
 		'status': 'Active',
-		'designation': ["NOT IN", ["Contractor"]]
+		'designation': ["NOT IN", ["Contractor"]],
+		'default_shift': ["NOT IN", ["Marketing"]],
 	}
 	for field in ["branch", "department"]:
 		if field in doc:
@@ -108,7 +115,7 @@ def get_employee_shift_info(doc):
 				field: doc.get(field)
 			})
 	
-	employees = frappe.get_all('Employee', fields=['name', 'employee_name', 'default_shift'], filters=filters)
+	employees = frappe.get_all('Employee', fields=['name', 'employee_name', 'default_shift'], filters=filters, order_by="creation")
 	shift_info = []
 
 	for employee in employees:
