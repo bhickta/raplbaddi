@@ -37,35 +37,41 @@ class AttendanceSalaryBundle(Document):
 
     def validate_items(self):
         self.add_holidays_item_not_present()
-        self.calculate_salary()
+        self.preitem()
+        self.calcualte_salary()
     
-    def calculate_salary(self):
+    def preitem(self):
         for item in self.items:
             salary = Salary(self.employee, item.date)
             item.is_holiday = Holiday.is_holiday(self.employee, item.date)
             if not item.attendance_item:
-                default_shift = frappe.get_value("Employee", self.employee, "default_shift")
-                shift = frappe.get_doc("Shift Type", default_shift, ["start_time", "end_time"])
-                shift_end = shift.end_time
-                shift_start = shift.start_time
+                self.set_default_values(item)
             else:
-                attendance_item = frappe.get_doc("Attendance Rapl Item", item.attendance_item)
-                shift_end = attendance_item.end_time
-                shift_start = attendance_item.start_time
-                item.attendance = attendance_item.attendance
-                item.duration = attendance_item.duration
+                self.set_values_from_attendance_item(item)
 
-            shift_duration = frappe.utils.time_diff_in_hours(shift_end, shift_start)
+            shift_duration = frappe.utils.time_diff_in_hours(item.shift_end, item.shift_start)
             item.hourly_rate = salary.get_hourly_rate(item, shift_duration)
             if item.is_holiday and item.attendance == "Absent" and not item.duration:
-                item.duration = frappe.utils.time_diff_in_seconds(shift_end, shift_start)
+                item.duration = frappe.utils.time_diff_in_seconds(item.shift_end, item.shift_start)
 
-            item.update(
-                {
-                    "monthly_salary": salary.get_monthly_salary(item.date),
-                    "salary": salary.calculate(item.hourly_rate, item.duration),
-                }
-            )
+            item.monthly_salary = salary.get_monthly_salary(item.date)
+    
+    def set_default_values(self, item):
+        default_shift = frappe.get_value("Employee", self.employee, "default_shift")
+        shift = frappe.get_doc("Shift Type", default_shift, ["start_time", "end_time"])
+        item.shift_end = shift.end_time
+        item.shift_start = shift.start_time
+    
+    def set_values_from_attendance_item(self, item):
+        attendance_item = frappe.get_doc("Attendance Rapl Item", item.attendance_item)
+        item.shift_end = attendance_item.end_time
+        item.shift_start = attendance_item.start_time
+        item.attendance = attendance_item.attendance
+        item.duration = attendance_item.duration
+
+    def calcualte_salary(self):
+        for item in self.items:
+            item.salary = item.hourly_rate * hr(item.duration)
 
     def add_holidays_item_not_present(self):
         missing_dates = self._get_missing_dates()
@@ -125,11 +131,8 @@ class Salary:
             return hourly_salary
         return hourly_salary * 2 if item.attendance_item and item.is_holiday else hourly_salary
 
-    def calculate(self, hourly_rate: float, duration: float) -> float:
-        return hourly_rate * hr(duration)
-
     def get_monthly_salary(self, date):
-        return self.monthly_salary
+        return self.monthly_salary[calendar.month_name[date.month]]
 
     def _get_monthly_salary(self, employee, date):
         salary_doc = frappe.get_all(
