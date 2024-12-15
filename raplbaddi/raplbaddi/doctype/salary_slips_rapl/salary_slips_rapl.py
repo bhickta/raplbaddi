@@ -17,7 +17,7 @@ class SalarySlipsRapl(Document):
             item.salary = attendance_salary_bundle.total_salary
             item.holidays = attendance_salary_bundle.total_holiday
 
-    def ensure_not_duplicate(employee, from_date, to_date):
+    def ensure_not_duplicate(self, employee, from_date, to_date):
         asbi = frappe.db.sql(
             """
                 SELECT asb.name
@@ -43,7 +43,7 @@ class AttendanceSalaryBundleHandler:
 
     @staticmethod
     def create_or_update(item, from_date, to_date):
-        attendances = AttendanceFetcher.get_attendances(item.employee, from_date, to_date)
+        attendances = Attendance.get_attendances(item.employee, from_date, to_date)
         attendance_salary_bundle = frappe.get_doc("Attendance Salary Bundle", item.attendance_salary_bundle) if item.attendance_salary_bundle else frappe.new_doc("Attendance Salary Bundle")
         attendance_salary_bundle.employee = item.employee
         attendance_salary_bundle.items = []
@@ -61,8 +61,8 @@ class AttendanceSalaryBundleHandler:
     @staticmethod
     def create_bundle_item(attendance):
         is_holiday = Holiday.is_holiday(attendance.employee, attendance.date)
-        shift_duration = ShiftCalculator.get_duration(attendance)
-        hourly_rate = SalaryCalculator.get_hourly_rate(attendance.employee, attendance.date, is_holiday, shift_duration)
+        shift_duration = Attendance.get_duration(attendance)
+        hourly_rate = Salary.get_hourly_rate(attendance.employee, attendance.date, is_holiday, shift_duration)
 
         return {
             "attendance_rapl": attendance.parent,
@@ -70,8 +70,8 @@ class AttendanceSalaryBundleHandler:
             "duration": attendance.duration,
             "date": attendance.date,
             "hourly_rate": hourly_rate,
-            "monthly_salary": MonthlySalaryFetcher.get_monthly(attendance.employee, attendance.date.year)[attendance.date.strftime("%B")],
-            "salary": SalaryCalculator.calculate(hourly_rate, attendance.duration),
+            "monthly_salary": Salary.get_monthly(attendance.employee, attendance.date.year)[attendance.date.strftime("%B")],
+            "salary": Salary.calculate(hourly_rate, attendance.duration),
             "is_holiday": is_holiday,
             "shift_duration": shift_duration * 3600
         }
@@ -97,7 +97,7 @@ class AttendanceSalaryBundleHandler:
             frappe.delete_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
 
 
-class AttendanceFetcher:
+class Attendance:
 
     @staticmethod
     def get_attendances(employee, from_date, to_date) -> List[str]:
@@ -110,6 +110,12 @@ class AttendanceFetcher:
             },
             pluck="name",
         )
+
+    @staticmethod
+    def get_duration(attendance) -> float:
+        start_time, end_time, time_allowance = frappe.get_cached_value("Shift Type", attendance.shift_type, ["start_time", "end_time", "time_allowance"])
+        shift_duration = (end_time - start_time).total_seconds()
+        return hr(shift_duration) if abs(attendance.duration - time_allowance) < shift_duration else hr(attendance.duration)
 
 class Holiday:
 
@@ -132,20 +138,13 @@ class Holiday:
             for holiday in frappe.get_all("Holiday", filters={"parent": holiday_list}, fields=["holiday_date", "description"])
         }
 
-class ShiftCalculator:
 
-    @staticmethod
-    def get_duration(attendance) -> float:
-        start_time, end_time, time_allowance = frappe.get_cached_value("Shift Type", attendance.shift_type, ["start_time", "end_time", "time_allowance"])
-        shift_duration = (end_time - start_time).total_seconds()
-        return hr(shift_duration) if abs(attendance.duration - time_allowance) < shift_duration else hr(attendance.duration)
-
-class SalaryCalculator:
+class Salary:
 
     @staticmethod
     def get_hourly_rate(employee, date, is_holiday, shift_duration):
         year, month = date.year, date.strftime("%B")
-        monthly_salary = MonthlySalaryFetcher.get_monthly(employee, year)
+        monthly_salary = Salary.get_monthly(employee, year)
         no_of_days = calendar.monthrange(year, date.month)[1]
         daily_salary = monthly_salary[month] / no_of_days
         hourly_salary = daily_salary / shift_duration
@@ -154,8 +153,6 @@ class SalaryCalculator:
     @staticmethod
     def calculate(hourly_rate: float, duration: float) -> float:
         return hourly_rate * hr(duration)
-
-class MonthlySalaryFetcher:
 
     @staticmethod
     def get_monthly(employee, year):
