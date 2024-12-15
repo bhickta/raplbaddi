@@ -47,7 +47,7 @@ class AttendanceSalaryBundleHandler:
 
     @staticmethod
     def create_bundle_item(attendance):
-        is_holiday = HolidayChecker.is_holiday(attendance.employee, attendance.date)
+        is_holiday = Holiday.is_holiday(attendance.employee, attendance.date)
         shift_duration = ShiftCalculator.get_duration(attendance)
         hourly_rate = SalaryCalculator.get_hourly_rate(attendance.employee, attendance.date, is_holiday, shift_duration)
 
@@ -83,21 +83,6 @@ class AttendanceSalaryBundleHandler:
         for item in items:
             frappe.delete_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
 
-class SalaryValidator:
-
-    @staticmethod
-    def ensure_not_duplicate(employee, from_date, to_date):
-        asbi = frappe.db.sql(
-            """
-                SELECT asb.name
-                FROM `tabAttendance Salary Bundle Item` asbi
-                JOIN `tabAttendance Salary Bundle` asb ON asb.name = asbi.parent
-                WHERE asb.employee = %s
-                AND asbi.date BETWEEN %s AND %s
-                AND asb.docstatus = 1
-            """, (employee, from_date, to_date))
-        if asbi:
-            frappe.throw(f"Salary is already created for the employee {employee} between {from_date} and {to_date} </br>" + "</br>".join([item[0] for item in asbi]))
 
 class AttendanceFetcher:
 
@@ -113,14 +98,12 @@ class AttendanceFetcher:
             pluck="name",
         )
 
-class HolidayChecker:
+class Holiday:
 
     @staticmethod
     def is_holiday(employee, date):
-        holiday_list = HolidayFetcher.get_list(employee)
+        holiday_list = Holiday.get_list(employee)
         return date in holiday_list
-
-class HolidayFetcher:
 
     @staticmethod
     def get_list(employee) -> Dict:
@@ -174,3 +157,19 @@ class MonthlySalaryFetcher:
 
 def hr(seconds: int) -> float:
     return seconds / 3600
+
+class SalaryValidator:
+
+    @staticmethod
+    def ensure_not_duplicate(employee, from_date, to_date):
+        asbi = frappe.db.sql(
+            """
+                SELECT asb.name
+                FROM `tabAttendance Salary Bundle Item` asbi
+                JOIN `tabAttendance Salary Bundle` asb ON asb.name = asbi.parent
+                WHERE asb.employee = %s
+                AND asbi.date BETWEEN %s AND %s
+                AND asb.docstatus = 1
+            """, (employee, from_date, to_date))
+        if asbi:
+            frappe.throw(f"Salary is already created for the employee {employee} between {from_date} and {to_date} </br>" + "</br>".join([item[0] for item in asbi]))
