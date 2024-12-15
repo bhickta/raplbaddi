@@ -129,8 +129,17 @@ class Salary:
         hourly_salary = daily_salary / shift_duration
         if item.attendance_item and item.is_holiday and item.attendance == "Absent":
             return hourly_salary
-        return hourly_salary * 2 if item.attendance_item and item.is_holiday else hourly_salary
+        double_rate = self.is_double_rate(item)
+        if shift_duration and double_rate and item.duration > shift_duration:
+            item.duration = shift_duration * 3600
+        return hourly_salary * 2 if double_rate else hourly_salary
 
+    def is_double_rate(self, item):
+        return self.present_on_holidays(item)
+    
+    def present_on_holidays(self, item):
+        return item.is_holiday and item.attendance == "Present"
+        
     def get_monthly_salary(self, date):
         return self.monthly_salary[calendar.month_name[date.month]]
 
