@@ -17,11 +17,11 @@ def naming_for_branch_red_star_unit_two(doc, method):
         naming_for_branch_rapl_unit_one(doc, "RSI", 40)
 
 def naming_for_branch_rapl_unit_one(doc, suffix="E", upper_limit=30):
-
-    if len(frappe.get_all("Employee", filters={"branch": doc.branch})) == 0:
+    filters = {"branch": doc.branch, "naming_series": ["like", f"{suffix}-%"]}
+    if len(frappe.get_all("Employee", filters=filters)) == 0:
         middle_no = 1
     else:
-        last_employee = frappe.get_last_doc("Employee", filters={"branch": doc.branch}).name.split("-")
+        last_employee = frappe.get_last_doc("Employee", filters=filters).name.split("-")
 
         middle_no = get_middle_no(last_employee[1])
         if int(last_employee[2]) == upper_limit:
