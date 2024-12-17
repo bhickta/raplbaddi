@@ -3,20 +3,30 @@ import frappe
 
 def autoname(doc, method):
     doc.employee, doc.name = None, None
-
     if not doc.department or doc.branch == None:
         frappe.throw("Department and branch is Mandatory")
+    if doc.branch == "RAPL Unit-1":
+        naming_for_branch_rapl_unit_one(doc)
+    elif doc.branch == "Red Star Unit 2":
+        naming_for_branch_red_star_unit_two(doc, method)
 
-    if len(frappe.get_all("Employee")) == 0:
+def naming_for_branch_red_star_unit_two(doc, method):
+    if doc.custom_employee_code:
+        doc.name = doc.custom_employee_code
+    else:
+        naming_for_branch_rapl_unit_one(doc, "RSI", 40)
+
+def naming_for_branch_rapl_unit_one(doc, suffix="E", upper_limit=30):
+
+    if len(frappe.get_all("Employee", filters={"branch": doc.branch})) == 0:
         middle_no = 1
     else:
-        last_employee = frappe.get_last_doc("Employee").name.split("-")
+        last_employee = frappe.get_last_doc("Employee", filters={"branch": doc.branch}).name.split("-")
 
         middle_no = get_middle_no(last_employee[1])
-        if int(last_employee[2]) == 30:
-            middle_no += + 1
-
-    doc.naming_series = f"E-{get_middle_no(middle_no)}-.#"
+        if int(last_employee[2]) == upper_limit:
+            middle_no += 1
+    doc.naming_series = f"{suffix}-{get_middle_no(middle_no)}-.#"
 
 def get_middle_no(value):
     if isinstance(value, int):
