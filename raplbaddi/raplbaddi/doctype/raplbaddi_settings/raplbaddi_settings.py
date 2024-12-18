@@ -13,8 +13,8 @@ class RaplbaddiSettings(Document):
 
 	if TYPE_CHECKING:
 		from frappe.types import DF
-		from raplbaddi.raplbaddi.doctype.holiday_sandwitch.holiday_sandwitch import HolidaySandwitch
+		from raplbaddi.raplbaddi.doctype.holiday_sandwich.holiday_sandwich import HolidaySandwich
 
-		holiday_sandwitch: DF.Table[HolidaySandwitch]
+		holiday_sandwich: DF.Table[HolidaySandwich]
 	# end: auto-generated types
 	pass

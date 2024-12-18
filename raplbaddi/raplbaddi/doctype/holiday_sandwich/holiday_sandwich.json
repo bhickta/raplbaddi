@@ -1,7 +1,8 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2024-12-18 07:00:43.622786",
+ "creation": "2024-12-18 07:36:52.636615",
+ "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -12,6 +13,11 @@
   "minimum_weekly_attendance"
  ],
  "fields": [
+  {
+   "fieldname": "holiday_section",
+   "fieldtype": "Section Break",
+   "label": "Holiday"
+  },
   {
    "fieldname": "designation",
    "fieldtype": "Link",
@@ -31,20 +37,15 @@
    "label": "Minimum Weekly Attendance",
    "non_negative": 1,
    "reqd": 1
-  },
-  {
-   "fieldname": "holiday_section",
-   "fieldtype": "Section Break",
-   "label": "Holiday"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-18 07:06:46.402324",
+ "modified": "2024-12-18 07:36:52.636615",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
- "name": "Holiday Sandwitch",
+ "name": "Holiday Sandwich",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",

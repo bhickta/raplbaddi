@@ -21,6 +21,7 @@ class AttendanceSalaryBundleItem(Document):
 		duration: DF.Duration | None
 		hourly_rate: DF.Float
 		is_holiday: DF.Check
+		is_holiday_sandwich: DF.Check
 		monthly_salary: DF.Float
 		parent: DF.Data
 		parentfield: DF.Data

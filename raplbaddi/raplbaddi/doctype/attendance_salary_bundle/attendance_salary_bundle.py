@@ -5,8 +5,7 @@ import calendar
 from typing import Dict, List
 
 import frappe.utils
-import frappe.utils.dateutils
-
+from frappe.utils import dateutils
 
 class AttendanceSalaryBundle(Document):
     # begin: auto-generated types
@@ -39,11 +38,14 @@ class AttendanceSalaryBundle(Document):
         self.add_holidays_item_not_present()
         self.preitem()
         self.calcualte_salary()
+        self.validate_holiday_sandwich()
     
     def preitem(self):
         for item in self.items:
             salary = Salary(self.employee, item.date)
             item.is_holiday = Holiday.is_holiday(self.employee, item.date)
+            if item.is_holiday:
+                item.is_holiday_sandwich = Holiday.is_holiday_sandwich(self.employee, item.date)
             if not item.attendance_item:
                 self.set_default_values(item)
             else:
@@ -72,6 +74,11 @@ class AttendanceSalaryBundle(Document):
     def calcualte_salary(self):
         for item in self.items:
             item.salary = item.hourly_rate * hr(item.duration)
+    
+    def validate_holiday_sandwich(self):
+        for item in self.items:
+            if item.is_holiday and item.is_holiday_sandwich:
+                item.salary = 0
 
     def add_holidays_item_not_present(self):
         missing_dates = self._get_missing_dates()
@@ -113,7 +120,6 @@ class AttendanceSalaryBundle(Document):
 
     def on_trash(self):
         pass
-
 
 from frappe.utils import getdate
 
@@ -164,9 +170,34 @@ def hr(seconds: int) -> float:
 class Holiday:
 
     @staticmethod
-    def is_holiday(employee, date):
+    def is_holiday(employee: str, date):
         holiday_list = Holiday.get_list(employee)
         return date in holiday_list
+
+    @staticmethod
+    def is_holiday_sandwich(employee, date):
+        employee = frappe.get_doc("Employee", employee, ["designation"])
+        ret = False
+        if not employee.designation:
+            return ret
+        holiday_sandwich = frappe.get_all("Holiday Sandwich", {"designation": employee.designation}, ['minimum_weekly_attendance'])
+        if not holiday_sandwich:
+            return ret
+        minimum_weekly_attendance = holiday_sandwich[0].minimum_weekly_attendance
+        weekly_attendance = Holiday.weekly_attendance(employee, date)
+        if weekly_attendance < minimum_weekly_attendance:
+            ret = True
+
+        return ret
+    
+    @staticmethod
+    def weekly_attendance(employee, date):
+        week_start = dateutils.get_first_day_of_week(date)
+        week_end = dateutils.get_last_day_of_week(date)
+        attendance = frappe.get_all("Attendance Rapl Item", filters={"employee": employee.name, "docstatus": 1, "date": ["between", [week_start, week_end]]})
+        if not attendance:
+            return 0
+        return len(attendance)
 
     @staticmethod
     def get_list(employee) -> Dict:

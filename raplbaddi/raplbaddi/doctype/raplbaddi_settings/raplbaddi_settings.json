@@ -7,16 +7,10 @@
  "field_order": [
   "hrms_tab",
   "holiday_section",
-  "holiday_sandwitch",
+  "holiday_sandwich",
   "column_break_bdep"
  ],
  "fields": [
-  {
-   "fieldname": "holiday_sandwitch",
-   "fieldtype": "Table",
-   "label": "Holiday Sandwitch",
-   "options": "Holiday Sandwitch"
-  },
   {
    "fieldname": "column_break_bdep",
    "fieldtype": "Column Break"
@@ -30,12 +24,18 @@
    "fieldname": "holiday_section",
    "fieldtype": "Section Break",
    "label": "Holiday"
+  },
+  {
+   "fieldname": "holiday_sandwich",
+   "fieldtype": "Table",
+   "label": "Holiday Sandwich",
+   "options": "Holiday Sandwich"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-12-18 07:05:56.084167",
+ "modified": "2024-12-18 07:38:24.112276",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Raplbaddi Settings",
