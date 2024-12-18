@@ -1,0 +1,58 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-18 06:58:41.487770",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "hrms_tab",
+  "holiday_section",
+  "holiday_sandwitch",
+  "column_break_bdep"
+ ],
+ "fields": [
+  {
+   "fieldname": "holiday_sandwitch",
+   "fieldtype": "Table",
+   "label": "Holiday Sandwitch",
+   "options": "Holiday Sandwitch"
+  },
+  {
+   "fieldname": "column_break_bdep",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "hrms_tab",
+   "fieldtype": "Tab Break",
+   "label": "Hrms"
+  },
+  {
+   "fieldname": "holiday_section",
+   "fieldtype": "Section Break",
+   "label": "Holiday"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-12-18 07:05:56.084167",
+ "modified_by": "Administrator",
+ "module": "Raplbaddi",
+ "name": "Raplbaddi Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
