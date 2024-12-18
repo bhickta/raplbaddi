@@ -14,7 +14,7 @@ class HolidaySandwich(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		designation: DF.Link
+		department: DF.Link
 		minimum_weekly_attendance: DF.Int
 		parent: DF.Data
 		parentfield: DF.Data

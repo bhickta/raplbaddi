@@ -18,6 +18,7 @@ class AttendanceSalaryBundleItem(Document):
 		attendance_item: DF.Data | None
 		attendance_rapl: DF.Link | None
 		date: DF.Date | None
+		day: DF.Data
 		duration: DF.Duration | None
 		hourly_rate: DF.Float
 		is_holiday: DF.Check

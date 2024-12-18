@@ -8,7 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "holiday_section",
-  "designation",
+  "department",
   "column_break_vtiu",
   "minimum_weekly_attendance"
  ],
@@ -17,14 +17,6 @@
    "fieldname": "holiday_section",
    "fieldtype": "Section Break",
    "label": "Holiday"
-  },
-  {
-   "fieldname": "designation",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Designation",
-   "options": "Designation",
-   "reqd": 1
   },
   {
    "fieldname": "column_break_vtiu",
@@ -37,12 +29,20 @@
    "label": "Minimum Weekly Attendance",
    "non_negative": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-18 07:36:52.636615",
+ "modified": "2024-12-18 08:12:56.125546",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Holiday Sandwich",

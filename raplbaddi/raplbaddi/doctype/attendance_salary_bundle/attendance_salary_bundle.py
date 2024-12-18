@@ -30,22 +30,36 @@ class AttendanceSalaryBundle(Document):
 
     def validate(self):
         self.validate_items()
-        self.validate_salary()
-        self.validate_holiday()
+        self.validate_total()
     
-
     def validate_items(self):
+        self.set_day_of_the_week()
         self.add_holidays_item_not_present()
+        self.validate_holiday()
+        self.validate_holiday_sandwich()
         self.preitem()
         self.calcualte_salary()
-        self.validate_holiday_sandwich()
     
+    def set_day_of_the_week(self):
+        for item in self.items:
+            item.day = calendar.day_name[item.date.weekday()]
+    
+    def validate_holiday(self):
+        for item in self.items:
+            item.is_holiday = Holiday.is_holiday(self.employee, item.date)
+
+    def validate_holiday_sandwich(self):
+        for item in self.items:
+            if item.is_holiday and item.day in ["Sunday",]:
+                print(item.date)
+                item.is_holiday_sandwich = Holiday.is_holiday_sandwich(self.employee, item.date)
+                print(item.is_holiday_sandwich)
+            if item.is_holiday_sandwich:
+                item.is_holiday = False
+
     def preitem(self):
         for item in self.items:
             salary = Salary(self.employee, item.date)
-            item.is_holiday = Holiday.is_holiday(self.employee, item.date)
-            if item.is_holiday:
-                item.is_holiday_sandwich = Holiday.is_holiday_sandwich(self.employee, item.date)
             if not item.attendance_item:
                 self.set_default_values(item)
             else:
@@ -74,11 +88,6 @@ class AttendanceSalaryBundle(Document):
     def calcualte_salary(self):
         for item in self.items:
             item.salary = item.hourly_rate * hr(item.duration)
-    
-    def validate_holiday_sandwich(self):
-        for item in self.items:
-            if item.is_holiday and item.is_holiday_sandwich:
-                item.salary = 0
 
     def add_holidays_item_not_present(self):
         missing_dates = self._get_missing_dates()
@@ -112,10 +121,8 @@ class AttendanceSalaryBundle(Document):
         missing_dates = all_dates - item_dates
         return missing_dates
 
-    def validate_salary(self):
+    def validate_total(self):
         self.total_salary = sum(item.salary for item in self.items)
-
-    def validate_holiday(self):
         self.total_holiday = len([item for item in self.items if item.is_holiday])
 
     def on_trash(self):
@@ -176,11 +183,11 @@ class Holiday:
 
     @staticmethod
     def is_holiday_sandwich(employee, date):
-        employee = frappe.get_doc("Employee", employee, ["designation"])
+        employee = frappe.get_doc("Employee", employee, ["department"])
         ret = False
-        if not employee.designation:
+        if not employee.department:
             return ret
-        holiday_sandwich = frappe.get_all("Holiday Sandwich", {"designation": employee.designation}, ['minimum_weekly_attendance'])
+        holiday_sandwich = frappe.get_all("Holiday Sandwich", {"department": employee.department}, ['minimum_weekly_attendance'])
         if not holiday_sandwich:
             return ret
         minimum_weekly_attendance = holiday_sandwich[0].minimum_weekly_attendance

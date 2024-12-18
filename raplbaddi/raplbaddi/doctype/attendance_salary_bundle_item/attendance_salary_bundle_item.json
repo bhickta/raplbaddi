@@ -13,6 +13,7 @@
   "monthly_salary",
   "attendance_item",
   "date",
+  "day",
   "column_break_ngdh",
   "is_holiday",
   "is_holiday_sandwich",
@@ -127,12 +128,19 @@
    "in_list_view": 1,
    "label": "Is Holiday Sandwich",
    "read_only": 1
+  },
+  {
+   "fieldname": "day",
+   "fieldtype": "Data",
+   "label": "Day",
+   "read_only": 1,
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-18 07:35:04.453973",
+ "modified": "2024-12-18 08:16:24.233859",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Attendance Salary Bundle Item",
