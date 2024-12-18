@@ -64,7 +64,7 @@ class BoxRequirements:
         if warehouse:
             qty_query = qty_query.where(self.bin.warehouse == warehouse)
         else:
-            pb_warehouses = frappe.get_list("Warehouse", {"warehouse_type": "Packing Box"}, pluck="name")
+            pb_warehouses = frappe.get_list("Warehouse", {"warehouse_type": "Packing Boxes}, pluck="name")
             qty_query = qty_query.where(self.bin.warehouse.isin(pb_warehouses))
         return report_utils.remove_negative(['warehouse_qty'], qty_query.run(as_dict=True))
 

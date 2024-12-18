@@ -19,7 +19,7 @@ class ReportType:
 
 	def set_report_type_class_map(self):
 		self.report_type_class_map = {
-			"Packing Box Stock Report": PBReportNew,
+			"Packing Boxes Stock Report": PBReportNew,
 		}
 	
 	def get_report_class(self):
@@ -29,7 +29,7 @@ class ReportType:
 class PBReportNew:
 	def __init__(self, filters):
 		self.filters = filters
-		self.pb_warehouses = frappe.get_list("Warehouse", {"warehouse_type": "Packing Box"}, pluck="name")
+		self.pb_warehouses = frappe.get_list("Warehouse", {"warehouse_type": "Packing Boxes"}, pluck="name")
 
 	def get_data(self):
 		data = []

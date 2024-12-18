@@ -7,8 +7,8 @@ frappe.query_reports["PB Report New"] = {
 			"fieldname": "report_type",
 			"fieldtype": "Select",
 			"label": "Report Type",
-			"options": "Packing Box Stock Report\n",
-			"default": "Packing Box Stock Report",
+			"options": "Packing Boxes Stock Report\n",
+			"default": "Packing Boxes Stock Report",
 			"reqd": 1,
 		},
 		{
@@ -17,7 +17,7 @@ frappe.query_reports["PB Report New"] = {
 			"options": "Warehouse",
 			"label": "Warehouse",
 			"filters": {
-				"warehouse_type": "Packing Box"
+				"warehouse_type": "Packing Boxes"
 			}
 		},
 		{
@@ -26,7 +26,7 @@ frappe.query_reports["PB Report New"] = {
 			"options": "Item",
 			"label": "Item",
 			"filters": {
-				"item_group": "Packing Box"
+				"item_group": "Packing Boxes"
 			},
 		},
 		{
