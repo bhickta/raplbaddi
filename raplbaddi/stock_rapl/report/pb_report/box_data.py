@@ -49,19 +49,23 @@ class BoxRequirements:
         )
         return box_query.run(as_dict=True)
     
-    def warehouse_qty(self, warehouse):
+    def warehouse_qty(self, warehouse=None):
         qty_query = (
             frappe.qb
             .from_(self.items)
             .left_join(self.bin)
             .on(self.items.name == self.bin.item_code)
-            .where(self.bin.warehouse == warehouse)
             .select(
                 self.bin.actual_qty.as_('warehouse_qty'),
                 self.items.name.as_('box'),
                 self.bin.projected_qty.as_('projected_qty')
             )
         )
+        if warehouse:
+            qty_query = qty_query.where(self.bin.warehouse == warehouse)
+        else:
+            pb_warehouses = frappe.get_list("Warehouse", {"warehouse_type": "Packing Box"}, pluck="name")
+            qty_query = qty_query.where(self.bin.warehouse.isin(pb_warehouses))
         return report_utils.remove_negative(['warehouse_qty'], qty_query.run(as_dict=True))
 
     def get_box_requirement_from_so(self):

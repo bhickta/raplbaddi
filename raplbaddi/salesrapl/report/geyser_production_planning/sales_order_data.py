@@ -50,5 +50,5 @@ def get_bin_stock():
 def get_box_qty():
     from raplbaddi.stock_rapl.report.pb_report.box_data import BoxRequirements
     box = BoxRequirements()
-    box_qty = box.warehouse_qty(warehouse='Packing Boxes - RAPL')
+    box_qty = box.warehouse_qty()
     return box_qty
