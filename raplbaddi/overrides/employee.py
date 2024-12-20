@@ -11,10 +11,7 @@ def autoname(doc, method):
         naming_for_branch_red_star_unit_two(doc, method)
 
 def naming_for_branch_red_star_unit_two(doc, method):
-    if doc.custom_employee_code:
-        doc.name = doc.custom_employee_code
-    else:
-        naming_for_branch_rapl_unit_one(doc, "RSI", 40)
+    naming_for_branch_rapl_unit_one(doc, "RSI", 40)
 
 def naming_for_branch_rapl_unit_one(doc, suffix="E", upper_limit=30):
     filters = {"branch": doc.branch, "naming_series": ["like", f"{suffix}-%"]}
