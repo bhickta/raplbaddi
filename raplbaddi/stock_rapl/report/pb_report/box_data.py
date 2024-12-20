@@ -56,10 +56,11 @@ class BoxRequirements:
             .left_join(self.bin)
             .on(self.items.name == self.bin.item_code)
             .select(
-                self.bin.actual_qty.as_('warehouse_qty'),
+                Sum(self.bin.actual_qty).as_('warehouse_qty'),
                 self.items.name.as_('box'),
                 self.bin.projected_qty.as_('projected_qty')
             )
+            .groupby(self.items.name)
         )
         if warehouse:
             qty_query = qty_query.where(self.bin.warehouse == warehouse)

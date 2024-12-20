@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.query_builder import Order
+from frappe.query_builder import Order, functions as fn
 
 
 def execute(filters=None):
@@ -56,7 +56,6 @@ class PBReportNew:
 			.on(bin_table.item_code == item_table.name)
 			.select(
 				bin_table.item_code,
-				bin_table.actual_qty,
 				item_table.item_name,
 			)
 			.where(bin_table.warehouse.isin(warehouse))
@@ -78,8 +77,10 @@ class PBReportNew:
 
 		if group_by:
 			query = query.groupby(bin_table.item_code)
+			query = query.select(fn.Sum(bin_table.actual_qty).as_("actual_qty"))
 		else:
 			query = query.select(bin_table.warehouse)
+			query = query.select(bin_table.actual_qty.as_("actual_qty"))
 
 		return query.run(as_dict=True)
 
