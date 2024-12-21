@@ -6,11 +6,12 @@
  "engine": "InnoDB",
  "field_order": [
   "section_break_vump",
+  "employee",
   "naming_series",
-  "department",
   "from_date",
   "column_break_myvx",
   "branch",
+  "department",
   "to_date",
   "section_break_gunv",
   "items",
@@ -77,12 +78,18 @@
    "fieldtype": "Select",
    "hidden": 1,
    "label": "Naming Series"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-15 19:53:33.439671",
+ "modified": "2024-12-21 09:20:15.883233",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Salary Slips Rapl",

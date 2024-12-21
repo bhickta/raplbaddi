@@ -18,9 +18,10 @@ class AttendanceRapl(Document):
 		from raplbaddi.raplbaddi.doctype.attendance_rapl_item.attendance_rapl_item import AttendanceRaplItem
 
 		amended_from: DF.Link | None
-		branch: DF.Link
+		branch: DF.Link | None
 		date: DF.Date
-		department: DF.Link
+		department: DF.Link | None
+		employee: DF.Link | None
 		items: DF.Table[AttendanceRaplItem]
 	# end: auto-generated types
 	pass
@@ -115,6 +116,12 @@ def get_employee_shift_info(doc):
 			filters.update({
 				field: doc.get(field)
 			})
+
+	if doc.get('employee'):
+		filters.update({
+			'name': doc.get('employee')
+		})
+ 
 	employees = frappe.get_all('Employee', fields=['name', 'employee_name', 'default_shift'], filters=filters, order_by="creation")
 	shift_info = []
 

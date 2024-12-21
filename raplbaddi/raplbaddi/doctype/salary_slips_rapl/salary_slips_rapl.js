@@ -7,6 +7,9 @@ frappe.ui.form.on("Salary Slips Rapl", {
     },
     branch: function(frm) {
         fill_items_onload(frm);
+    },
+    employee: function(frm) {
+        fill_items_onload(frm);
     }
 });
 

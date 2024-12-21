@@ -6,9 +6,10 @@
  "field_order": [
   "section_break_0bdz",
   "date",
+  "department",
   "column_break_baqm",
   "branch",
-  "department",
+  "employee",
   "section_break_pida",
   "items",
   "amended_from"
@@ -56,21 +57,25 @@
    "fieldname": "branch",
    "fieldtype": "Link",
    "label": "Branch",
-   "options": "Branch",
-   "reqd": 1
+   "options": "Branch"
   },
   {
    "fieldname": "department",
    "fieldtype": "Link",
    "label": "Department",
-   "options": "Department",
-   "reqd": 0
+   "options": "Department"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-23 19:24:33.612575",
+ "modified": "2024-12-21 09:21:58.689294",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Attendance Rapl",

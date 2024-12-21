@@ -11,13 +11,12 @@ class SalarySlipsRapl(Document):
 
     if TYPE_CHECKING:
         from frappe.types import DF
-        from raplbaddi.raplbaddi.doctype.salary_slips_rapl_item.salary_slips_rapl_item import (
-            SalarySlipsRaplItem,
-        )
+        from raplbaddi.raplbaddi.doctype.salary_slips_rapl_item.salary_slips_rapl_item import SalarySlipsRaplItem
 
         amended_from: DF.Link | None
         branch: DF.Link | None
         department: DF.Link | None
+        employee: DF.Link | None
         from_date: DF.Date
         items: DF.Table[SalarySlipsRaplItem]
         naming_series: DF.Literal[None]

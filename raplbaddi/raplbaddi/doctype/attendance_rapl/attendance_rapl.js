@@ -7,7 +7,10 @@ frappe.ui.form.on("Attendance Rapl", {
     },
     branch: function(frm) {
         fill_items_onload(frm)
-    }
+    },
+    employee: function(frm) {
+        fill_items_onload(frm)
+    },
 });
 
 function fill_items_onload(frm) {
