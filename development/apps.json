@@ -8,8 +8,16 @@
     "branch": "version-15"
   },
   {
+    "url": "https://github.com/frappe/payments.git",
+    "branch": "development"
+  },
+  {
     "url": "git@github.com:bhickta/raplbaddi.git",
     "branch": "production"
+  },
+  {
+    "url": "git@github.com:bhickta/frappe_whatsapp.git",
+    "branch": "development"
   },
   {
     "url": "https://github.com/resilient-tech/india-compliance.git",
