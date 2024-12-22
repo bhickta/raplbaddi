@@ -14,9 +14,9 @@ class ContractorRatesItem(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		contractor: DF.Data | None
 		item_code: DF.Link
-		item_name: DF.Link
+		item_name: DF.Data | None
+		lead: DF.Currency
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data

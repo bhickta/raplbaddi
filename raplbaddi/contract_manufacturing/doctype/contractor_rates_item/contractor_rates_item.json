@@ -11,11 +11,13 @@
   "item_name",
   "column_break_bhfz",
   "rate",
-  "contractor",
   "rejection_section_section",
   "rejection",
   "column_break_rbuh",
-  "rejection_rate"
+  "rejection_rate",
+  "deductions_per_unit_section",
+  "lead",
+  "column_break_tcjk"
  ],
  "fields": [
   {
@@ -72,25 +74,34 @@
   {
    "fetch_from": "item_code.item_name",
    "fieldname": "item_name",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Item Name",
-   "options": "Item",
-   "read_only": 1,
-   "reqd": 1
+   "read_only": 1
   },
   {
-   "default": "parent.contractor",
-   "fieldname": "contractor",
-   "fieldtype": "Data",
-   "label": "Contractor"
+   "fieldname": "deductions_per_unit_section",
+   "fieldtype": "Section Break",
+   "label": "Deductions per unit"
+  },
+  {
+   "default": "0",
+   "fieldname": "lead",
+   "fieldtype": "Currency",
+   "label": "Lead",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_tcjk",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-22 19:58:02.108721",
+ "modified": "2024-12-22 20:37:51.812512",
  "modified_by": "Administrator",
  "module": "Contract Manufacturing",
  "name": "Contractor Rates Item",

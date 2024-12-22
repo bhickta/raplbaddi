@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class ContractorRates(Document):
+class ContractorRateList(Document):
 	def validate(self):
 		print(get_contractor_item_rates('Dinbandhu', 'G13A'))
 

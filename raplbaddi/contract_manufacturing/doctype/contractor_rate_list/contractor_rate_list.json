@@ -10,6 +10,9 @@
  "engine": "InnoDB",
  "field_order": [
   "contractor",
+  "column_break_mfvj",
+  "contractor_name",
+  "section_break_asof",
   "items"
  ],
  "fields": [
@@ -17,7 +20,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Contractor Rates Item",
+   "options": "Contractor Rate Item",
    "reqd": 1
   },
   {
@@ -28,14 +31,30 @@
    "options": "Contractor",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fetch_from": "contractor.full_name",
+   "fieldname": "contractor_name",
+   "fieldtype": "Data",
+   "label": "Contractor Name",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_mfvj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_asof",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-22 19:42:55.390978",
+ "modified": "2024-12-22 20:51:55.356662",
  "modified_by": "Administrator",
  "module": "Contract Manufacturing",
- "name": "Contractor Rates",
+ "name": "Contractor Rate List",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
