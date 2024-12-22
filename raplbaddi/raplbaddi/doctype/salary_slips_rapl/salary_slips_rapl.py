@@ -20,6 +20,7 @@ class SalarySlipsRapl(Document):
         from_date: DF.Date
         items: DF.Table[SalarySlipsRaplItem]
         naming_series: DF.Literal[None]
+        status: DF.Literal["", "Audited"]
         to_date: DF.Date
     # end: auto-generated types
 
@@ -53,6 +54,15 @@ class SalarySlipsRapl(Document):
                 f"Salary is already created for the employee {employee} between {from_date} and {to_date} </br>"
                 + "</br>".join([item[0] for item in asbi])
             )
+
+    def before_submit(self):
+        mandatory = [{
+            "status": "Audited",
+        }]
+        for item in mandatory:
+            for field, value in item.items():
+                if not self.get(field) == value:
+                    frappe.throw(f"{field.capitalize()} must be {value}")
 
     def on_submit(self):
         AttendanceSalaryBundleHandler.submit_all(self.items)

@@ -9,6 +9,7 @@
   "employee",
   "naming_series",
   "from_date",
+  "status",
   "column_break_myvx",
   "branch",
   "department",
@@ -84,12 +85,18 @@
    "fieldtype": "Link",
    "label": "Employee",
    "options": "Employee"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nAudited"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-21 09:20:15.883233",
+ "modified": "2024-12-22 20:06:53.596438",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Salary Slips Rapl",
