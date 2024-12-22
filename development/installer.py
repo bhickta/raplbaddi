@@ -40,8 +40,8 @@ def get_args_parser():
         "--apps-json",
         action="store",
         type=str,
-        help="Path to apps.json, default: apps-example.json",
-        default="apps-example.json",
+        help="Path to apps.json, default: apps.json",
+        default="apps.json",
     )  # noqa: E501
     parser.add_argument(
         "-b",
@@ -56,8 +56,8 @@ def get_args_parser():
         "--site-name",
         action="store",
         type=str,
-        help="Site name, should end with .localhost, default: development.localhost",  # noqa: E501
-        default="development.localhost",
+        help="Site name, should end with .localhost, default: rapl",  # noqa: E501
+        default="rapl",
     )
     parser.add_argument(
         "-r",
