@@ -137,6 +137,7 @@ class Salary:
 
     def get_hourly_rate(self, item, shift_duration):
         year, month = item.date.year, item.date.month
+        shift_duration -= 0.5
         no_of_days = calendar.monthrange(year, item.date.month)[1]
         daily_salary = self.monthly_salary[calendar.month_name[month]] / no_of_days
         hourly_salary = daily_salary / shift_duration
