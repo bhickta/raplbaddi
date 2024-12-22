@@ -17,7 +17,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Contractor Rates Details",
+   "options": "Contractor Rates Item",
    "reqd": 1
   },
   {
@@ -32,7 +32,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-29 11:15:57.563593",
+ "modified": "2024-12-22 19:42:55.390978",
  "modified_by": "Administrator",
  "module": "Contract Manufacturing",
  "name": "Contractor Rates",

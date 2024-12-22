@@ -7,7 +7,9 @@
  "engine": "InnoDB",
  "field_order": [
   "personal_details_section",
-  "full_name"
+  "full_name",
+  "column_break_mjve",
+  "production_lines"
  ],
  "fields": [
   {
@@ -19,14 +21,24 @@
    "fieldname": "full_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "First Name",
+   "label": "Full Name",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "column_break_mjve",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "production_lines",
+   "fieldtype": "Link",
+   "label": "Production Lines",
+   "options": "Production Lines"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-29 11:30:49.867230",
+ "modified": "2024-12-22 19:24:43.756365",
  "modified_by": "Administrator",
  "module": "Contract Manufacturing",
  "name": "Contractor",

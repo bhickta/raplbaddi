@@ -9,7 +9,14 @@ custom_fields = {
             "insert_after": "over_billing_allowance",
             "fieldtype": "Select",
             "options": "Unit 1\nUnit 2"
-        }
+        },
+        {
+            "name": "Item-is_contractable",
+            "label": "Is Contractable",
+            "fieldname": "is_contractable",
+            "insert_after": "include_item_in_manufacturing",
+            "fieldtype": "Check",
+        },
     ]
 }
 

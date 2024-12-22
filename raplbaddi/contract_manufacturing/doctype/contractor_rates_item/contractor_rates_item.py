@@ -5,7 +5,7 @@
 from frappe.model.document import Document
 
 
-class Contractor(Document):
+class ContractorRatesItem(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
 
@@ -14,7 +14,14 @@ class Contractor(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		full_name: DF.Data
-		production_lines: DF.Link | None
+		contractor: DF.Data | None
+		item_code: DF.Link
+		item_name: DF.Link
+		parent: DF.Data
+		parentfield: DF.Data
+		parenttype: DF.Data
+		rate: DF.Currency
+		rejection: DF.Percent
+		rejection_rate: DF.Currency
 	# end: auto-generated types
 	pass
