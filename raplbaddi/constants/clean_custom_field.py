@@ -13,5 +13,3 @@ def main():
         file.write(f"custom_fields = {dump}")
     
     print(f"Data has been written to {file_path}")
-
-main()
