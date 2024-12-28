@@ -104,6 +104,8 @@ class AttendanceRapl(Document):
 			item.date = self.date
 
 	def before_submit(self):
+		if self._action == "cancel":
+			return
 		mandatory = [{
 			"status": "Audited",
 		}]

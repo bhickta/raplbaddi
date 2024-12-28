@@ -56,6 +56,8 @@ class SalarySlipsRapl(Document):
             )
 
     def before_submit(self):
+        if self._action == "cancel":
+            return
         mandatory = [{
             "status": "Audited",
         }]
