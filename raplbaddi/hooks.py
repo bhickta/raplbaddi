@@ -166,6 +166,11 @@ doc_events = {
             "raplbaddi.overrides.employee.validate",
         ],
     },
+    "Item": {
+        "validate": [
+            "raplbaddi.overrides.item.validate",
+        ]
+    }
 }
 
 # Scheduled Tasks

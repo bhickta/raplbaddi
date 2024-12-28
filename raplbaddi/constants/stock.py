@@ -17,6 +17,38 @@ custom_fields = {
             "insert_after": "include_item_in_manufacturing",
             "fieldtype": "Check",
         },
+    ],
+    "UOM Conversion Detail": [
+        {
+            "name": "UOM Conversion Detail-conversion_multiple",
+            "label": "Conversion Multiple",
+            "fieldname": "conversion_multiple",
+            "insert_after": "conversion_factor",
+            "fieldtype": "Float",
+            "read_only": 1,
+            "reqd": 1,
+        },
+        {
+            "name": "UOM Conversion Detail-conversion_multiple",
+            "label": "Conversion Multiple",
+            "fieldname": "conversion_multiple",
+            "insert_after": "uom",
+            "fieldtype": "Float",
+            "read_only": 1,
+            "in_list_view": 1,
+            "columns": 2
+        },
+        {
+            "name": "UOM Conversion Detail-base_uom",
+            "label": "Base UOM",
+            "fieldname": "base_uom",
+            "insert_after": "conversion_multiple",
+            "fieldtype": "Link",
+            "options": "UOM",
+            "read_only": 1,
+            "in_list_view": 1,
+            "columns": 1
+        }
     ]
 }
 
