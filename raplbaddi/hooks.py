@@ -133,6 +133,9 @@ doc_events = {
         "on_cancel": [
             "raplbaddi.overrides.delivery_note.on_cancel",
         ],
+        "on_update_after_submit": [
+            "raplbaddi.overrides.delivery_note.on_update_after_submit",
+        ],
     },
     "Sales Order": {
         "validate": [

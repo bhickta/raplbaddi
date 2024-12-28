@@ -97,6 +97,26 @@ custom_fields = {
             "reqd": 1,
             "allow_on_submit": 0,
         },
+        {
+            "name": "Delivery Note-freight",
+            "label": "Freight",
+            "fieldname": "freight",
+            "insert_after": "gst_vehicle_type",
+            "fieldtype": "Table",
+            "options": "Freight Table",
+            "reqd": 1,
+            "allow_on_submit": 1,
+        },
+        {
+            "name": "Delivery Note-amount",
+            "label": "Amount",
+            "fieldname": "amount",
+            "insert_after": "vehicle_no",
+            "fieldtype": "Int",
+            "default": "0",
+            "reqd": 1,
+            "allow_on_submit": 1,
+        },
     ],
 }
 

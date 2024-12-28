@@ -20,6 +20,7 @@ def set_naming_series(doc):
 
 def validate(doc, method):
     validate_naming_series(doc)
+    calculate_freight_amount(doc)
 
 from raplbaddi.utils import make_fields_set_only_once
 def validate_naming_series(doc):
@@ -27,6 +28,9 @@ def validate_naming_series(doc):
 
 def on_submit(doc, method):
     create_reverse_entry_for_internal_customers(doc)
+
+def on_update_after_submit(doc, method):
+    calculate_freight_amount(doc)
 
 def create_reverse_entry_for_internal_customers(doc):
     internal_customers = ["Real Appliances Pvt Ltd (RAPL-Unit 1)"]
@@ -64,3 +68,8 @@ def cancel_reverse_entry_for_internal_customers(doc):
         return
     else:
         frappe.get_doc("Stock Entry", doc.internal_receipt).cancel()
+
+def calculate_freight_amount(doc):
+    doc.amount = 0
+    for item in doc.freight:
+        doc.amount += item.amount

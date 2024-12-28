@@ -7,10 +7,12 @@
  "engine": "InnoDB",
  "field_order": [
   "type",
+  "column_break_fbxp",
   "amount"
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "fieldname": "type",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -19,18 +21,23 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "amount",
-   "fieldtype": "Int",
+   "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Amount",
    "non_negative": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_fbxp",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-09-06 18:15:57.786353",
+ "modified": "2024-12-28 09:22:10.925215",
  "modified_by": "Administrator",
  "module": "Stock Rapl",
  "name": "Freight Table",
