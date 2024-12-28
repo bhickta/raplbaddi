@@ -12,6 +12,10 @@ roles = [
         "role_name": "Salary Auditor",
         "desk_access": 0,
     },
+    {
+        "role_name": "Transportation Manager",
+        "desk_access": 0,
+    },
 ]
 
 

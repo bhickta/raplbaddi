@@ -70,6 +70,8 @@ def cancel_reverse_entry_for_internal_customers(doc):
         frappe.get_doc("Stock Entry", doc.internal_receipt).cancel()
 
 def calculate_freight_amount(doc):
+    if not frappe.user.has_role("Transportation Manager"):
+        frappe.throw("You are not allowed to calculate freight amount, only Transportation Manager can do it.")
     doc.amount = 0
     for item in doc.freight:
         doc.amount += item.amount
