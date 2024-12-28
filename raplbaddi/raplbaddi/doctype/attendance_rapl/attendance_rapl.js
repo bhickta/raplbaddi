@@ -8,13 +8,13 @@ frappe.ui.form.on("Attendance Rapl", {
         }
     },
     department: function(frm) {
-        fill_items_onload(frm);
+        fobj.fill_items_onload(frm);
     },
     branch: function(frm) {
-        fill_items_onload(frm)
+        fobj.fill_items_onload(frm)
     },
     employee: function(frm) {
-        fill_items_onload(frm)
+        fobj.fill_items_onload(frm)
     },
 });
 
