@@ -23,6 +23,7 @@ class AttendanceRapl(Document):
 		department: DF.Link | None
 		employee: DF.Link | None
 		items: DF.Table[AttendanceRaplItem]
+		status: DF.Literal["", "Audited"]
 	# end: auto-generated types
 	pass
 
@@ -101,6 +102,15 @@ class AttendanceRapl(Document):
 			else:
 				item.attendance = "Present"
 			item.date = self.date
+
+	def before_submit(self):
+		mandatory = [{
+			"status": "Audited",
+		}]
+		for item in mandatory:
+			for field, value in item.items():
+				if not self.get(field) == value:
+					frappe.throw(f"{field.capitalize()} must be {value}")
 
 @frappe.whitelist()
 def get_employee_shift_info(doc):

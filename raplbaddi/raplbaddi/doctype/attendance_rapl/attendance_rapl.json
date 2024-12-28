@@ -7,6 +7,7 @@
   "section_break_0bdz",
   "date",
   "department",
+  "status",
   "column_break_baqm",
   "branch",
   "employee",
@@ -70,12 +71,18 @@
    "fieldtype": "Link",
    "label": "Employee",
    "options": "Employee"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nAudited"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-21 09:21:58.689294",
+ "modified": "2024-12-28 11:01:55.644196",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Attendance Rapl",
