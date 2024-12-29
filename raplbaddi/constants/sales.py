@@ -118,6 +118,17 @@ custom_fields = {
             "allow_on_submit": 1,
         },
     ],
+    "Customer Group": [
+        {
+            "is_system_generated": 1,
+            "label": "Abbreviation",
+            "fieldname": "abbreviation",
+            "insert_after": "is_group",
+            "fieldtype": "Data",
+            "reqd": 1,
+            "is_unique": 1,
+        },
+    ],
 }
 
 
