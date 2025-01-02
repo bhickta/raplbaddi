@@ -184,6 +184,19 @@ doc_events = {
             "raplbaddi.overrides.customer_group.validate",
         ],
     },
+    "Supplier": {
+        "autoname": [
+            "raplbaddi.overrides.supplier.autoname",
+        ],
+        "validate": [
+            "raplbaddi.overrides.supplier.validate",
+        ],
+    },
+    "Supplier Group": {
+        "validate": [
+            "raplbaddi.overrides.supplier_group.validate",
+        ],
+    },
 }
 
 # Scheduled Tasks

@@ -140,6 +140,17 @@ custom_fields = {
             "fieldtype": "Small Text",
         },
     ],
+    "Supplier Group": [
+        {
+            "is_system_generated": 1,
+            "label": "Abbreviation",
+            "fieldname": "abbreviation",
+            "insert_after": "is_group",
+            "fieldtype": "Data",
+            "reqd": 1,
+            "unique": 1,
+        },
+    ],
 }
 
 
