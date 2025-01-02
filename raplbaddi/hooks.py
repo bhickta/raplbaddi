@@ -170,7 +170,20 @@ doc_events = {
         "validate": [
             "raplbaddi.overrides.item.validate",
         ]
-    }
+    },
+    "Customer": {
+        "autoname": [
+            "raplbaddi.overrides.customer.autoname",
+        ],
+        "validate": [
+            "raplbaddi.overrides.customer.validate",
+        ],
+    },
+    "Customer Group": {
+        "validate": [
+            "raplbaddi.overrides.customer_group.validate",
+        ],
+    },
 }
 
 # Scheduled Tasks

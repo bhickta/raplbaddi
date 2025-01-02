@@ -126,7 +126,7 @@ custom_fields = {
             "insert_after": "is_group",
             "fieldtype": "Data",
             "reqd": 1,
-            "is_unique": 1,
+            "unique": 1,
         },
     ],
 }
