@@ -29,7 +29,8 @@ def get_data(filters):
     query = f"""
         SELECT DISTINCT
             dn.name as dn,
-            dn.customer as customer_name,
+            cu.name as customer,
+            cu.customer_name as customer_name,
             dn.posting_date as posting_date,
             dn.total_qty as total_qty,
             dni.uom as uom,
@@ -50,7 +51,7 @@ def get_data(filters):
 
 def get_columns(filters):
     columns = [
-        {"label": "Customer", "fieldname": "customer_name", "fieldtype": "Link", "options": "Customer", "width": 250},
+        {"label": "Name", "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 250},
         {"label": "Delivery Note", "fieldname": "dn", "fieldtype": "Link", "options": "Delivery Note", "width": 150},
         {"label": "Delivery Date", "fieldname": "posting_date", "fieldtype": "Date", "width": 100},
         {"label": "Quantity", "fieldname": "total_qty", "fieldtype": "Int", "width": 50},

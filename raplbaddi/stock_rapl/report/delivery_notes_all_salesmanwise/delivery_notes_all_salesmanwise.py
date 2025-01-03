@@ -102,7 +102,7 @@ def get_customer():
     cu = DocType('Customer')
     query = (frappe.qb
         .from_(cu)
-        .select(cu.name.as_('customer'), cu.customer_group)         
+        .select(cu.name.as_('customer'), cu.customer_group, cu.customer_name)         
     )
     return query.run(as_dict=True)
 
@@ -126,16 +126,17 @@ def join(filters):
     # Iterate through customer data
     for customer_data in customer_data_list:
         if desired_customer_group != 'All' and customer_data['customer_group'] != desired_customer_group:
-            continue  # Skip this customer if the group doesn't match the filter
+            continue
 
         total_net_sales = 0.0
-        customer_name = customer_data['customer']
+        customer = customer_data['customer']
+        customer_name = customer_data['customer_name']
         
         days_since_last_order = 0.0
         last_order_date = datetime.date.today()
         no_of_so = 0.0
         for inactive_cust in inactive_customers:
-            if(inactive_cust['customer'] == customer_name):
+            if(inactive_cust['customer'] == customer):
                 days_since_last_order = inactive_cust['days_since_last_order']
                 last_order_date = inactive_cust['last_order_date']
                 no_of_so = inactive_cust['no_of_so']
@@ -143,13 +144,14 @@ def join(filters):
         for transaction in transactions_list:
             if (
                 start_date <= transaction['date'] <= end_date
-                and (desired_customer == "All" or transaction['customer'] == customer_name)
+                and (desired_customer == "All" or transaction['customer'] == customer)
             ):
                 total_net_sales += transaction['net_sales']
             
         if total_net_sales != 0.0:
             consolidated_data = {
-                'customer': customer_name,
+                'customer': customer,
+                'customer_name': customer_name,
                 'net_sales': total_net_sales,
                 'days_since_last_order': days_since_last_order,
                 'last_order_date': last_order_date,
@@ -219,6 +221,7 @@ def get_conditions(filters):
 
 
 def get_data(filters):
+    return
     query = f"""
         SELECT
             customer,

@@ -19,6 +19,7 @@ def get_so_items():
 			soi.item_code.as_('item_code'),
 			so.status.as_('status'),
 			so.customer.as_('customer'),
+			so.customer_name.as_('customer_name'),
 			so.conditions.as_('so_remarks'),
 			soi.custom_box.as_('box'),
 			so.planning_remarks.as_('planning_remarks'),

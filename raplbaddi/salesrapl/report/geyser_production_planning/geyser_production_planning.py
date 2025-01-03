@@ -109,6 +109,7 @@ def order_and_shortage_date():
 			entry['so_remarks'] = soi['so_remarks']
 			entry['date'] = soi['date']
 			entry['customer'] = soi['customer']
+			entry['customer_name'] = soi['customer_name']
 			soi_shortage = 0
 			items.add(soi['item_code'])
 			brands.add(soi['brand'].replace(' - RAPL', ''))

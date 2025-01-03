@@ -20,7 +20,8 @@ def get_columns():
         {
             "label": "Customer",
             "fieldname": "customer",
-            "fieldtype": "Data",
+            "fieldtype": "Link",
+            "options": "Customer",
             "width": 150,
         },
         {
@@ -96,6 +97,7 @@ def get_data(filters):
         SELECT
             dn.name AS dn,
             dn.customer,
+            dn.customer_name,
             i.capacity,
             dn.billing_rule,
             SUM(dni.qty) AS total_qty,
@@ -142,6 +144,7 @@ def get_data(filters):
             {
                 "dn": row.dn,
                 "customer": row.customer,
+                "customer_name": row.customer_name,
                 "capacity": row.capacity,
                 "billing_rule": row.billing_rule,
                 "total_qty": total_qty,
@@ -158,7 +161,6 @@ def get_data(filters):
                 ),
             }
         )
-
     return data
 
 

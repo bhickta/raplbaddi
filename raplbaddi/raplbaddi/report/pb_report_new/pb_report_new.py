@@ -3,9 +3,10 @@
 
 import frappe
 from frappe.query_builder import Order, functions as fn
-
+import traceback
 
 def execute(filters=None):
+	# traceback.print_stack()
 	report_type = ReportType(filters)
 	report = report_type.get_report_class()(filters)
 	data = report.get_data()
@@ -92,7 +93,6 @@ class PBReportNew:
 
 	def set_columns(self, columns):
 		columns.append(frappe._dict({"label": "Item Code", "fieldname": "item_code", "fieldtype": "Link", "options": "Item",}))
-		columns.append(frappe._dict({"label": "Item Name", "fieldname": "item_name", "fieldtype": "Data",}))
 		columns.append(frappe._dict({"label": "Stock Qty", "fieldname": "actual_qty", "fieldtype": "Float",}))
 		if not self.filters.is_group_by:
 			columns.append(frappe._dict({"label": "Warehouse", "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse",}))
