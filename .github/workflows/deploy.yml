@@ -36,6 +36,7 @@ jobs:
               echo "Changes detected, running bench migrate and restart."
               cd /home/frappe/frappe-bench
               bench migrate
+              bench build
               bench restart
           fi
 
