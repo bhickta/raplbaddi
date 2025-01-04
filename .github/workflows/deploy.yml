@@ -29,15 +29,31 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 frappe@${{ secrets.PROD_IP }} "
           cd /home/frappe/frappe-bench/apps/raplbaddi && \
           PULL_OUTPUT=\$(git pull origin production) && \
-          if [[ \$PULL_OUTPUT == *'Already up to date.'* ]]; then
-              echo 'Already up-to-date, no need to migrate or restart.';
+          echo \"\$PULL_OUTPUT\" && \
+          if [[ \$PULL_OUTPUT != *'Already up to date.'* ]]; then
+              echo 'Changes detected.';
           else
-              echo 'Changes detected, running bench migrate and restart.' && \
-              cd /home/frappe/frappe-bench && \
-              bench migrate && \
-              bench build && \
-              bench restart;
-          fi"
+              echo 'Already up-to-date.';
+          fi
+
+          # Migrate if 'migrate' keyword is in the commit message
+          if [[ \$(echo '${{ github.event.head_commit.message }}' | grep -i 'migrate') ]]; then
+              echo 'Running bench migrate...';
+              cd /home/frappe/frappe-bench && bench migrate;
+          fi
+
+          # Build if 'build' keyword is in the commit message
+          if [[ \$(echo '${{ github.event.head_commit.message }}' | grep -i 'build') ]]; then
+              echo 'Running bench build...';
+              cd /home/frappe/frappe-bench && bench build;
+          fi
+
+          # Restart if 'restart' keyword is in the commit message
+          if [[ \$(echo '${{ github.event.head_commit.message }}' | grep -i 'restart') ]]; then
+              echo 'Running bench restart...';
+              cd /home/frappe/frappe-bench && bench restart;
+          fi
+          "
 
       - name: Skip deployment
         if: ${{ !contains(github.event.head_commit.message, 'p2p') }}
