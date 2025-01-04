@@ -26,19 +26,18 @@ jobs:
       - name: Deploy code to DigitalOcean
         if: contains(github.event.head_commit.message, 'p2p')
         run: |
-          ssh -i ~/.ssh/id_ed25519 frappe@${{ secrets.PROD_IP }} << 'EOF'
-          cd /home/frappe/frappe-bench/apps/raplbaddi
-          PULL_OUTPUT=$(git pull)
-
-          if [[ $PULL_OUTPUT == *"Already up to date."* ]]; then
-              echo "Already up-to-date, no need to migrate or restart."
+          ssh -i ~/.ssh/id_ed25519 frappe@${{ secrets.PROD_IP }} "
+          cd /home/frappe/frappe-bench/apps/raplbaddi && \
+          PULL_OUTPUT=\$(git pull origin production) && \
+          if [[ \$PULL_OUTPUT == *'Already up to date.'* ]]; then
+              echo 'Already up-to-date, no need to migrate or restart.';
           else
-              echo "Changes detected, running bench migrate and restart."
-              cd /home/frappe/frappe-bench
-              bench migrate
-              bench build
-              bench restart
-          fi
+              echo 'Changes detected, running bench migrate and restart.' && \
+              cd /home/frappe/frappe-bench && \
+              bench migrate && \
+              bench build && \
+              bench restart;
+          fi"
 
       - name: Skip deployment
         if: ${{ !contains(github.event.head_commit.message, 'p2p') }}
