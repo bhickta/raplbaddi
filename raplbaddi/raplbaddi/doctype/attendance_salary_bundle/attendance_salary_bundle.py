@@ -3,6 +3,7 @@ from frappe.model.document import Document
 from datetime import datetime, timedelta
 import calendar
 from typing import Dict, List
+from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
 
 import frappe.utils
 from frappe.utils import dateutils
@@ -83,7 +84,7 @@ class AttendanceSalaryBundle(Document):
         item.shift_end = attendance_item.end_time
         item.shift_start = attendance_item.start_time
         item.attendance = attendance_item.attendance
-        item.duration = attendance_item.duration
+        item.duration = Attendance.get_duration(self.employee, attendance_item.shift_type, attendance_item.duration)
 
     def calcualte_salary(self):
         for item in self.items:
@@ -250,6 +251,9 @@ class Attendance:
 
     @staticmethod
     def get_duration(employee, shift_type, duration) -> float:
+        if duration == 0:
+            return 0
+
         if not shift_type:
             shift_type = frappe.get_value("Employee", employee, "default_shift")
 
@@ -259,10 +263,10 @@ class Attendance:
             ["start_time", "end_time", "time_allowance"],
         )
         shift_duration = (end_time - start_time).total_seconds()
-        if not duration:
-            duration = shift_duration
+        shift_duration -= 30 * 60
+
         return (
-            hr(shift_duration)
-            if abs(duration - time_allowance) < shift_duration
-            else hr(duration)
+            duration
+            if abs(duration - shift_duration) > time_allowance
+            else shift_duration
         )
