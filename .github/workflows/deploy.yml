@@ -28,7 +28,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 frappe@${{ secrets.PROD_IP }} << 'EOF'
           cd /home/frappe/frappe-bench/apps/raplbaddi
-          PULL_OUTPUT=$(git pull origin production)
+          PULL_OUTPUT=$(git pull)
 
           if [[ $PULL_OUTPUT == *"Already up to date."* ]]; then
               echo "Already up-to-date, no need to migrate or restart."
