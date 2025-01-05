@@ -8,8 +8,8 @@ from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
 import frappe.utils
 from frappe.utils import dateutils
 
-lunch_duration_sec: float = 30 * 60
-lunch_duration_hour: float = 30 * 60 / 3600
+lunch_duration_sec = 30 * 60
+lunch_duration_hour = 30 * 60 / 3600
 
 class AttendanceSalaryBundle(Document):
     # begin: auto-generated types
@@ -70,7 +70,7 @@ class AttendanceSalaryBundle(Document):
             shift_duration = frappe.utils.time_diff_in_hours(item.shift_end, item.shift_start)
             item.hourly_rate = salary.get_hourly_rate(item, shift_duration)
             if item.is_holiday and item.attendance == "Absent" and not item.duration:
-                item.duration = frappe.utils.time_diff_in_seconds(item.shift_end, item.shift_start) - Constants.lunch_duration_sec
+                item.duration = frappe.utils.time_diff_in_seconds(item.shift_end, item.shift_start) - lunch_duration_sec
 
             item.monthly_salary = salary.get_monthly_salary(item.date)
     
@@ -139,7 +139,7 @@ class Salary:
 
     def get_hourly_rate(self, item, shift_duration):
         year, month = item.date.year, item.date.month
-        shift_duration -= Constants.lunch_duration_hr
+        shift_duration -= lunch_duration_hr
         no_of_days = calendar.monthrange(year, item.date.month)[1]
         daily_salary = self.monthly_salary[calendar.month_name[month]] / no_of_days
         hourly_salary = daily_salary / shift_duration
@@ -264,7 +264,7 @@ class Attendance:
             ["start_time", "end_time", "time_allowance"],
         )
         shift_duration = (end_time - start_time).total_seconds()
-        shift_duration -= Constants.lunch_duration_sec
+        shift_duration -= lunch_duration_sec
 
         return (
             duration
