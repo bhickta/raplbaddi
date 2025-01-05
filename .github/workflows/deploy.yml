@@ -31,7 +31,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 frappe@${{ secrets.PROD_IP }} "
           cd /home/frappe/frappe-bench/apps/raplbaddi && \
-          PULL_OUTPUT=\$(git pull origin production) && \
+          PULL_OUTPUT=\$(git pull upstream production) && \
           echo \"\$PULL_OUTPUT\" && \
           if [[ \$PULL_OUTPUT != *'Already up to date.'* ]]; then
               echo 'Changes detected.';
