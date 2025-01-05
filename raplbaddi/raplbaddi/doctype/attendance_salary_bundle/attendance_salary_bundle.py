@@ -7,11 +7,9 @@ from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
 
 import frappe.utils
 from frappe.utils import dateutils
-from enum import Enum
 
-class Constants(Enum):
-    lunch_duration_sec: float = 30 * 60
-    lunch_duration_hour: float = 30 * 60 / 3600
+lunch_duration_sec: float = 30 * 60
+lunch_duration_hour: float = 30 * 60 / 3600
 
 class AttendanceSalaryBundle(Document):
     # begin: auto-generated types
