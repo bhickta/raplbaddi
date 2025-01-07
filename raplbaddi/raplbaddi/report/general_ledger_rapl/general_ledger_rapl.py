@@ -46,7 +46,6 @@ def execute(filters=None):
 	columns = get_columns(filters)
 
 	res = get_result(filters, account_details)
-	print(len(res))
 
 	return columns, res
 
@@ -144,36 +143,56 @@ def get_result(filters, account_details):
 	gl_entries = get_gl_entries(filters, accounting_dimensions)
 
 	result = get_result_as_list(gl_entries, filters)
-	result = add_items(result, filters)
+	if filters.get("is_exploded"):
+		add_reference_voucher_details(result, filters)
+		result = add_items(result, filters)
 
 	return result
 
-import copy
-def add_items(gl_entries, filters):
-	if not filters.get("is_exploded"):
-		return gl_entries
-	gl_entries_with_items = []
+def add_reference_voucher_details(gl_entries, filters):
 	for gle in gl_entries:
 		voucher_type = gle.get("voucher_type")
+		if voucher_type not in ["Journal Entry"]:
+			continue
 		voucher_no = gle.get("voucher_no")
 		if voucher_type and voucher_no:
+			voucher = frappe.get_doc(voucher_type, voucher_no)
+			gle.against_voucher_type = voucher.accounts[0].reference_type
+			gle.against_voucher = voucher.accounts[0].reference_name
+
+import copy
+def add_items(gl_entries, filters):
+	gl_entries_with_items = []
+	for gle in gl_entries:
+		is_journal_entry = gle.get("voucher_type") in ["Journal Entry"]
+		voucher_type = gle.get("against_voucher_type") if is_journal_entry else gle.get("voucher_type")
+		voucher_no = gle.get("against_voucher") if is_journal_entry else gle.get("voucher_no")
+		print(voucher_type, voucher_no)
+		if voucher_type and voucher_no:
 			items = get_items(voucher_type, voucher_no)
-			for item in items:
-				key = copy.deepcopy(gle)
-				key.item_code = item.get("item_code")
-				key.qty = item.get("qty")
-				gl_entries_with_items.append(key)
+			if not items:
+				gl_entries_with_items.append(gle)
+			else:
+				for item in items:
+					key = copy.deepcopy(gle)
+					key.item_code = item.get("item_code")
+					key.qty = item.get("qty")
+					gl_entries_with_items.append(key)
 	return gl_entries_with_items
 
 def get_items(voucher_type, voucher_no):
 	voucher = frappe.get_doc(voucher_type, voucher_no)
 	key = get_item_filed_key(voucher_type)
+	if not key:
+		return []
 	return voucher.get(key)
 
 
 def get_item_filed_key(voucher_type):
-	return "items" or voucher_type + "_items"
-
+	if voucher_type in ["Sales Invoice", "Purchase Invoice"]:
+		return "items"
+	elif voucher_type in ["Journal Entry",]:
+		return None
 
 def get_gl_entries(filters, accounting_dimensions):
 	currency_map = get_currency(filters)
