@@ -746,6 +746,8 @@ def get_columns(filters):
 		columns.extend([
 			{"label": _("Item Code"), "fieldname": "item_code", "width": 100},
 			{"label": _("Qty"), "fieldname": "qty", "fieldtype": "Float", "width": 100},
+			{"label": _("Rate"), "fieldname": "rate", "fieldtype": "Currency", "width": 100},
+			{"label": _("Amount"), "fieldname": "amount", "fieldtype": "Currency", "width": 100},
 		])
 
 	return columns
