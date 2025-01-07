@@ -177,6 +177,8 @@ def add_items(gl_entries, filters):
 					key = copy.deepcopy(gle)
 					key.item_code = item.get("item_code")
 					key.qty = item.get("qty")
+					key.rate = item.get("rate")
+					key.amount = item.get("amount")
 					gl_entries_with_items.append(key)
 	return gl_entries_with_items
 
