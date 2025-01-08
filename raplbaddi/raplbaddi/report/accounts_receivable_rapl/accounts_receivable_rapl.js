@@ -171,6 +171,11 @@ frappe.query_reports["Accounts Receivable Rapl"] = {
 			label: __("In Party Currency"),
 			fieldtype: "Check",
 		},
+		{
+			fieldname: "is_exploded",
+			label: __("Exploded"),
+			fieldtype: "Check",
+		},
 	],
 
 	formatter: function (value, row, column, data, default_formatter) {

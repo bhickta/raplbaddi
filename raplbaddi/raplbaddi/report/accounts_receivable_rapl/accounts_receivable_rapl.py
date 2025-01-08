@@ -61,7 +61,14 @@ class ReceivablePayableReport:
 		self.get_columns()
 		self.get_data()
 		self.get_chart_data()
+		self.add_items()
 		return self.columns, self.data, None, self.chart, None, self.skip_total_row
+
+	def add_items(self):
+		from raplbaddi.raplbaddi.report.general_ledger_rapl.general_ledger_rapl import add_items, add_items_columns, add_reference_voucher_details
+		add_reference_voucher_details(self.data, self.filters)
+		self.data = add_items(self.data, self.filters)
+		add_items_columns(self.columns, self.filters)
 
 	def set_defaults(self):
 		if not self.filters.get("company"):

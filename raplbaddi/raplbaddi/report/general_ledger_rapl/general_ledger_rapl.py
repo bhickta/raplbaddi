@@ -167,7 +167,6 @@ def add_items(gl_entries, filters):
 		is_journal_entry = gle.get("voucher_type") in ["Journal Entry"]
 		voucher_type = gle.get("against_voucher_type") if is_journal_entry else gle.get("voucher_type")
 		voucher_no = gle.get("against_voucher") if is_journal_entry else gle.get("voucher_no")
-		print(voucher_type, voucher_no)
 		if voucher_type and voucher_no:
 			items = get_items(voucher_type, voucher_no)
 			if not items:
@@ -742,6 +741,11 @@ def get_columns(filters):
 	if filters.get("show_remarks"):
 		columns.extend([{"label": _("Remarks"), "fieldname": "remarks", "width": 400}])
 	
+	add_items_columns(columns, filters)
+
+	return columns
+
+def add_items_columns(columns, filters):
 	if filters.get("is_exploded"):
 		columns.extend([
 			{"label": _("Item Code"), "fieldname": "item_code", "width": 100},
@@ -749,5 +753,3 @@ def get_columns(filters):
 			{"label": _("Rate"), "fieldname": "rate", "fieldtype": "Currency", "width": 100},
 			{"label": _("Amount"), "fieldname": "amount", "fieldtype": "Currency", "width": 100},
 		])
-
-	return columns
