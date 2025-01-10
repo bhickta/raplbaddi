@@ -146,8 +146,17 @@ def get_result(filters, account_details):
 	if filters.get("is_exploded"):
 		add_reference_voucher_details(result, filters)
 		result = add_items(result, filters)
+		result = add_party_details(result, filters)
 
 	return result
+
+def add_party_details(gl_entries, filters):
+	for gle in gl_entries:
+		party_type = gle.get("party_type")
+		party = gle.get("party")
+		party_name = frappe.get_cached_value(party_type, party, party_type.lower() + "_name")
+		# gle.party = party + ": " + party_name
+	return gl_entries
 
 def add_reference_voucher_details(gl_entries, filters):
 	for gle in gl_entries:
@@ -156,7 +165,7 @@ def add_reference_voucher_details(gl_entries, filters):
 			continue
 		voucher_no = gle.get("voucher_no")
 		if voucher_type and voucher_no:
-			voucher = frappe.get_doc(voucher_type, voucher_no)
+			voucher = frappe.get_cached_doc(voucher_type, voucher_no)
 			gle.against_voucher_type = voucher.accounts[0].reference_type
 			gle.against_voucher = voucher.accounts[0].reference_name
 
@@ -175,6 +184,7 @@ def add_items(gl_entries, filters):
 				for item in items:
 					key = copy.deepcopy(gle)
 					key.item_code = item.get("item_code")
+					key.item_name = item.get("item_name")
 					key.qty = item.get("qty")
 					key.rate = item.get("rate")
 					key.amount = item.get("amount")
@@ -711,7 +721,7 @@ def get_columns(filters):
 		},
 		{"label": _("Against Account"), "fieldname": "against", "width": 120},
 		{"label": _("Party Type"), "fieldname": "party_type", "width": 100},
-		{"label": _("Party"), "fieldname": "party", "width": 100},
+		{"label": _("Party"), "fieldname": "party", "fieldtype": "Dynamic Link", "options": "party_type", "width": 100},
 		{"label": _("Project"), "options": "Project", "fieldname": "project", "width": 100},
 	]
 
@@ -748,7 +758,7 @@ def get_columns(filters):
 def add_items_columns(columns, filters):
 	if filters.get("is_exploded"):
 		columns.extend([
-			{"label": _("Item Code"), "fieldname": "item_code", "width": 100},
+			{"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 100},
 			{"label": _("Qty"), "fieldname": "qty", "fieldtype": "Float", "width": 100},
 			{"label": _("Rate"), "fieldname": "rate", "fieldtype": "Currency", "width": 100},
 			{"label": _("Amount"), "fieldname": "amount", "fieldtype": "Currency", "width": 100},

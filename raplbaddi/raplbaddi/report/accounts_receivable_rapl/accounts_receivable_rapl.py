@@ -61,7 +61,8 @@ class ReceivablePayableReport:
 		self.get_columns()
 		self.get_data()
 		self.get_chart_data()
-		self.add_items()
+		if self.filters.get("is_exploded"):
+			self.add_items()
 		return self.columns, self.data, None, self.chart, None, self.skip_total_row
 
 	def add_items(self):
