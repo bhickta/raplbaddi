@@ -51,6 +51,7 @@ custom_fields = {
             "insert_after": "cbm_height",
             "fieldtype": "Float",
             "read_only": 1,
+            "precision": 9,
         },
         {
             "name": "Item-unit",
