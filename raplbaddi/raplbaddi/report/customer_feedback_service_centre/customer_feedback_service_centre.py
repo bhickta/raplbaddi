@@ -3,32 +3,13 @@
 
 import frappe
 from frappe.core.doctype.user_permission.user_permission import get_user_permissions
-
-
-class IssueComplaintsReport:
-    """Generate the Issue Complaints Report."""
-
+from raplbaddi.raplbaddi.report.utils.service_centre import ServiceCentreReport
+  
+class IssueComplaintsReport(ServiceCentreReport):
     def __init__(self, filters=None):
-        self.filters = filters or {}
-        self.allowed_groups = []
-
-    def get_allowed_service_centres(self):
-        user_permissions = get_user_permissions(frappe.session.user)
-        allowed_service_centres = [groups['doc'] for groups in user_permissions.get('Service Centre', [])]
-        return allowed_service_centres
-
-    def validate_permissions(self):
-        self.allowed_service_centres = self.get_allowed_service_centres()
-
-    def run(self):
-        """Fetch and process data for the report."""
-        self.validate_permissions()
-        data = self.fetch_data()
-        columns = self.get_columns()
-        return columns, data
+        super().__init__(filters)
 
     def fetch_data(self):
-        """Fetch the report data based on filters."""
         query = """
             SELECT
                 ir.name AS complaint_no,
@@ -55,7 +36,6 @@ class IssueComplaintsReport:
             ),
         }
 
-        # Apply customer group filtering only if allowed_groups has elements
         if self.allowed_service_centres:
             query += " AND ir.service_centre IN %(service_centre)s"
             params["service_centre"] = tuple(self.allowed_service_centres)
@@ -119,6 +99,5 @@ class IssueComplaintsReport:
 
 
 def execute(filters=None):
-    """Entry point for the report."""
     report = IssueComplaintsReport(filters)
     return report.run()
