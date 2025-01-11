@@ -188,6 +188,8 @@ def add_items(gl_entries, filters):
 					key.qty = item.get("qty")
 					key.rate = item.get("rate")
 					key.amount = item.get("amount")
+					for gst_type in ["sgst", "cgst", "igst"]:
+						key[f"{gst_type}_amount"] = item.get(f"{gst_type}_amount")
 					gl_entries_with_items.append(key)
 	return gl_entries_with_items
 
@@ -763,3 +765,5 @@ def add_items_columns(columns, filters):
 			{"label": _("Rate"), "fieldname": "rate", "fieldtype": "Currency", "width": 100},
 			{"label": _("Amount"), "fieldname": "amount", "fieldtype": "Currency", "width": 100},
 		])
+		for gst_type in ["sgst", "cgst", "igst"]:
+			columns.append({"label": _("{} Amount".format(gst_type.title())), "fieldname": "{}_amount".format(gst_type), "fieldtype": "Currency", "width": 100})
