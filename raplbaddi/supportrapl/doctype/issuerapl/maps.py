@@ -33,10 +33,8 @@ class GoogleMapClient(MapClient):
                     distance = elements[0]['distance']['value'] // 1000
                     return distance
                 else:
-                    raise ValueError("Distance information is missing in the response.")
+                    return 0
             else:
-                raise ValueError("Invalid response structure from the Distance Matrix API.")
+                return 0
         except Exception as e:
-            print(f"Error fetching road distance: {e}")
-            raise e
-            return None
+            return 0
