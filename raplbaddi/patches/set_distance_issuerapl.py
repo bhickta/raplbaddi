@@ -10,5 +10,4 @@ def execute():
     for doc in issuerapl_docs:
         doc = frappe.get_doc("IssueRapl", doc)
         set_kilometers(doc)
-        doc.save()
-    
+        doc.save()    
