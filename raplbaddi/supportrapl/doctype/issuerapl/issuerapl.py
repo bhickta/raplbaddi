@@ -57,7 +57,6 @@ class IssueRapl(Document):
         self.curr_service_centre = service_centre or self.service_centre
         if service_centres:
             self.service_centres = service_centres
-        print(self.service_centres)
         lat, lng = None, None
         for sc in self.service_centres:
             if sc["name"] == self.curr_service_centre:
