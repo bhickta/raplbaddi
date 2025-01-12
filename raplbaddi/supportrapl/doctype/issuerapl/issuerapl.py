@@ -53,8 +53,8 @@ class IssueRapl(Document):
         return ret
 
     @frappe.whitelist()
-    def set_kilometers(self, service_centre):
-        self.curr_service_centre = service_centre
+    def set_kilometers(self, service_centre=None):
+        self.curr_service_centre = service_centre or self.service_centre
         lat, lng = None, None
         for sc in self.service_centres:
             if sc["name"] == service_centre:
@@ -62,9 +62,10 @@ class IssueRapl(Document):
                 lng = sc["longitude"]
                 break
         if lat is not None and lng is not None:
-            distance = mapclient.road_distance(
-                origin=(lat, lng), destination=(self.latitude, self.longitude)
-            )
+            # distance = mapclient.road_distance(
+            #     origin=(lat, lng), destination=(self.latitude, self.longitude)
+            # )
+            distance = 10
             self.kilometer = distance * 2
             self._get_rates(self.curr_service_centre)
         return
@@ -116,3 +117,6 @@ class IssueRapl(Document):
             self.amount = final_rate
         else:
             self.amount = 0
+
+def set_kilometers(doc):
+    doc.set_kilometers()
