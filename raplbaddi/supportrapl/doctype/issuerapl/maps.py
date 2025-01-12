@@ -21,10 +21,22 @@ class GoogleMapClient(MapClient):
         self.distance_matrix = self.client.distance_matrix
 
     def road_distance(self, origin, destination):
-        distance_matrix = self.distance_matrix(origin, destination, mode="driving")
-        print(distance_matrix['rows'][0].values()[0][0])
-        distance = list(distance_matrix['rows'][0].values())[0][0]['distance']['value'] // 1000
-        return distance 
-    
-    
-    
+        try:
+            # Get the distance matrix with driving mode
+            distance_matrix = self.distance_matrix(origin, destination, mode="driving")
+            
+            # Validate the response structure
+            if 'rows' in distance_matrix and distance_matrix['rows']:
+                elements = distance_matrix['rows'][0].get('elements', [])
+                if elements and 'distance' in elements[0]:
+                    # Extract the distance in meters and convert to kilometers
+                    distance = elements[0]['distance']['value'] // 1000
+                    return distance
+                else:
+                    raise ValueError("Distance information is missing in the response.")
+            else:
+                raise ValueError("Invalid response structure from the Distance Matrix API.")
+        except Exception as e:
+            print(f"Error fetching road distance: {e}")
+            raise e
+            return None
