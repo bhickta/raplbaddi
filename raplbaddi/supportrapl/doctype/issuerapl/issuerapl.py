@@ -20,6 +20,9 @@ class IssueRapl(Document):
             fields=["latitude", "longitude", "name"],
         )
 
+    def validate(self):
+        if not self.kilometer:
+            self.set_kilometers()
 
     def _nearest_sc(self, top: int = 3):
         self.areal_distances = []
