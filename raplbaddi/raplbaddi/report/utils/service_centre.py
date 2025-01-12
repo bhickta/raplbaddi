@@ -17,11 +17,15 @@ class ServiceCentreReport:
     def run(self):
         self.validate_permissions()
         data = self.fetch_data()
-        columns = self.get_columns()
-        return columns, data
+        columns = self.fetch_columns()
+        message = self.fetch_message()
+        return columns, data, message
     
-    def get_columns(self):
+    def fetch_columns(self):
         pass
     
     def fetch_data(self):
+        pass
+    
+    def fetch_message(self):
         pass

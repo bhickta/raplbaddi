@@ -3,75 +3,111 @@
 
 import frappe
 from datetime import datetime
+from raplbaddi.raplbaddi.report.utils.service_centre import ServiceCentreReport
 
 
-class payment:
+class ServiceCentrePaymentReport(ServiceCentreReport):
     def __init__(self, filters) -> None:
         self.filters = filters
-        self.process_filters()
-        self.get_conditions()
-        self.get_data()
-        self.filtred_data()
 
+    def get_query(self, grouped):
+        select_fields = (
+            """
+            COUNT(i.name) AS count,
+            SUM(i.amount) AS amount,
+            SUM(i.kilometer) AS kilometer
+            """
+            if grouped
+            else """
+            1 AS count,
+            i.name AS complaint_no,
+            i.amount AS amount,
+            i.kilometer AS kilometer
+            """
+        )
 
-    def process_filters(self):
-        self.filters.end_date = datetime.strptime(self.filters.end_date, "%Y-%m-%d").date()
-        self.filters.start_date = datetime.strptime(self.filters.start_date, "%Y-%m-%d").date()
+        common_fields = """
+            CASE 
+                WHEN i.custom_creation_date THEN DATE(i.custom_creation_date) 
+                ELSE DATE(i.creation) 
+            END AS date,
+            j.service_centre_name AS service_centre,
+            j.bank_name AS bank,
+            j.bank_account_no AS account_no,
+            j.ifsc_code AS ifsc,
+            j.upi_id AS upi,
+            i.payment_done AS payment_status,
+            i.service_delivered AS service_delivered,
+            i.customer_confirmation
+        """
 
-    def get_query(self):
-        from .data import get_query
+        query = f"""
+            SELECT 
+                {select_fields},
+                {common_fields}
+            FROM 
+                `tabIssueRapl` AS i
+            LEFT JOIN 
+                `tabService Centre` AS j 
+            ON 
+                i.service_centre = j.service_centre_name
+            WHERE 
+                i.service_centre NOT IN %(excluded_service_centres)s
+        """
+       
+        return query
 
-        self.query = get_query(self.filters, self.conditions)
 
     def get_data(self):
-        self.get_query()
-        result = frappe.db.sql(self.query, as_dict=True)
-        self.data = result
 
-    def get_conditions(self):
-        self.conditions = "i.service_centre NOT IN ('Geo Appliances', 'Amit Company Inside','Amit Company Outside', 'HIMANSHU COMPANY') "
-        if self.filters.payment_done:
-            self.conditions += f" and i.payment_done = '{self.filters.payment_done}'"
-        if self.filters.customer_confirmation:
-            self.conditions += (
-                f" and i.customer_confirmation = '{self.filters.customer_confirmation}'"
-            )
-        if self.filters.service_delivered:
-            self.conditions += (
-                f" and i.service_delivered = '{self.filters.service_delivered}'"
-            )
-  
-        # when group_by_sc filter then it this date condition will be applied to the group_by_query
-        if self.filters.group_by_sc:
-            if self.filters.start_date and self.filters.end_date:
-                self.conditions += (
-                    f" and i.custom_creation_date BETWEEN '{self.filters.start_date}' AND '{self.filters.end_date}'"
-                )
-                
-                
-    def filtred_data(self):
-        self.filtered_data = []
-        for data in self.data:
-            data.amount = int(data.amount)
-            # data.ifsc = data.ifsc.upper()
-            data.ifsc = data.ifsc
-            
+        params = {
+            "excluded_service_centres": tuple(
+                [
+                    "Geo Appliances", 
+                    "Amit Company Inside", 
+                    "Amit Company Outside", 
+                    "HIMANSHU COMPANY"
+                ]
+            ),
+            "payment_done": self.filters.get("payment_done"),
+            "customer_confirmation": self.filters.get("customer_confirmation"),
+            "service_delivered": self.filters.get("service_delivered"),
+            "start_date": self.filters.get("start_date"),
+            "end_date": self.filters.get("end_date"),
+            "allowed_service_centres": tuple(self.allowed_service_centres)
+            if self.allowed_service_centres
+            else None,
+        }
+        grouped=self.filters.get("group_by_sc")
+        
+        query = self.get_query(grouped)
 
-            data.per_complaint = int(data.amount / data.count)
-            if (
-                (
-                    not self.filters.service_centre
-                    or data.service_centre == self.filters.service_centre
-                )
-                and (
-                    not self.filters.start_date or data.date >= self.filters.start_date
-                )
-                and (not self.filters.end_date or data.date <= self.filters.end_date)
-            ):
-                self.filtered_data.append(data)
+        if params.get("payment_done"):
+            query += " AND i.payment_done = %(payment_done)s"
+        if params.get("customer_confirmation"):
+            query += " AND i.customer_confirmation = %(customer_confirmation)s"
+        if params.get("service_delivered"):
+            query += " AND i.service_delivered = %(service_delivered)s"
+        if params["start_date"] and params["end_date"]:
+            query += " AND i.custom_creation_date BETWEEN %(start_date)s AND %(end_date)s"
+        if params.get("allowed_service_centres"):
+            query += " AND i.service_centre IN %(allowed_service_centres)s"
+
+        if grouped:
+            query += " GROUP BY i.service_centre"
+        query += " ORDER BY amount DESC, count DESC"
+
+        self.data = frappe.db.sql(query, params, as_dict=True)
+
+    def fetch_data(self):
+        self.get_data()
+        self.filtered_data = self.data
         return self.filtered_data
 
-    def get_columns(self):
+    def get_column(self):
+        return self.get_columns()
+
+    def fetch_columns(self):
         from .columns import get_columns
 
         return get_columns(self.filters)
@@ -87,15 +123,24 @@ class payment:
 
     def get_account_details(self):
         if self.filters.service_centre:
-            self.account_no = self.filtered_data[0]['account_no']
-            self.bank_ifsc = self.filtered_data[0]['ifsc']
-            self.bank_name = self.filtered_data[0]['bank']
-            self.upi = self.filtered_data[0]['upi']
-          
+            self.account_no = self.filtered_data[0]["account_no"]
+            self.bank_ifsc = self.filtered_data[0]["ifsc"]
+            self.bank_name = self.filtered_data[0]["bank"]
+            self.upi = self.filtered_data[0]["upi"]
+
         else:
-            self.account_no,self.bank_ifsc,self.bank_name,self.upi = None,None,None,None
+            self.account_no, self.bank_ifsc, self.bank_name, self.upi = (
+                None,
+                None,
+                None,
+                None,
+            )
+
+    def fetch_message(self):
+        return self.get_msg()
 
     def get_msg(self):
+        return ""
         self.get_count()
         self.get_total_amount()
         self.get_account_details()
@@ -116,11 +161,8 @@ class payment:
         </div>
         """
         return ret
-                        
-            
+
+
 def execute(filters=None):
-    payee = payment(filters)
-    columns, data = [], []
-    return payee.get_columns(), payee.filtred_data(),payee.get_msg() if not filters.group_by_sc else ""
-
-
+    payee = ServiceCentrePaymentReport(filters)
+    return payee.run()

@@ -48,7 +48,7 @@ class IssueComplaintsReport(ServiceCentreReport):
 
         return frappe.db.sql(query, params, as_dict=True)
 
-    def get_columns(self):
+    def fetch_columns(self):
         """Define the report columns."""
         return [
             {
