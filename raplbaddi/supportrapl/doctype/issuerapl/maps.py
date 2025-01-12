@@ -22,6 +22,7 @@ class GoogleMapClient(MapClient):
 
     def road_distance(self, origin, destination):
         distance_matrix = self.distance_matrix(origin, destination, mode="driving")
+        print(distance_matrix['rows'][0].values()[0][0])
         distance = list(distance_matrix['rows'][0].values())[0][0]['distance']['value'] // 1000
         return distance 
     

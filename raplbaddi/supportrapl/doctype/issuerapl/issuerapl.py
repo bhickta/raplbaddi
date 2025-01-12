@@ -67,7 +67,6 @@ class IssueRapl(Document):
             distance = mapclient.road_distance(
                 origin=(lat, lng), destination=(self.latitude, self.longitude)
             )
-            distance = 10
             self.kilometer = distance * 2
             self._get_rates(self.curr_service_centre)
         return
