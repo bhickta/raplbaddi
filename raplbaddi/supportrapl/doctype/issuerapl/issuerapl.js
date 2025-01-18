@@ -152,14 +152,6 @@ class IssueRaplHandler {
     updateServiceCentreDetails(serviceCentre, distance) {
         this.frm.set_value('service_centre', serviceCentre);
         this.frm.set_value('aerial_kilometer', 2 * parseFloat(distance));
-        this.frm.call({
-            method: 'set_kilometers',
-            doc: this.frm.doc,
-            args: { service_centre },
-            callback: () => {
-                this.frm.refresh();
-            },
-        });
     }
 
     // Reset the input field after saving the form
