@@ -82,7 +82,9 @@ class IssueRapl(Document):
         fields = ["latitude", "longitude", "service_centre"]
         changed_fields = False
         for field in fields:
-            if self.is_new() and str(self._doc_before_save.get(field)) != str(self.get(field)):
+            if self.is_new():
+                break
+            if str(self._doc_before_save.get(field)) != str(self.get(field)):
                 changed_fields = True
                 break
         if not self.kilometer or self._action == "submit" or changed_fields:
