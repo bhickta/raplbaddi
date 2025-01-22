@@ -26,6 +26,7 @@ class IssueRapl(Document):
         brand_name: DF.Link | None
         complaint_source_group: DF.Data | None
         cooler_model: DF.Link | None
+        custom_creation_date: DF.Date | None
         customer_address: DF.Text | None
         customer_address_state: DF.Data | None
         customer_confirmation: DF.Literal["Not Taken", "Positive", "Negative"]

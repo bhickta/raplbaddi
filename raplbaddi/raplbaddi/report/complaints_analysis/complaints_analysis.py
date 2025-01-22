@@ -11,8 +11,8 @@ def get_report_class():
         "Complaints Register Per Day": ComplaintsRegisterPerDay,
         "Pending Complaints Report": PendingComplaintReport,
         "Customer Feedback Report": CustomerFeedbackReport,
-        # "Service Centre Details": ServiceCentreDetailsReport,
-        # "Days Deadline": DaysDeadline,
+        "Days Deadline": DaysDeadline,
+        "Service Centre Details": ServiceCentreDetailsReport,
     }
     return report_class_map
 

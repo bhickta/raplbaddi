@@ -13,6 +13,7 @@
   "expected_visit_date",
   "column_break_vbez",
   "service_delivered",
+  "custom_creation_date",
   "customer_details_section",
   "address_description",
   "column_break_9bolz",
@@ -361,11 +362,16 @@
   {
    "fieldname": "column_break_bszn",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "custom_creation_date",
+   "fieldtype": "Date",
+   "label": "Creation Date"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-18 09:46:00.324464",
+ "modified": "2025-01-22 09:20:26.633410",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "IssueRapl",

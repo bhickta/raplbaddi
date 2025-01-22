@@ -21,6 +21,8 @@ class DaysDeadline(ServiceCentreReport):
 				tabIssueRapl
 			WHERE 
 				DATEDIFF(CURDATE(),custom_creation_date) >3 AND service_delivered = "No"
+			ORDER BY
+				custom_creation_date
 
 		"""
     
@@ -32,14 +34,21 @@ class DaysDeadline(ServiceCentreReport):
 	def fetch_columns(self):
 		columns = [
 			{
+				'fieldname':'name',
+				'label':'Name',
+				'fieldtype':'Link',
+				'options': 'IssueRapl',
+				'width':'310'
+			},
+			{
 				'fieldname':'custom_creation_date',
 				'label':'Complaint Register Date',
 				'fieldtype':'Date',
 				'width':'310'
 			},
 			{
-				'fieldname':'no_of_complaints',
-				'label':'No of Complaints',		
+				'fieldname':'days_diff',
+				'label':'Days Difference',		
 				'fieldtype':'Int',
 				'width':'250'
 			}
