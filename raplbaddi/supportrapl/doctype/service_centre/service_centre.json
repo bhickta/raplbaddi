@@ -19,6 +19,12 @@
   "district",
   "phone_no",
   "country",
+  "inventory_tab",
+  "main_warehouse",
+  "defective_warehouse",
+  "column_break_fcqf",
+  "customer",
+  "create_warehouse_customer",
   "banking_tab",
   "account_holder_name",
   "bank_name",
@@ -211,11 +217,47 @@
    "fieldname": "is_payable",
    "fieldtype": "Check",
    "label": "Is Payable"
+  },
+  {
+   "fieldname": "inventory_tab",
+   "fieldtype": "Tab Break",
+   "label": "Inventory"
+  },
+  {
+   "fieldname": "column_break_fcqf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "no_copy": 1,
+   "options": "Customer"
+  },
+  {
+   "default": "0",
+   "fieldname": "create_warehouse_customer",
+   "fieldtype": "Check",
+   "label": "Create Warehouse Customer"
+  },
+  {
+   "fieldname": "main_warehouse",
+   "fieldtype": "Link",
+   "label": "Main Warehouse",
+   "no_copy": 1,
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "defective_warehouse",
+   "fieldtype": "Link",
+   "label": "Defective Warehouse",
+   "no_copy": 1,
+   "options": "Warehouse"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-06 10:03:22.814424",
+ "modified": "2025-01-22 19:18:53.850213",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "Service Centre",
