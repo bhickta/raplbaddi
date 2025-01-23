@@ -64,6 +64,10 @@ class IssueRapl(Document):
 
     def post_init(self):
         pass
+    
+    def before_insert(self):
+        if not self.custom_creation_date:
+            self.custom_creation_date = frappe.utils.today()
 
     def validate(self):
         self.validate_service_centre()
