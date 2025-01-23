@@ -99,6 +99,7 @@ class AttendanceSalaryBundle(Document):
                 {
                     "date": date,
                     "is_holiday": True,
+                    "day": calendar.day_name[date.weekday()],
                     "salary": 0.0,
                     "attendance": "Absent",
                 }
@@ -174,6 +175,8 @@ class Salary:
 
 
 def hr(seconds: int) -> float:
+    if not seconds:
+        return 0
     return seconds / 3600
 
 
