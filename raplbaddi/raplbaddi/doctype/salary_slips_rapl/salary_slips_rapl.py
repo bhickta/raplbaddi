@@ -1,7 +1,11 @@
 import frappe
 from frappe.model.document import Document
 from typing import List
-from raplbaddi.raplbaddi.doctype.attendance_salary_bundle.attendance_salary_bundle import Attendance
+from raplbaddi.raplbaddi.doctype.attendance_salary_bundle.attendance_salary_bundle import (
+    Attendance,
+)
+from datetime import datetime, timedelta
+
 
 class SalarySlipsRapl(Document):
     # begin: auto-generated types
@@ -11,7 +15,9 @@ class SalarySlipsRapl(Document):
 
     if TYPE_CHECKING:
         from frappe.types import DF
-        from raplbaddi.raplbaddi.doctype.salary_slips_rapl_item.salary_slips_rapl_item import SalarySlipsRaplItem
+        from raplbaddi.raplbaddi.doctype.salary_slips_rapl_item.salary_slips_rapl_item import (
+            SalarySlipsRaplItem,
+        )
 
         amended_from: DF.Link | None
         branch: DF.Link | None
@@ -58,9 +64,11 @@ class SalarySlipsRapl(Document):
     def before_submit(self):
         if self._action == "cancel":
             return
-        mandatory = [{
-            "status": "Audited",
-        }]
+        mandatory = [
+            {
+                "status": "Audited",
+            }
+        ]
         for item in mandatory:
             for field, value in item.items():
                 if not self.get(field) == value:
@@ -101,13 +109,16 @@ class AttendanceSalaryBundleHandler:
 
     @staticmethod
     def create_bundle_item(attendance):
-        return {
-            "attendance_rapl": attendance.parent,
-            "shift_type": attendance.shift_type,
-            "attendance_item": attendance.name,
-            "duration": attendance.duration,
-            "date": attendance.date,
-        }
+        item = frappe._dict(
+            {
+                "attendance_rapl": attendance.parent,
+                "shift_type": attendance.shift_type,
+                "attendance_item": attendance.name,
+                "duration": attendance.duration,
+                "date": attendance.date,
+            }
+        )
+        return item
 
     @staticmethod
     def submit_all(items):
