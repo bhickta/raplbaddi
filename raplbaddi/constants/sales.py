@@ -129,6 +129,16 @@ custom_fields = {
             "unique": 1,
         },
     ],
+    "Customer": [
+        {
+            "is_system_generated": 1,
+            "label": "Custom Is Internal Customer",
+            "fieldname": "custom_is_internal_customer",
+            "insert_after": "is_internal_customer",
+            "fieldtype": "Check",
+            "reqd": 0,
+        },
+    ],
 }
 
 
@@ -169,6 +179,19 @@ property_setters = [
         "doc_type": "Supplier",
         "field_name": "supplier_group",
         "property": "allow_in_quick_entry",
+        "property_type": "Check",
+        "value": "1",
+        "doctype": "Property Setter",
+    },
+    {
+        "name": "Customer-is_internal_customer-hidden",
+        "docstatus": 0,
+        "idx": 0,
+        "is_system_generated": 1,
+        "doctype_or_field": "DocField",
+        "doc_type": "Customer",
+        "field_name": "is_internal_customer",
+        "property": "hidden",
         "property_type": "Check",
         "value": "1",
         "doctype": "Property Setter",

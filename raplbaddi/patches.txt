@@ -2,8 +2,8 @@
 execute:from raplbaddi.patches.reorder_installed_apps import execute; execute() #2
 
 [post_model_sync]
-execute:from raplbaddi.constants import execute; execute() #28
-execute:from raplbaddi.constants.property_setters import execute; execute() #4
+execute:from raplbaddi.constants import execute; execute() #28.2
+execute:from raplbaddi.constants.property_setters import execute; execute() #4.3
 execute:from raplbaddi.patches.user_access_control import execute; execute() #1
 execute:from raplbaddi.patches.naming_series_mrn_dn_branch import execute; execute() #1
 execute:from raplbaddi.data import execute; execute() #1
