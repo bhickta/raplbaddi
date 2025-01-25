@@ -8,8 +8,8 @@ from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
 import frappe.utils
 from frappe.utils import dateutils
 
-lunch_start = "13:30:00"
-lunch_end = "14:00:00"
+lunch_start = "13:00:00"
+lunch_end = "13:30:00"
 lunch_duration_sec = frappe.utils.time_diff_in_seconds(lunch_end, lunch_start)
 lunch_duration_hour = frappe.utils.time_diff_in_hours(lunch_end, lunch_start)
 
