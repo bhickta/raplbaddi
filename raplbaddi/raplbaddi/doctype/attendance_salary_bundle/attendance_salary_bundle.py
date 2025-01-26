@@ -318,7 +318,7 @@ class Attendance:
 
         return (
             attendance_item.duration
-            if abs(attendance_item.duration - shift_duration_timedelta.total_seconds())
+            if abs(attendance_item.duration - shift_duration)
             > time_allowance
-            else shift_duration_timedelta.total_seconds()
+            else shift_duration
         )
