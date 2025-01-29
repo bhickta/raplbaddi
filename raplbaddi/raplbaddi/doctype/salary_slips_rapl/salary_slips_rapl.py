@@ -29,11 +29,18 @@ class SalarySlipsRapl(Document):
         status: DF.Literal["", "Audited"]
         to_date: DF.Date
     # end: auto-generated types
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.in_delete = False
 
     def autoname(self):
         self.naming_series = "SSR-.YY.-.#"
 
     def validate(self):
+        if not self.in_delete:
+            self.validate_items()
+
+    def validate_items(self):
         for item in self.items:
             attendance_salary_bundle = AttendanceSalaryBundleHandler.create_or_update(
                 item, self.from_date, self.to_date
@@ -81,7 +88,7 @@ class SalarySlipsRapl(Document):
         AttendanceSalaryBundleHandler.cancel_all(self.items)
 
     def on_trash(self):
-        AttendanceSalaryBundleHandler.delete_all(self.items)
+        AttendanceSalaryBundleHandler.delete_all(self)
 
 
 class AttendanceSalaryBundleHandler:
@@ -141,6 +148,11 @@ class AttendanceSalaryBundleHandler:
             item.attendance_salary_bundle = None
 
     @staticmethod
-    def delete_all(items):
-        for item in items:
-            frappe.delete_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
+    def delete_all(doc):
+        bundles = [item.attendance_salary_bundle for item in doc.items]
+        for item in doc.items:
+            item.attendance_salary_bundle = None
+        doc.in_delete = True
+        doc.save()
+        for bundle in bundles:
+            frappe.delete_doc("Attendance Salary Bundle", bundle)
