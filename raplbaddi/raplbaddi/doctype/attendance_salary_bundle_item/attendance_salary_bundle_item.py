@@ -17,6 +17,7 @@ class AttendanceSalaryBundleItem(Document):
 		attendance: DF.Literal["Present", "Absent", "On Leave", "Half Day", "Work From Home"]
 		attendance_item: DF.Data | None
 		attendance_rapl: DF.Link | None
+		calculation: DF.Data | None
 		date: DF.Date | None
 		day: DF.Data
 		duration: DF.Duration | None

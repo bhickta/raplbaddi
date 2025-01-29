@@ -3,7 +3,7 @@ from frappe.model.document import Document
 from datetime import datetime, timedelta
 import calendar
 from typing import Dict, List
-from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
+import math
 
 import frappe.utils
 from raplbaddi.utils import dateutils
@@ -22,12 +22,11 @@ class AttendanceSalaryBundle(Document):
 
     if TYPE_CHECKING:
         from frappe.types import DF
-        from raplbaddi.raplbaddi.doctype.attendance_salary_bundle_item.attendance_salary_bundle_item import (
-            AttendanceSalaryBundleItem,
-        )
+        from raplbaddi.raplbaddi.doctype.attendance_salary_bundle_item.attendance_salary_bundle_item import AttendanceSalaryBundleItem
 
         amended_from: DF.Link | None
         employee: DF.Link | None
+        exact_salary: DF.Float
         from_date: DF.Date | None
         items: DF.Table[AttendanceSalaryBundleItem]
         to_date: DF.Date | None
@@ -45,8 +44,9 @@ class AttendanceSalaryBundle(Document):
         self.validate_holiday()
         self.validate_holiday_sandwich()
         self.preitem()
-        self.calcualte_salary()
+        self.calculate_salary()
         self.order_item_based_on_date()
+
 
     def set_day_of_the_week(self):
         for item in self.items:
@@ -77,16 +77,7 @@ class AttendanceSalaryBundle(Document):
             else:
                 self.set_values_from_attendance_item(item)
 
-            shift_duration = frappe.utils.time_diff_in_hours(
-                item.shift_end, item.shift_start
-            )
-            item.hourly_rate = salary.get_hourly_rate(item, shift_duration)
-            if item.is_holiday and item.attendance == "Absent" and not item.duration:
-                item.duration = (
-                    frappe.utils.time_diff_in_seconds(item.shift_end, item.shift_start)
-                    - lunch_duration_sec
-                )
-
+            item.hourly_rate = salary.get_hourly_rate(item)
             item.monthly_salary = salary.get_monthly_salary(item.date)
 
     def set_default_values(self, item):
@@ -100,11 +91,34 @@ class AttendanceSalaryBundle(Document):
         item.shift_end = attendance_item.end_time
         item.shift_start = attendance_item.start_time
         item.attendance = attendance_item.attendance
-        item.duration = Attendance.get_duration(self.employee, attendance_item)
+        item.duration, item.shift_duration = Attendance.get_durations(self.employee, attendance_item)
 
-    def calcualte_salary(self):
+    def calculate_salary(self):
         for item in self.items:
-            item.salary = item.hourly_rate * hr(item.duration)
+            shift_duration = hr(item.shift_duration)
+            duration = hr(item.duration)
+            item.salary = 0
+            item.calculation = ""  # Initialize calculation field
+
+            if item.is_holiday:
+                if item.attendance == "Present":
+                    if shift_duration >= duration >= 8:
+                        item.salary = item.hourly_rate * shift_duration
+                        item.calculation = f"{item.hourly_rate:.2f} * {shift_duration:.2f} = {item.salary:.2f}"
+                    else:
+                        overtime = 2 * item.hourly_rate * min(duration, shift_duration)
+                        extra_hours = item.hourly_rate * abs(shift_duration - duration)
+                        item.salary = overtime + extra_hours
+                        item.calculation = (
+                            f"2 * {item.hourly_rate:.2f} * min({duration:.2f}, {shift_duration:.2f}) "
+                            f"+ {item.hourly_rate:.2f} * abs({shift_duration:.2f} - {duration:.2f}) = {item.salary:.2f}"
+                        )
+                elif item.attendance == "Absent":
+                    item.salary = shift_duration * item.hourly_rate
+                    item.calculation = f"{shift_duration:.2f} * {item.hourly_rate:.2f} = {item.salary:.2f}"
+            else:
+                item.salary = item.hourly_rate * duration
+                item.calculation = f"{item.hourly_rate:.2f} * {duration:.2f} = {item.salary:.2f}"
 
     def add_holidays_item_not_present(self):
         missing_dates = self._get_missing_dates()
@@ -145,8 +159,9 @@ class AttendanceSalaryBundle(Document):
         return missing_dates
 
     def validate_total(self):
-        self.total_salary = sum(item.salary for item in self.items)
+        self.exact_salary = sum(item.salary for item in self.items)
         self.total_holiday = len([item for item in self.items if item.is_holiday])
+        self.total_salary = round(self.exact_salary, -2)
 
     def on_trash(self):
         pass
@@ -156,18 +171,12 @@ class Salary:
     def __init__(self, employee, year):
         self.monthly_salary = self._get_monthly_salary(employee, year)
 
-    def get_hourly_rate(self, item, shift_duration):
+    def get_hourly_rate(self, item):
         year, month = item.date.year, item.date.month
-        shift_duration -= lunch_duration_hour
         no_of_days = calendar.monthrange(year, item.date.month)[1]
         daily_salary = self.monthly_salary[calendar.month_name[month]] / no_of_days
-        hourly_salary = daily_salary / shift_duration
-        if item.attendance_item and item.is_holiday and item.attendance == "Absent":
-            return hourly_salary
-        double_rate = self.is_double_rate(item)
-        if shift_duration and double_rate and item.duration > shift_duration * 3600:
-            item.duration = shift_duration * 3600
-        return hourly_salary * 2 if double_rate else hourly_salary
+        hourly_salary = daily_salary / (item.shift_duration/3600)
+        return hourly_salary
 
     def is_double_rate(self, item):
         return self.present_on_holidays(item)
@@ -284,11 +293,7 @@ class Attendance:
         )
 
     @staticmethod
-    def get_duration(employee, attendance_item) -> float:
-        global lunch_start
-        if attendance_item.duration == 0:
-            return 0
-
+    def get_durations(employee, attendance_item) -> tuple[float, float]:
         if not attendance_item.shift_type:
             attendance_item.shift_type = frappe.get_value(
                 "Employee", employee, "default_shift"
@@ -303,6 +308,9 @@ class Attendance:
         shift_duration_timedelta = timedelta(seconds=shift_duration)
         half_shift_duration = timedelta(seconds=shift_duration / 2)
         shift_duration -= lunch_duration_sec
+        global lunch_start
+        if attendance_item.duration == 0:
+            return (0, shift_duration)
 
         if isinstance(lunch_start, str):
             hours, minutes, seconds = map(int, lunch_start.split(":"))
@@ -318,8 +326,8 @@ class Attendance:
             attendance_item.duration = shift_duration / 2
 
         return (
-            attendance_item.duration
+            (attendance_item.duration, shift_duration)
             if abs(attendance_item.duration - shift_duration)
             > time_allowance
-            else shift_duration
+            else (shift_duration, shift_duration)
         )

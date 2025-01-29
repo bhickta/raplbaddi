@@ -20,7 +20,8 @@
   "duration",
   "attendance",
   "shift_duration",
-  "shift_type"
+  "shift_type",
+  "calculation"
  ],
  "fields": [
   {
@@ -135,12 +136,18 @@
    "label": "Day",
    "read_only": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "calculation",
+   "fieldtype": "Data",
+   "label": "Calculation",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-18 08:16:24.233859",
+ "modified": "2025-01-29 21:20:51.220624",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Attendance Salary Bundle Item",
