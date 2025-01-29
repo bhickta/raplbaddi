@@ -6,7 +6,7 @@ from typing import Dict, List
 from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
 
 import frappe.utils
-from frappe.utils import dateutils
+from raplbaddi.utils import dateutils
 
 lunch_start = "13:00:00"
 lunch_end = "13:30:00"
@@ -50,6 +50,8 @@ class AttendanceSalaryBundle(Document):
 
     def set_day_of_the_week(self):
         for item in self.items:
+            if isinstance(item.date, str):
+                item.date = datetime.strptime(item.date, "%Y-%m-%d").date()
             item.day = calendar.day_name[item.date.weekday()]
 
     def validate_holiday(self):
@@ -218,7 +220,6 @@ class Holiday:
             return ret
         minimum_weekly_attendance = holiday_sandwich[0].minimum_weekly_attendance
         weekly_attendance = Holiday.weekly_attendance(employee, date)
-        print(weekly_attendance)
         if weekly_attendance < minimum_weekly_attendance:
             ret = True
 
