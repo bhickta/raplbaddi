@@ -85,7 +85,7 @@ class SalarySlipsRapl(Document):
         AttendanceSalaryBundleHandler.submit_all(self.items)
 
     def on_cancel(self):
-        AttendanceSalaryBundleHandler.cancel_all(self.items)
+        AttendanceSalaryBundleHandler.cancel_all(self)
 
     def on_trash(self):
         AttendanceSalaryBundleHandler.delete_all(self)
@@ -136,19 +136,17 @@ class AttendanceSalaryBundleHandler:
             attendance_salary_bundle.submit()
 
     @staticmethod
-    def cancel_all(items):
-        for item in items:
-            attendance_salary_bundle = frappe.get_doc(
-                "Attendance Salary Bundle", item.attendance_salary_bundle
-            )
-            for bundle_item in attendance_salary_bundle.items:
-                bundle_item.attendance_item = None
-            attendance_salary_bundle.save()
-            attendance_salary_bundle.cancel()
+    def cancel_all(doc):
+        for item in doc.items:
+            bundle = frappe.get_doc("Attendance Salary Bundle", item.attendance_salary_bundle)
             item.attendance_salary_bundle = None
+            bundle.cancel()
+            bundle.delete(force=True)
 
     @staticmethod
     def delete_all(doc):
+        if not doc.docstatus == 0:
+            return
         bundles = [item.attendance_salary_bundle for item in doc.items]
         for item in doc.items:
             item.attendance_salary_bundle = None

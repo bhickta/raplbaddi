@@ -145,9 +145,8 @@ class AttendanceSalaryBundle(Document):
     def _get_missing_dates(self):
         if not self.from_date or not self.to_date:
             frappe.throw("From Date and To Date must be specified.")
-
-        from_date = datetime.strptime(self.from_date, "%Y-%m-%d").date()
-        to_date = datetime.strptime(self.to_date, "%Y-%m-%d").date()
+        from_date = datetime.strptime(self.from_date, "%Y-%m-%d").date() if isinstance(self.from_date, str) else self.from_date
+        to_date = datetime.strptime(self.to_date, "%Y-%m-%d").date() if isinstance(self.to_date, str) else self.to_date
 
         all_dates = {
             from_date + timedelta(days=i) for i in range((to_date - from_date).days + 1)
