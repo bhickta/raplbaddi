@@ -85,6 +85,7 @@ class AttendanceSalaryBundle(Document):
         shift = frappe.get_doc("Shift Type", default_shift, ["start_time", "end_time"])
         item.shift_end = shift.end_time
         item.shift_start = shift.start_time
+        item.shift_duration = (shift.end_time - shift.start_time).total_seconds()
 
     def set_values_from_attendance_item(self, item):
         attendance_item = frappe.get_doc("Attendance Rapl Item", item.attendance_item)
