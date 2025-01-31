@@ -21,6 +21,7 @@ class CustomerFeedbackReport(ServiceCentreReport):
                 ir.customer_confirmation AS 'feedback',
                 ir.service_delivered AS 'service_delivered',
                 ir.status AS 'status',
+                ir.expected_visit_date,
                 ir.remarks AS 'customer_remarks',
                 1 AS 'no'
             FROM
@@ -79,16 +80,22 @@ class CustomerFeedbackReport(ServiceCentreReport):
                 "width": 150,
             },
             {
-                "label": "Customer Remarks",
-                "fieldname": "customer_remarks",
-                "fieldtype": "Data",
-                "width": 300,
+                "label": "Close Date",
+                "fieldname": "expected_visit_date",
+                "fieldtype": "Date",
+                "width": 100,
             },
             {
                 "label": "No",
                 "fieldname": "no",
                 "fieldtype": "Int",
                 "width": 50,
+            },
+            {
+                "label": "Customer Remarks",
+                "fieldname": "customer_remarks",
+                "fieldtype": "Data",
+                "width": 300,
             },
         ]
 
