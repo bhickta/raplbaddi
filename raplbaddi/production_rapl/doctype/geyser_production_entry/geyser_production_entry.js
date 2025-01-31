@@ -4,12 +4,26 @@
 frappe.ui.form.on('Geyser Production Entry', {
 	onload(frm) {
 		frm.set_query("item", "items", function () {
+			return frm.events.get_items_filters(frm)
+		});
+		frm.set_query("item_group", function () {
 			return {
 				"filters": {
-					"item_group": "Geyser Unit",
+					"name": ["in", ["Geyser Unit", "Cooler"]],
 				}
-			};
-		});
+			}
+		})
+	},
+	get_items_filters(frm) {
+		let default_filters = {
+			"filters": {
+				"item_group": ["in", ["Geyser Unit", "Cooler"]],
+			}
+		};
+		if (frm.doc.item_group) {
+			default_filters.filters.item_group = frm.doc.item_group;
+		}
+		return default_filters
 	},
 	before_save(frm) {
 		let total = 0

@@ -5,6 +5,24 @@ import frappe
 from frappe.model.document import Document
 
 class GeyserProductionEntry(Document):
+    # begin: auto-generated types
+    # This code is auto-generated. Do not modify anything in this block.
+
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from frappe.types import DF
+        from raplbaddi.production_rapl.doctype.geyser_production_entry_table.geyser_production_entry_table import GeyserProductionEntryTable
+
+        amended_from: DF.Link | None
+        contactor_name: DF.Data | None
+        date_of_production: DF.Date
+        item_group: DF.Link | None
+        items: DF.Table[GeyserProductionEntryTable]
+        production_line: DF.Link | None
+        total: DF.Int
+        workforce: DF.Int
+    # end: auto-generated types
     pass
 	# def on_submit(self):
 	# 	date = self.get("date_of_production")
