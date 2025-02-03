@@ -7,8 +7,10 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
+  "nature",
   "column_break_ahft",
   "sticker_type",
+  "source",
   "section_break_jyvm",
   "sample"
  ],
@@ -26,10 +28,10 @@
   },
   {
    "fieldname": "sticker_type",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Sticker Type",
-   "options": "\nLogo\nLahar\nISI\nSpecification Plate\nFive Star\nBox Model Sticker",
+   "options": "Sticker Type",
    "reqd": 1
   },
   {
@@ -40,12 +42,27 @@
   {
    "fieldname": "section_break_jyvm",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "nature",
+   "fieldtype": "Select",
+   "label": "Nature",
+   "options": "Common\nNot Common",
+   "reqd": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Source",
+   "options": "Source",
+   "reqd": 1
   }
  ],
  "image_field": "sample",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-27 09:25:06.072370",
+ "modified": "2025-02-03 15:04:46.773380",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Sticker",
