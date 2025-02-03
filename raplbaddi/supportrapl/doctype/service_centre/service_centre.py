@@ -42,6 +42,11 @@ class ServiceCentre(Document):
         user: DF.Link
     # end: auto-generated types
 
+    def after_rename(self, name, merge=False, force=False, validate_rename=True):
+        frappe.rename_doc("Customer", self.customer, self.customer + " changed")
+        frappe.rename_doc("Warehouse", self.main_warehouse, self.main_warehouse + " changed", True)
+        frappe.rename_doc("Warehouse", self.defective_warehouse, self.defective_warehouse + " changed", True)
+
     def before_insert(self):
         self.check_warehouse_customer()
 
