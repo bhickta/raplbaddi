@@ -117,6 +117,17 @@ doc_events = {
             "raplbaddi.overrides.user_permissions.validate",
         ],
     },
+    "Brand": {
+        "after_insert": [
+            "raplbaddi.overrides.brand.after_insert",
+        ],
+        "after_rename": [
+            "raplbaddi.overrides.brand.after_rename",
+        ],
+        "after_delete": [
+            "raplbaddi.overrides.brand.after_delete",
+        ],
+    },
     "Delivery Note": {
         "before_insert": [
             "raplbaddi.overrides.delivery_note.before_insert",

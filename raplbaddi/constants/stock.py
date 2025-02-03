@@ -59,7 +59,7 @@ custom_fields = {
             "fieldname": "unit",
             "insert_after": "over_billing_allowance",
             "fieldtype": "Select",
-            "options": "Unit 1\nUnit 2"
+            "options": "Unit 1\nUnit 2",
         },
         {
             "name": "Item-is_contractable",
@@ -87,7 +87,7 @@ custom_fields = {
             "fieldtype": "Float",
             "read_only": 1,
             "in_list_view": 1,
-            "columns": 2
+            "columns": 2,
         },
         {
             "name": "UOM Conversion Detail-base_uom",
@@ -98,9 +98,19 @@ custom_fields = {
             "options": "UOM",
             "read_only": 1,
             "in_list_view": 1,
-            "columns": 1
-        }
-    ]
+            "columns": 1,
+        },
+    ],
+    "Brand": [
+        {
+            "is_system_generated": 1,
+            "label": "Warehouse",
+            "fieldname": "warehouse",
+            "insert_after": "supplier",
+            "fieldtype": "Link",
+            "options": "Warehouse",
+        },
+    ],
 }
 
 
