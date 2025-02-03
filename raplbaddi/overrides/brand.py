@@ -9,5 +9,6 @@ def after_insert(doc, method):
 def after_delete(doc, method):
     frappe.delete_doc('Warehouse', doc.brand + ' - RAPL')
 
-def after_rename(doc, method):
-    frappe.rename_doc("Warehouse", doc.name, doc.name + "-WH-Defective", True)
+def after_rename(doc, name, merge=False, force=False, validate_rename=True):
+    if doc.warehouse:
+        frappe.rename_doc("Warehouse", doc.warehouse, doc.name + ' - RAPL', True)
