@@ -33,6 +33,7 @@
   "cooler_model",
   "column_break_isjsk",
   "issue_type",
+  "sub_issue",
   "product_photo",
   "invoice_date",
   "service_centre_tab",
@@ -367,11 +368,18 @@
    "fieldname": "custom_creation_date",
    "fieldtype": "Date",
    "label": "Creation Date"
+  },
+  {
+   "depends_on": "eval: doc.issue_type",
+   "fieldname": "sub_issue",
+   "fieldtype": "Link",
+   "label": "Sub Issue",
+   "options": "Sub Issue"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-22 09:20:26.633410",
+ "modified": "2025-02-03 15:24:45.369194",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "IssueRapl",

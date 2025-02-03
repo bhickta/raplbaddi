@@ -169,6 +169,24 @@ frappe.ui.form.on('IssueRapl', {
     refresh(frm) {
         const issueHandler = new IssueRaplHandler(frm);
         issueHandler.addCustomButtons();
+        frm.events.set_filters(frm);
+    },
+    set_filters(frm) {
+        frm.events.sub_issue_filters(frm)
+    },
+
+    sub_issue_filters(frm) {
+        frm.set_query("sub_issue", function () {
+            return {
+                "filters": {
+                    "issue_type": ["in", [frm.doc.issue_type]],
+                }
+            }
+        });
+    },
+
+    issue_type(frm) {
+        frm.events.sub_issue_filters(frm)
     },
     after_save(frm) {
         const issueHandler = new IssueRaplHandler(frm);

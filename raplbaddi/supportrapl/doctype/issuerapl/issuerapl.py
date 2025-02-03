@@ -56,6 +56,7 @@ class IssueRapl(Document):
         service_delivered: DF.Literal["No", "Yes"]
         spare_parts_entry: DF.Table[SparePartsEntry]
         status: DF.Literal["Open", "Closed", "Cancelled"]
+        sub_issue: DF.Link | None
         system_amount: DF.Float
     # end: auto-generated types
     def __init__(self, *args, **kwargs):
