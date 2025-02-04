@@ -17,6 +17,7 @@ class IssueRapl(Document):
     if TYPE_CHECKING:
         from frappe.contacts.doctype.contact_phone.contact_phone import ContactPhone
         from frappe.types import DF
+        from raplbaddi.raplbaddi.doctype.issuerapl_item.issuerapl_item import IssueRaplItem
         from raplbaddi.supportrapl.doctype.spare_parts_entry.spare_parts_entry import SparePartsEntry
 
         address_description: DF.LongText | None
@@ -38,7 +39,7 @@ class IssueRapl(Document):
         geyser_capacity: DF.Link | None
         invoice_date: DF.Date | None
         is_custom_amount: DF.Check
-        issue_type: DF.Link
+        issuerapl_items: DF.Table[IssueRaplItem]
         kilometer: DF.Float
         latitude: DF.Data | None
         longitude: DF.Data | None
@@ -56,7 +57,6 @@ class IssueRapl(Document):
         service_delivered: DF.Literal["No", "Yes"]
         spare_parts_entry: DF.Table[SparePartsEntry]
         status: DF.Literal["Open", "Closed", "Cancelled"]
-        sub_issue: DF.Link | None
         system_amount: DF.Float
     # end: auto-generated types
     def __init__(self, *args, **kwargs):
@@ -207,3 +207,11 @@ class IssueRapl(Document):
             )
 
         self.areal_distances.sort(key=lambda x: list(x.values())[0]["distance"])
+
+    def before_submit(self):
+        self.validate_mandatory()
+    
+    def validate_mandatory(self):
+        for item in self.issuerapl_items:
+            if not item.sub_issue or item.issue_type:
+                frappe.throw(f"Please select issue type and sub issue in row {item.idx}")

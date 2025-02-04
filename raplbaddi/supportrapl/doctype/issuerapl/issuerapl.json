@@ -32,10 +32,10 @@
   "model",
   "cooler_model",
   "column_break_isjsk",
-  "issue_type",
-  "sub_issue",
   "product_photo",
   "invoice_date",
+  "section_break_rzzb",
+  "issuerapl_items",
   "service_centre_tab",
   "section_break_useg",
   "service_centre_phone_number",
@@ -123,13 +123,6 @@
   {
    "fieldname": "column_break_utfyp",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "issue_type",
-   "fieldtype": "Link",
-   "label": "Issue Type",
-   "options": "Issue Type",
-   "reqd": 1
   },
   {
    "fieldname": "column_break_isjsk",
@@ -370,16 +363,19 @@
    "label": "Creation Date"
   },
   {
-   "depends_on": "eval: doc.issue_type",
-   "fieldname": "sub_issue",
-   "fieldtype": "Link",
-   "label": "Sub Issue",
-   "options": "Sub Issue"
+   "fieldname": "section_break_rzzb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "issuerapl_items",
+   "fieldtype": "Table",
+   "label": "IssueRapl Items",
+   "options": "IssueRapl Item"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-03 15:24:45.369194",
+ "modified": "2025-02-04 09:15:50.524252",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "IssueRapl",
@@ -409,6 +405,7 @@
    "role": "Support Team",
    "select": 1,
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

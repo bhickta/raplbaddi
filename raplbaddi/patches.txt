@@ -13,3 +13,4 @@ execute:from raplbaddi.patches.naming_series_rsi_employee import execute; execut
 execute:from raplbaddi.patches.set_distance_issuerapl import execute; execute() #5
 execute:from raplbaddi.patches.customer_name_dsra import execute; execute() #1
 execute:from raplbaddi.patches.brand_warehouse import execute; execute() #2
+execute:from raplbaddi.patches.issues_table import execute; execute() #1
