@@ -4,6 +4,14 @@ custom_fields = {
     "Employee": [
         {
             "is_system_generated": 1,
+            "label": "IDX",
+            "fieldname": "idx",
+            "insert_after": "basic_details_tab",
+            "fieldtype": "Int",
+            "reqd": 1,
+        },
+        {
+            "is_system_generated": 1,
             "label": "Custom Employee Code",
             "fieldname": "custom_employee_code",
             "insert_after": "branch",
