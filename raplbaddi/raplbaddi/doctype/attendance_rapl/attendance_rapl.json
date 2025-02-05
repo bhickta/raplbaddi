@@ -11,6 +11,7 @@
   "column_break_baqm",
   "branch",
   "employee",
+  "is_marketing_employee_included",
   "section_break_pida",
   "items",
   "amended_from"
@@ -77,12 +78,18 @@
    "fieldtype": "Select",
    "label": "Status",
    "options": "\nAudited"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_marketing_employee_included",
+   "fieldtype": "Check",
+   "label": "Is Marketing Employee Included"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-28 11:01:55.644196",
+ "modified": "2025-02-05 08:49:35.067753",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Attendance Rapl",

@@ -22,6 +22,7 @@ class AttendanceRapl(Document):
 		date: DF.Date
 		department: DF.Link | None
 		employee: DF.Link | None
+		is_marketing_employee_included: DF.Check
 		items: DF.Table[AttendanceRaplItem]
 		status: DF.Literal["", "Audited"]
 	# end: auto-generated types
@@ -54,6 +55,8 @@ class AttendanceRapl(Document):
 			row.duration -= lunch_time_duration
    
 	def add_attendance_for_sales_based_on_dsra(self):
+		if not self.is_marketing_employee_included:
+			return
 		dsra_list = frappe.get_all(
 			"Daily Sales Report By Admin",
 			filters={
