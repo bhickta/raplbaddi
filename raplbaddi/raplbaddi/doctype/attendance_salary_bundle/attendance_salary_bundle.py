@@ -103,17 +103,13 @@ class AttendanceSalaryBundle(Document):
 
             if item.is_holiday:
                 if item.attendance == "Present":
-                    if shift_duration >= duration >= 8:
-                        item.salary = item.hourly_rate * shift_duration
-                        item.calculation = f"{item.hourly_rate:.2f} * {shift_duration:.2f} = {item.salary:.2f}"
-                    else:
-                        overtime = 2 * item.hourly_rate * min(duration, shift_duration)
-                        extra_hours = item.hourly_rate * abs(shift_duration - duration)
-                        item.salary = overtime + extra_hours
-                        item.calculation = (
-                            f"2 * {item.hourly_rate:.2f} * min({duration:.2f}, {shift_duration:.2f}) "
-                            f"+ {item.hourly_rate:.2f} * abs({shift_duration:.2f} - {duration:.2f}) = {item.salary:.2f}"
-                        )
+                    overtime = 2 * item.hourly_rate * min(duration, shift_duration)
+                    extra_hours = item.hourly_rate * abs(shift_duration - duration)
+                    item.salary = overtime + extra_hours
+                    item.calculation = (
+                        f"2 * {item.hourly_rate:.2f} * min({duration:.2f}, {shift_duration:.2f}) "
+                        f"+ {item.hourly_rate:.2f} * abs({shift_duration:.2f} - {duration:.2f}) = {item.salary:.2f}"
+                    )
                 elif item.attendance == "Absent":
                     item.salary = shift_duration * item.hourly_rate
                     item.calculation = f"{shift_duration:.2f} * {item.hourly_rate:.2f} = {item.salary:.2f}"
