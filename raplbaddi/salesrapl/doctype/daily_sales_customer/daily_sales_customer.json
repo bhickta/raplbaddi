@@ -30,6 +30,7 @@
   },
   {
    "allow_on_submit": 1,
+   "fetch_from": "customer.customer_name",
    "fieldname": "customer_name",
    "fieldtype": "Data",
    "label": "Customer Name",
@@ -43,7 +44,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-20 19:32:53.160928",
+ "modified": "2025-02-05 08:31:05.331576",
  "modified_by": "Administrator",
  "module": "SalesRapl",
  "name": "Daily Sales Customer",

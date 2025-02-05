@@ -5,7 +5,7 @@ custom_fields = {
         {
             "is_system_generated": 1,
             "label": "IDX",
-            "fieldname": "idx",
+            "fieldname": "index",
             "insert_after": "basic_details_tab",
             "fieldtype": "Int",
             "reqd": 1,
