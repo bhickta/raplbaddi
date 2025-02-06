@@ -25,6 +25,7 @@ class IssueRapl(Document):
         amended_from: DF.Link | None
         amount: DF.Currency
         brand_name: DF.Link | None
+        coins: DF.Float
         complaint_source_group: DF.Data | None
         cooler_model: DF.Link | None
         custom_creation_date: DF.Date | None

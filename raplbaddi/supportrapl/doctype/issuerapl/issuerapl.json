@@ -14,6 +14,7 @@
   "column_break_vbez",
   "service_delivered",
   "custom_creation_date",
+  "coins",
   "customer_details_section",
   "address_description",
   "column_break_9bolz",
@@ -371,11 +372,16 @@
    "fieldtype": "Table",
    "label": "IssueRapl Items",
    "options": "IssueRapl Item"
+  },
+  {
+   "fieldname": "coins",
+   "fieldtype": "Float",
+   "label": "Coins"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-04 09:15:50.524252",
+ "modified": "2025-02-06 13:00:22.991168",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "IssueRapl",
