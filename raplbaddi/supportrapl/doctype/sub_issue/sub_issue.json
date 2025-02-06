@@ -22,10 +22,12 @@
   {
    "fetch_from": "issue_type.product",
    "fieldname": "product",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
+   "options": "Geyser\nDesert Air Cooler",
    "in_list_view": 1,
+   "reqd": 1,
    "label": "Product",
-   "read_only": 1
+   "read_only": 0
   },
   {
    "fieldname": "description",
