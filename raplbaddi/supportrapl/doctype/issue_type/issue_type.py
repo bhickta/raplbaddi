@@ -5,4 +5,16 @@
 from frappe.model.document import Document
 
 class IssueType(Document):
+	# begin: auto-generated types
+	# This code is auto-generated. Do not modify anything in this block.
+
+	from typing import TYPE_CHECKING
+
+	if TYPE_CHECKING:
+		from frappe.types import DF
+
+		description: DF.SmallText | None
+		is_disabled: DF.Check
+		product: DF.Literal["Geyser", "Desert Air Cooler"]
+	# end: auto-generated types
 	pass

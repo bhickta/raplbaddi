@@ -10,6 +10,9 @@
  "engine": "InnoDB",
  "field_order": [
   "product",
+  "column_break_lfhl",
+  "is_disabled",
+  "section_break_yuux",
   "description"
  ],
  "fields": [
@@ -25,10 +28,24 @@
    "label": "Product",
    "options": "Geyser\nDesert Air Cooler",
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_lfhl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_disabled",
+   "fieldtype": "Check",
+   "label": "Is Disabled"
+  },
+  {
+   "fieldname": "section_break_yuux",
+   "fieldtype": "Section Break"
   }
  ],
  "links": [],
- "modified": "2023-04-30 11:00:09.182789",
+ "modified": "2025-02-06 12:35:54.170605",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "Issue Type",

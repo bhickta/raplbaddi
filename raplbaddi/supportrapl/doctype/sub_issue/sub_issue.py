@@ -15,6 +15,7 @@ class SubIssue(Document):
 		from frappe.types import DF
 
 		description: DF.SmallText | None
+		is_disabled: DF.Check
 		issue_type: DF.Link
 		product: DF.Data | None
 		title: DF.Data

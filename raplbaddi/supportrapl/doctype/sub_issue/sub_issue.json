@@ -14,6 +14,7 @@
   "product",
   "column_break_atqv",
   "issue_type",
+  "is_disabled",
   "section_break_ctfh",
   "description"
  ],
@@ -54,10 +55,16 @@
   {
    "fieldname": "section_break_ctfh",
    "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_disabled",
+   "fieldtype": "Check",
+   "label": "Is Disabled"
   }
  ],
  "links": [],
- "modified": "2025-02-03 15:23:10.762452",
+ "modified": "2025-02-06 12:55:24.327894",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "Sub Issue",

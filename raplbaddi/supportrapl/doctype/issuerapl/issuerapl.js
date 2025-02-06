@@ -166,11 +166,35 @@ frappe.ui.form.on('IssueRapl', {
         const issueHandler = new IssueRaplHandler(frm);
         issueHandler.initialize();
     },
+
+    onload(frm) {
+        frm.events.queries(frm);
+    },
+
     refresh(frm) {
         const issueHandler = new IssueRaplHandler(frm);
         issueHandler.addCustomButtons();
         frm.events.set_filters(frm);
     },
+    queries(frm) {
+        frm.set_query("issue_type", "issuerapl_items", function () {
+            return {
+                query: "raplbaddi.controllers.queries.issue_type",
+                filters: {}
+            };
+        });
+    
+        frm.set_query("sub_issue", "issuerapl_items", function (doc, cdt, cdn) {
+            let child = locals[cdt][cdn];
+            return {
+                query: "raplbaddi.controllers.queries.sub_issue",
+                filters: {
+                    "issue_type": child.issue_type
+                }
+            };
+        });
+    },    
+
     set_filters(frm) {
         frm.events.sub_issue_filters(frm)
     },
