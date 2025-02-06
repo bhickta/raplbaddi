@@ -177,10 +177,12 @@ frappe.ui.form.on('IssueRapl', {
         frm.events.set_filters(frm);
     },
     queries(frm) {
-        frm.set_query("issue_type", "issuerapl_items", function () {
+        frm.set_query("issue_type", "issuerapl_items", function (doc, cdt, cd) {
             return {
                 query: "raplbaddi.controllers.queries.issue_type",
-                filters: {}
+                filters: {
+                    "product": doc.product
+                }
             };
         });
     
@@ -189,7 +191,8 @@ frappe.ui.form.on('IssueRapl', {
             return {
                 query: "raplbaddi.controllers.queries.sub_issue",
                 filters: {
-                    "issue_type": child.issue_type
+                    "issue_type": child.issue_type,
+                    "product": doc.product
                 }
             };
         });
