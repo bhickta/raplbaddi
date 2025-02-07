@@ -57,7 +57,7 @@ custom_fields = {
             "fieldname": "account_holder_name",
             "insert_after": "bank_name",
             "fieldtype": "Data",
-        }
+        },
     ],
     "Shift Type": [
         {
@@ -83,6 +83,17 @@ custom_fields = {
             "no_copy": 0,
         },
     ],
+    "Sales Person": [
+        {
+            "is_system_generated": 1,
+            "label": "Travel Rate",
+            "fieldname": "travel_rate",
+            "insert_after": "employee",
+            "fieldtype": "Currency",
+            "default": "9",
+            "reqd": 0,
+        },
+    ],
 }
 
 
@@ -94,36 +105,39 @@ def get_property_setters():
     property_setters = []
     for field in ["bank_name", "bank_ac_no", "ifsc_code", "micr_code"]:
         property_setters.append(
-                {
-            "name": f"Employee-{field}-depends_on",
-            "owner": "Administrator",
-            "docstatus": 0,
-            "idx": 0,
-            "is_system_generated": 1,
-            "doctype_or_field": "DocField",
-            "doc_type": "Employee",
-            "field_name": f"{field}",
-            "property": "depends_on",
-            "property_type": "Code",
-            "value": "",
-            "doctype": "Property Setter",
-        })
-    
-    property_setters.extend([
-        {
-            "name": f"Employee-provident_fund_account-label",
-            "owner": "Administrator",
-            "docstatus": 0,
-            "idx": 0,
-            "is_system_generated": 1,
-            "doctype_or_field": "DocField",
-            "doc_type": "Employee",
-            "field_name": f"provident_fund_account",
-            "property": "label",
-            "property_type": "Data",
-            "value": "PF Number",
-            "doctype": "Property Setter",
-        }
-    ])
+            {
+                "name": f"Employee-{field}-depends_on",
+                "owner": "Administrator",
+                "docstatus": 0,
+                "idx": 0,
+                "is_system_generated": 1,
+                "doctype_or_field": "DocField",
+                "doc_type": "Employee",
+                "field_name": f"{field}",
+                "property": "depends_on",
+                "property_type": "Code",
+                "value": "",
+                "doctype": "Property Setter",
+            }
+        )
+
+    property_setters.extend(
+        [
+            {
+                "name": f"Employee-provident_fund_account-label",
+                "owner": "Administrator",
+                "docstatus": 0,
+                "idx": 0,
+                "is_system_generated": 1,
+                "doctype_or_field": "DocField",
+                "doc_type": "Employee",
+                "field_name": f"provident_fund_account",
+                "property": "label",
+                "property_type": "Data",
+                "value": "PF Number",
+                "doctype": "Property Setter",
+            }
+        ]
+    )
 
     return property_setters

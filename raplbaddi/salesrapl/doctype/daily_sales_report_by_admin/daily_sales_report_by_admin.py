@@ -18,10 +18,7 @@ class DailySalesReportByAdmin(Document):
 		self.amount_for_travel = self.km_travelled * self.get_travel_rate()
   
 	def get_travel_rate(self):
-		sales_persons = ["E-C-3 Puspendra Kumar"]
-		rate = 7
-		if self.sales_person in sales_persons:
-			rate = 9
+		rate = frappe.get_cached_value("Sales Person", self.sales_person, "travel_rate")
 		return rate
   
 	def set_total_amount(self):
