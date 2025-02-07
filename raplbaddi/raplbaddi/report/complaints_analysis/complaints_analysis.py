@@ -12,7 +12,7 @@ def get_report_class():
         "Pending Complaints Report": PendingComplaintReport,
         "Customer Feedback Report": CustomerFeedbackReport,
         "Days Deadline": DaysDeadline,
-        "Service Centre Details": ServiceCentreDetailsReport,
+        # "Service Centre Details": ServiceCentreDetailsReport,
     }
     return report_class_map
 

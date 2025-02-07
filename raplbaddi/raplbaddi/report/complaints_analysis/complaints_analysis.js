@@ -3,7 +3,7 @@
 
 function get_options() {
 	let report_types = ["Complaints Register Per Day", "Pending Complaints Report", "Customer Feedback Report"];
-	report_types.push("Service Centre Details");
+	// report_types.push("Service Centre Details");
 	report_types.push("Days Deadline");
 	return report_types.join("\n");
 }
