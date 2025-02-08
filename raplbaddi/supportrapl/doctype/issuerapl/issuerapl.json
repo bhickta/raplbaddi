@@ -145,6 +145,7 @@
   },
   {
    "default": "0",
+   "description": "Both side via google",
    "fieldname": "kilometer",
    "fieldtype": "Float",
    "label": "Kilometer",
@@ -327,6 +328,7 @@
    "label": "Address Description"
   },
   {
+   "description": "Both side via lat long",
    "fieldname": "aerial_kilometer",
    "fieldtype": "Int",
    "label": "Aerial Kilometer",
@@ -381,7 +383,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-06 13:00:22.991168",
+ "modified": "2025-02-08 13:15:24.163846",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "IssueRapl",

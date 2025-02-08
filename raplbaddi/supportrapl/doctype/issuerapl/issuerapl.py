@@ -106,7 +106,7 @@ class IssueRapl(Document):
             origin=(org_lat, org_lng), destination=(sc_lat, sc_lng)
         )
         if new_kilometer != self.kilometer:
-            self.kilometer = new_kilometer
+            self.kilometer = new_kilometer * 2
             frappe.msgprint(
                 f"Kilometer has been updated to {self.kilometer} kilometers",
                 title="Updated Kilometer",
