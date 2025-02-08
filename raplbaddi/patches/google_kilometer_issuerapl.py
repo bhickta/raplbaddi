@@ -12,4 +12,3 @@ def execute():
         doc = frappe.get_doc("IssueRapl", issue)
         doc.kilometer = 2 * doc.kilometer
         doc.save()
-    frappe.db.commit()
