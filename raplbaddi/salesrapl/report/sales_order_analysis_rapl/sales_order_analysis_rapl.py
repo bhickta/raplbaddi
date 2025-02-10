@@ -9,7 +9,7 @@ from frappe import _, qb
 from frappe.query_builder import CustomFunction
 from frappe.query_builder.functions import Max
 from frappe.utils import date_diff, flt, getdate
-
+from erpnext.stock.utils import get_stock_balance
 
 def execute(filters=None):
 	if not filters:
@@ -105,10 +105,23 @@ def get_data(conditions, filters):
 		filters,
 		as_dict=1,
 	)
-
+	add_stock_data(data, filters)
 	return data
 
-
+def add_stock_data(data, filters):
+	for d in data:
+		stock = get_stock_balance(
+			item_code=d.item_code,
+			warehouse=d.warehouse,
+			posting_date=None,
+			posting_time=None,
+			with_valuation_rate=False,
+			with_serial_no=False,
+			inventory_dimensions_dict=None,
+		)
+		d['stock'] = stock
+		d['shortage'] = stock - d['pending_qty']
+ 
 def get_so_elapsed_time(data):
 	"""
 	query SO's elapsed time till latest delivery note
@@ -228,7 +241,7 @@ def get_columns(filters):
 			"fieldname": "sales_order",
 			"fieldtype": "Link",
 			"options": "Sales Order",
-			"width": 20,
+			"width": 120,
 		},
 		{"label": _("Date"), "fieldname": "date", "fieldtype": "Date", "width": 90},
 		{"label": _("Brand"), "fieldname": "name_of_brand", "fieldtype": "Data", "width": 90},
@@ -283,6 +296,27 @@ def get_columns(filters):
 			{
 				"label": _("Qty to Deliver"),
 				"fieldname": "pending_qty",
+				"fieldtype": "Float",
+				"width": 120,
+				"convertible": "qty",
+			},
+			{
+				"label": _("Stock"),
+				"fieldname": "stock",
+				"fieldtype": "Float",
+				"width": 120,
+				"convertible": "qty",
+			},
+			{
+				"label": _("Shortage"),
+				"fieldname": "shortage",
+				"fieldtype": "Float",
+				"width": 120,
+				"convertible": "qty",
+			},
+			{
+				"label": _("%"),
+				"fieldname": "%",
 				"fieldtype": "Float",
 				"width": 120,
 				"convertible": "qty",
