@@ -5,7 +5,7 @@
 from frappe.model.document import Document
 
 
-class SubIssue(Document):
+class ModelItem(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
 
@@ -13,13 +13,11 @@ class SubIssue(Document):
 
 	if TYPE_CHECKING:
 		from frappe.types import DF
-		from raplbaddi.raplbaddi.doctype.model_item.model_item import ModelItem
 
-		description: DF.SmallText | None
-		is_disabled: DF.Check
-		issue_type: DF.Link
-		model_items: DF.Table[ModelItem]
-		product: DF.Literal["Geyser", "Desert Air Cooler"]
-		title: DF.Data
+		item: DF.Link
+		model: DF.Link
+		parent: DF.Data
+		parentfield: DF.Data
+		parenttype: DF.Data
 	# end: auto-generated types
 	pass

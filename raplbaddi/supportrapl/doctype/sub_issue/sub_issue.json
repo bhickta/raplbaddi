@@ -16,18 +16,18 @@
   "issue_type",
   "is_disabled",
   "section_break_ctfh",
-  "description"
+  "description",
+  "model_items"
  ],
  "fields": [
   {
    "fetch_from": "issue_type.product",
    "fieldname": "product",
    "fieldtype": "Select",
-   "options": "Geyser\nDesert Air Cooler",
    "in_list_view": 1,
-   "reqd": 1,
    "label": "Product",
-   "read_only": 0
+   "options": "Geyser\nDesert Air Cooler",
+   "reqd": 1
   },
   {
    "fieldname": "description",
@@ -63,10 +63,16 @@
    "fieldname": "is_disabled",
    "fieldtype": "Check",
    "label": "Is Disabled"
+  },
+  {
+   "fieldname": "model_items",
+   "fieldtype": "Table",
+   "label": "Model Items",
+   "options": "Model Item"
   }
  ],
  "links": [],
- "modified": "2025-02-06 12:55:24.327894",
+ "modified": "2025-02-11 08:37:02.217714",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "Sub Issue",
