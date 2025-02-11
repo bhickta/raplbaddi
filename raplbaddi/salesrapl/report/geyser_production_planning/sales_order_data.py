@@ -12,7 +12,6 @@ def get_so_items(filters=None):
 		.where(so.status.notin(['Stopped', 'Closed']) & so.docstatus == 1)
 		.where(so.delivery_status.isin(['Partly Delivered', 'Not Delivered']))
 		.where((soi.qty - soi.delivered_qty) > 0)
-		.where(soi.item_code.like('G%%'))
 		.select(
 			Case().when(so.submission_date, so.submission_date).else_(so.transaction_date).as_('date'),
 			soi.item_code.as_('item_code'),
