@@ -35,11 +35,16 @@ frappe.query_reports["Daily Geyser Production"] = {
     },
 	"filters": [
 		{
-			"fieldname": "item",
-			"label": "Item",
-			"fieldtype": "Select",
-			"options": "Geyser\nDesert Air Cooler\nElement",
-			"default": "Geyser"
+			fieldname: "item_group",
+			label: __("Item Group"),
+			fieldtype: "MultiSelectList",
+			width: "80",
+			options: "Item Group",
+			get_data: function (txt) {
+				return frappe.db.get_link_options("Item Group", txt);
+			},
+			get_query: () => {
+			},
 		},
 		{
 			"fieldname": "start_date",
