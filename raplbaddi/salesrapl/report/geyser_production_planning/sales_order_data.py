@@ -2,7 +2,7 @@ import frappe
 from raplbaddi.utils import report_utils
 from pypika import Case
 
-def get_so_items():
+def get_so_items(filters=None):
 	so = frappe.qb.DocType('Sales Order')
 	soi = frappe.qb.DocType('Sales Order Item')
 	query = (
@@ -10,7 +10,6 @@ def get_so_items():
 		.from_(so)
 		.left_join(soi).on(so.name == soi.parent)
 		.where(so.status.notin(['Stopped', 'Closed']) & so.docstatus == 1)
-		.where(soi.item_group.isin(["Geyser Unit"]))
 		.where(so.delivery_status.isin(['Partly Delivered', 'Not Delivered']))
 		.where((soi.qty - soi.delivered_qty) > 0)
 		.where(soi.item_code.like('G%%'))
@@ -34,7 +33,9 @@ def get_so_items():
 			so.delivery_status,
 			so.delivery_status.as_('delivery_status')
 		)
-	)	
+	)
+	if filters and filters.get('item_group'):
+		query = query.where(soi.item_group.isin(filters.get('item_group')))
 	data = query.run(as_dict=True)
 	return data
 
@@ -44,7 +45,6 @@ def get_bin_stock():
 		frappe.qb
 		.from_(bin)
 		.select(bin.item_code, bin.warehouse, bin.actual_qty)
-		.where(bin.item_code.like('G%%'))
 	)
 	return query.run(as_dict=True)
 

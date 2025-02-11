@@ -7,15 +7,15 @@ import frappe
 from collections import Counter
 
 def execute(filters=None):
-	columns, datas = [], []
+	columns, data = [], []
 	if filters.get('report_type') == "Order and Shortage":
-		datas = order_and_shortage_date()
+		data = order_and_shortage_data(filters)
 	elif filters.get('report_type') == "Itemwise Order and Shortage":
-		datas = itemwise_order_and_shortage_data()
-	return get_columns(filters), datas
+		data = itemwise_order_and_shortage_data(filters)
+	return get_columns(filters), data
 
-def itemwise_order_and_shortage_data():
-	data = sales_order_data.get_so_items()
+def itemwise_order_and_shortage_data(filters):
+	data = sales_order_data.get_so_items(filters)
 	bin = sales_order_data.get_bin_stock()
 	boxes = sales_order_data.get_box_qty()
 	item_units = {}
@@ -88,9 +88,9 @@ def get_ordered_qty():
     """
     return frappe.db.sql(query, as_dict=True)
 
-def order_and_shortage_date():
+def order_and_shortage_data(filters):
 	data = []
-	so = report_utils.accum_mapper(data=(sales_order_data.get_so_items()), key='sales_order')
+	so = report_utils.accum_mapper(data=(sales_order_data.get_so_items(filters)), key='sales_order')
 	bin = sales_order_data.get_bin_stock()
 	for so, so_val in so.items():
 		entry = {}
