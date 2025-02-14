@@ -214,5 +214,5 @@ class IssueRapl(Document):
     
     def validate_mandatory(self):
         for item in self.issuerapl_items:
-            if not item.sub_issue or item.issue_type:
+            if not item.sub_issue or not item.issue_type:
                 frappe.throw(f"Please select issue type and sub issue in row {item.idx}")
