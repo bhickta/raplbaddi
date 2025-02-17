@@ -44,15 +44,22 @@ class ServiceCentre(Document):
     # end: auto-generated types
 
     def after_rename(self, name, merge=False, force=False, validate_rename=True):
-        frappe.rename_doc("Warehouse", self.main_warehouse, self.name + "-WH-Main", True)
-        frappe.rename_doc("Warehouse", self.defective_warehouse, self.name + "-WH-Defective", True)
+        frappe.rename_doc(
+            "Warehouse", self.main_warehouse, self.name + "-WH-Main", True
+        )
+        frappe.rename_doc(
+            "Warehouse", self.defective_warehouse, self.name + "-WH-Defective", True
+        )
 
     def before_insert(self):
         self.check_warehouse_customer_supplier()
 
     def check_warehouse_customer_supplier(self):
         if not self.create_warehouse_customer and (
-            not self.customer or not self.supplier or not self.main_warehouse or not self.defective_warehouse
+            not self.customer
+            or not self.supplier
+            or not self.main_warehouse
+            or not self.defective_warehouse
         ):
             frappe.throw(
                 "Please enter warehouse(main, defective) and customer supplier or check create warehouse and customer supplier"
@@ -83,11 +90,14 @@ class ServiceCentre(Document):
         )
 
         self.settings = frappe.get_single("Raplbaddi Settings")
-        if not self.settings.service_centre_customer_group or not self.settings.service_centre_supplier_group:
+        if (
+            not self.settings.service_centre_customer_group
+            or not self.settings.service_centre_supplier_group
+        ):
             frappe.throw(
                 "Please enter service centre customer group and supplier group in Raplbaddi Settings"
             )
-        
+
         self.customer = _get_or_create_doc(
             "Customer",
             self.service_centre_name,
@@ -126,3 +136,35 @@ def _get_or_create_doc(doctype, name, defaults):
     except frappe.DuplicateEntryError as e:
         new_doc = frappe.get_doc(doctype, e.args[1])
     return new_doc.name
+
+
+@frappe.whitelist()
+def get_service_centre_details(filters):
+    filters = frappe.parse_json(filters)
+    doc = frappe._dict({
+        "set_warehouse": "",
+        "rejected_warehouse": "",
+        "transaction_type": "",
+    })
+    if not filters:
+        return doc
+    docs = frappe.get_all(
+        "Service Centre",
+        fields=[
+            "name",
+            "main_warehouse",
+            "defective_warehouse",
+            "customer",
+            "supplier",
+        ],
+        filters=filters,
+        order_by="modified desc",
+    )
+
+    if not docs:
+        return doc
+    doc = docs[0]
+    doc.transaction_type = "Service Centre Inward"
+    doc.set_warehouse = doc.main_warehouse
+    doc.rejected_warehouse = doc.defective_warehouse
+    return docs[0]

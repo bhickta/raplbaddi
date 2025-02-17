@@ -65,6 +65,25 @@ custom_fields = {
     "Purchase Receipt": [
         {
             "is_system_generated": 1,
+            "label": "Supplier Group",
+            "fieldname": "supplier_group",
+            "insert_after": "supplier_name",
+            "fieldtype": "Link",
+            "options": "Supplier Group",
+            "fetch_from": "supplier.supplier_group",
+            "read_only": 1,
+        },
+        {
+            "is_system_generated": 1,
+            "label": "Transaction Type",
+            "fieldname": "transaction_type",
+            "insert_after": "column_break1",
+            "fieldtype": "Link",
+            "options": "Transaction Type",
+            "read_only": 1,
+        },
+        {
+            "is_system_generated": 1,
             "label": "Branch",
             "fieldname": "branch",
             "insert_after": "company",
