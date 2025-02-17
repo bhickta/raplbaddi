@@ -24,6 +24,7 @@
   "defective_warehouse",
   "column_break_fcqf",
   "customer",
+  "supplier",
   "create_warehouse_customer",
   "banking_tab",
   "account_holder_name",
@@ -253,11 +254,18 @@
    "label": "Defective Warehouse",
    "no_copy": 1,
    "options": "Warehouse"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "no_copy": 1,
+   "options": "Supplier"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-22 19:18:53.850213",
+ "modified": "2025-02-17 18:50:22.736294",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "Service Centre",

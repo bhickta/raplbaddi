@@ -17,6 +17,7 @@ class RaplbaddiSettings(Document):
 
 		holiday_sandwich: DF.Table[HolidaySandwich]
 		is_internal_receipt_for_service_centre_on_dn: DF.Check
-		service_centre_group: DF.Link | None
+		service_centre_customer_group: DF.Link | None
+		service_centre_supplier_group: DF.Link | None
 	# end: auto-generated types
 	pass
