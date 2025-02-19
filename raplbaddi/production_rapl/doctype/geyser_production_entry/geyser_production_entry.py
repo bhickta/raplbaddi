@@ -3,6 +3,8 @@
 
 import frappe
 from frappe.model.document import Document
+from raplbaddi.utils.stock import make_manufacturing_stock_entry as _make_manufacturing_stock_entry
+from raplbaddi.overrides.delivery_note import cancel_reverse_entry_for_internal_customers as _cancel_internal_receipt
 
 class GeyserProductionEntry(Document):
     # begin: auto-generated types
@@ -20,36 +22,29 @@ class GeyserProductionEntry(Document):
         item_group: DF.Link | None
         items: DF.Table[GeyserProductionEntryTable]
         production_line: DF.Link | None
+        stock_entry: DF.Data | None
         total: DF.Int
         workforce: DF.Int
     # end: auto-generated types
     pass
-	# def on_submit(self):
-	# 	date = self.get("date_of_production")
-	# 	manufacture(items=self.get("items"), name=self.get("name"), date=date)
 
-@frappe.whitelist()
-def manufacture(items, name, date):
-	"""Helper function to make a Stock Entry
-	:items: Item to be moved
-	"""
-	s = frappe.new_doc("Stock Entry")
-	s.company = "Real Appliances Private Limited"
-	s.stock_entry_type = "Geyser Manufactured"
-	s.production_entry = name
-	s.set_posting_time = 1
-	s.posting_date = date
-	
-	# items
-	for item in items:
-		s.append('items', {
-			"item_code": item.item,
-			"qty": item.qty,
-			"t_warehouse": item.brand + " - RAPL",
-			"is_finished_item": 1,
-		})
+    def before_submit(self):
+        self.make_manufacturing_stock_entry()
+    
+    def before_cancel(self):
+        self.internal_receipt_name = self.stock_entry
+        self.internal_receipt = None
 
-	# insert
-	s.insert()
-	s.submit()
-	return s
+    def on_cancel(self):
+        print(self.internal_receipt_name)
+        _cancel_internal_receipt(self)
+
+    def make_manufacturing_stock_entry(self):
+        items = []
+        for item in self.items:
+            i = frappe._dict({})
+            i.item_code = item.item
+            i.qty = item.qty
+            i.t_warehouse = item.brand + " - RAPL"
+            items.append(i)
+        self.stock_entry = _make_manufacturing_stock_entry(items=items)
