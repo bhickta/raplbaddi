@@ -1,7 +1,7 @@
 import frappe
 
 def execute():
-    StockReconciliationManager(["Coolers", "DLP-Price List"]).execute()
+    StockReconciliationManager(["Cooler", "DLP-Price List"]).execute()
 
 class StockReconciliationManager:
     def __init__(self, restricted_item_groups):
