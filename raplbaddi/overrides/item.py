@@ -4,6 +4,14 @@ from erpnext.stock.doctype.item.item import get_uom_conv_factor
 def validate(doc, method):
     validate_uom_conversion_factor(doc)
     validate_cbm(doc)
+    do_not_allow_negative_stock(doc, method)
+
+def do_not_allow_negative_stock(doc, method):
+    groups = ["Cooler", "DLP-Price List"]
+    if not doc.is_stock_item  or doc.item_group not in groups or not doc.allow_negative_stock:
+        return
+    else:
+        frappe.throw("Negative stock is not allowed for stock items in Item Group " + ", ".join([doc.item_group]))
 
 def validate_cbm(doc):
     if doc.cbm_height and doc.cbm_width and doc.cbm_length:
