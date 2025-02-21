@@ -7,6 +7,8 @@ def validate(doc, method):
     do_not_allow_negative_stock(doc, method)
 
 def do_not_allow_negative_stock(doc, method):
+    if frappe.session.user in ["Administrator", ]:
+        return
     groups = ["Cooler", "DLP-Price List"]
     if not doc.is_stock_item  or doc.item_group not in groups or not doc.allow_negative_stock:
         return
