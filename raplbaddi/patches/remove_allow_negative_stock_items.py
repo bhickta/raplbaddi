@@ -6,6 +6,6 @@ def execute():
 def remove_allow_negative_stock_items():
     query = f"""
         UPDATE `tabItem`
-        SET allow_negative_stock = 0 
+        SET allow_negative_stock = 1 
     """
     frappe.db.sql(query)

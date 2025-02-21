@@ -101,6 +101,7 @@ doctype_js = {
 
 override_doctype_class = {
 	"Purchase Receipt": "raplbaddi.overrides.purchase_receipt.PurchaseReceipt",
+	"Stock Reconciliation": "raplbaddi.overrides.stock_reconciliation.StockReconciliation",
 	# "Purchase Order": "raplbaddi.overrides.purchase_order.PurchaseOrder",
 }
 

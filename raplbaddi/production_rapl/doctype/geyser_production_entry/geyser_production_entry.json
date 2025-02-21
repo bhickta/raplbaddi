@@ -88,13 +88,15 @@
   {
    "fieldname": "stock_entry",
    "fieldtype": "Data",
-   "label": "Stock Entry"
+   "label": "Stock Entry",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-19 22:57:22.028175",
+ "modified": "2025-02-20 21:38:40.021653",
  "modified_by": "Administrator",
  "module": "Production Rapl",
  "name": "Geyser Production Entry",

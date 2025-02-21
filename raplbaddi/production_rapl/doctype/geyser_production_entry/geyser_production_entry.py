@@ -45,6 +45,6 @@ class GeyserProductionEntry(Document):
             i = frappe._dict({})
             i.item_code = item.item
             i.qty = item.qty
-            i.t_warehouse = item.brand + " - RAPL"
+            i.t_warehouse = item.brand + " - RAPL" if i.item_group not in ["Cooler", "DLP-Price List"] else "FG - RAPL"
             items.append(i)
         self.stock_entry = _make_manufacturing_stock_entry(items=items)
