@@ -90,7 +90,7 @@ def get_data(filters):
         dsr.name, dsr.date, dse.type, {get_amount(filters)} as amount, dsr.amount_for_travel, dsr.payment_audited, dsr.start_reading, dsr.end_reading, dsr.km_travelled
     FROM
         `tabDaily Sales Report By Admin` as dsr
-        JOIN
+        LEFT JOIN
         `tabDaily Sales Expenses By Admin` as dse ON dse.parent = dsr.name
     WHERE
         {get_conditions(filters)} and dsr.docstatus = 1
