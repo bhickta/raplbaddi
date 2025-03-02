@@ -123,13 +123,14 @@ class AttendanceSalaryBundle(Document):
 
     def adjust_sunday_hours(self, item, duration, shift_duration):
         if item.day == "Sunday":
+            sunday_equivallance = 8
             original_duration = duration
-            if duration >= shift_duration:
+            if sunday_equivallance <= duration <= shift_duration:
                 duration = shift_duration
-            elif duration >= shift_duration / 2:
+            elif sunday_equivallance / 2 <= duration <= shift_duration / 2:
                 duration = shift_duration / 2
             if original_duration != duration:
-                return duration, f"Adjusted Sunday hours: {original_duration:.2f} → {duration:.2f}\n"
+                return duration, f"Adjusted Sunday hours: {original_duration:.2f} → {duration:.2f}; Salary: "
         return duration, ""
 
     def add_holidays_item_not_present(self):
