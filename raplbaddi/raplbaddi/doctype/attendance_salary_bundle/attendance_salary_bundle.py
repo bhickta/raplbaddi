@@ -101,7 +101,7 @@ class AttendanceSalaryBundle(Document):
             item.salary = 0
             item.calculation = ""
 
-            duration, sunday_adjustment = self.adjust_sunday_hours(item, duration)
+            duration, sunday_adjustment = self.adjust_sunday_hours(item, duration, shift_duration)
 
             if item.is_holiday:
                 if item.attendance == "Present":
@@ -121,13 +121,13 @@ class AttendanceSalaryBundle(Document):
                 item.calculation = f"{sunday_adjustment}{item.hourly_rate:.2f} * {duration:.2f} = {item.salary:.2f}"
 
 
-    def adjust_sunday_hours(self, item, duration):
+    def adjust_sunday_hours(self, item, duration, shift_duration):
         if item.day == "Sunday":
             original_duration = duration
-            if duration >= 8:
-                duration = 10
-            elif duration >= 4:
-                duration = 5
+            if duration >= shift_duration:
+                duration = shift_duration
+            elif duration >= shift_duration / 2:
+                duration = shift_duration / 2
             if original_duration != duration:
                 return duration, f"Adjusted Sunday hours: {original_duration:.2f} → {duration:.2f}\n"
         return duration, ""
