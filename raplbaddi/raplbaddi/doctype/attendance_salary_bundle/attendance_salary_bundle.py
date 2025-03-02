@@ -99,7 +99,9 @@ class AttendanceSalaryBundle(Document):
             shift_duration = hr(item.shift_duration)
             duration = hr(item.duration)
             item.salary = 0
-            item.calculation = ""  # Initialize calculation field
+            item.calculation = ""
+
+            duration, sunday_adjustment = self.adjust_sunday_hours(item, duration)
 
             if item.is_holiday:
                 if item.attendance == "Present":
@@ -107,15 +109,28 @@ class AttendanceSalaryBundle(Document):
                     extra_hours = item.hourly_rate * abs(shift_duration - duration)
                     item.salary = overtime + extra_hours
                     item.calculation = (
+                        f"{sunday_adjustment}"
                         f"2 * {item.hourly_rate:.2f} * min({duration:.2f}, {shift_duration:.2f}) "
                         f"+ {item.hourly_rate:.2f} * abs({shift_duration:.2f} - {duration:.2f}) = {item.salary:.2f}"
                     )
                 elif item.attendance == "Absent":
                     item.salary = shift_duration * item.hourly_rate
-                    item.calculation = f"{shift_duration:.2f} * {item.hourly_rate:.2f} = {item.salary:.2f}"
+                    item.calculation = f"{sunday_adjustment}{shift_duration:.2f} * {item.hourly_rate:.2f} = {item.salary:.2f}"
             else:
                 item.salary = item.hourly_rate * duration
-                item.calculation = f"{item.hourly_rate:.2f} * {duration:.2f} = {item.salary:.2f}"
+                item.calculation = f"{sunday_adjustment}{item.hourly_rate:.2f} * {duration:.2f} = {item.salary:.2f}"
+
+
+    def adjust_sunday_hours(self, item, duration):
+        if item.day == "Sunday":
+            original_duration = duration
+            if duration >= 8:
+                duration = 10
+            elif duration >= 4:
+                duration = 5
+            if original_duration != duration:
+                return duration, f"Adjusted Sunday hours: {original_duration:.2f} → {duration:.2f}\n"
+        return duration, ""
 
     def add_holidays_item_not_present(self):
         missing_dates = self._get_missing_dates()
