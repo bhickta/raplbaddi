@@ -44,7 +44,7 @@ def create_reverse_entry_for_internal_customers(doc):
     )
     customer_group = frappe.get_cached_value("Customer", doc.customer, "customer_group")
     raplbaddi_settings = frappe.get_cached_doc("Raplbaddi Settings", "Raplbaddi Settings")
-    sc_group = raplbaddi_settings.service_centre_group
+    sc_group = raplbaddi_settings.service_centre_customer_group
 
     all_items_group = False
     if raplbaddi_settings.is_internal_receipt_for_service_centre_on_dn and customer_group in [sc_group,]:
