@@ -21,7 +21,7 @@ class DaysDeadline(ServiceCentreReport):
 				tabIssueRapl
 			WHERE 
 				DATEDIFF(CURDATE(),custom_creation_date) >3 AND service_delivered = "No"
-				and i.docstatus != 2
+				and docstatus != 2
 			ORDER BY
 				custom_creation_date
 
