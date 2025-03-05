@@ -31,7 +31,7 @@ class CustomerFeedbackReport(ServiceCentreReport):
             WHERE
                 ir.service_delivered = 'Yes'
                 AND ir.customer_confirmation IN ('Not Taken', 'Negative')
-                AND ir.status != 'Cancelled'
+                and i.docstatus != 2
             GROUP BY
                 ir.name, ir.customer_name, ir.customer_confirmation, ir.service_delivered, ir.remarks
             ORDER BY 

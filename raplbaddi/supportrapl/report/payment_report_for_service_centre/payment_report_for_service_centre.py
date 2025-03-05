@@ -53,6 +53,7 @@ class ServiceCentrePaymentReport(ServiceCentreReport):
                 i.service_centre = j.service_centre_name
             WHERE 
                 i.service_centre NOT IN %(excluded_service_centres)s
+                and i.docstatus = 1
         """
        
         return query

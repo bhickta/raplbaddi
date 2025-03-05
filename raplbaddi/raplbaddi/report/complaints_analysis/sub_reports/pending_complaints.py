@@ -29,6 +29,7 @@ class PendingComplaintReport(ServiceCentreReport):
                 `tabContact Phone` AS j ON j.parent = i.name
             where 
                 i.service_delivered = 'No' and i.status = 'Open'
+                and i.docstatus != 2
         """
 
         params = {}
