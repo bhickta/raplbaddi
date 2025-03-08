@@ -104,6 +104,8 @@ class StockReconciliationManager:
                 amended_doc.submit()
             except FileNotFoundError as e:
                 amended_doc.submit()
+            except erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.EmptyStockReconciliationItemsError as e:
+                print(e)
         return amended_doc
 
     def set_service_centre_details(self, filters=None):
