@@ -162,4 +162,3 @@ class StockReconciliationManager:
     
 def execute():
     StockReconciliationManager.execute("stock_reconcilliation_sc.csv")
-    frappe.db.commit()
