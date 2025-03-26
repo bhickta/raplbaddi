@@ -18,3 +18,4 @@ execute:from raplbaddi.patches.raplbaddi_data import execute; execute() #1
 execute:from raplbaddi.patches.remove_allow_negative_stock_items import execute; execute() #2
 execute:from raplbaddi.patches.reconcile_stock_cooler import execute; execute() #2
 execute:from raplbaddi.patches.sc_stock_recon import execute; execute() #2
+execute:from raplbaddi.patches.merge_accounts import execute; execute() #1
