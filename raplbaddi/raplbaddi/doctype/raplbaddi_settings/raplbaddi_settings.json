@@ -13,7 +13,16 @@
   "service_centre_customer_group",
   "is_internal_receipt_for_service_centre_on_dn",
   "column_break_iteq",
-  "service_centre_supplier_group"
+  "service_centre_supplier_group",
+  "triggers_tab",
+  "purchase_section",
+  "is_create_purchase_invoice_via_purchase_receipt",
+  "column_break_hgoi",
+  "is_submit_purchase_invoice",
+  "selling_section",
+  "is_create_sales_invoice_via_delivery_note",
+  "column_break_fjkp",
+  "is_submit_sales_invoice"
  ],
  "fields": [
   {
@@ -62,12 +71,59 @@
    "fieldtype": "Link",
    "label": "Service Centre Supplier Group",
    "options": "Supplier Group"
+  },
+  {
+   "fieldname": "triggers_tab",
+   "fieldtype": "Tab Break",
+   "label": "Triggers"
+  },
+  {
+   "fieldname": "purchase_section",
+   "fieldtype": "Section Break",
+   "label": "Purchase"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_create_purchase_invoice_via_purchase_receipt",
+   "fieldtype": "Check",
+   "label": "Is Create Purchase Invoice Via Purchase Receipt"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_submit_purchase_invoice",
+   "fieldtype": "Check",
+   "label": "Is Submit Purchase Invoice"
+  },
+  {
+   "fieldname": "selling_section",
+   "fieldtype": "Section Break",
+   "label": "Selling"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_create_sales_invoice_via_delivery_note",
+   "fieldtype": "Check",
+   "label": "Is Create Sales Invoice Via Delivery Note"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_submit_sales_invoice",
+   "fieldtype": "Check",
+   "label": "Is Submit Sales Invoice"
+  },
+  {
+   "fieldname": "column_break_hgoi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_fjkp",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-02-17 18:47:26.269977",
+ "modified": "2025-03-27 08:23:51.670869",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Raplbaddi Settings",

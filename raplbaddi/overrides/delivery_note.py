@@ -32,6 +32,7 @@ def validate_naming_series(doc):
 
 def on_submit(doc, method):
     create_reverse_entry_for_internal_customers(doc)
+    create_sales_invoice(doc, method)
 
 
 def on_update_after_submit(doc, method):
@@ -108,3 +109,37 @@ def calculate_freight_amount(doc):
     doc.amount = 0
     for item in doc.freight:
         doc.amount += item.amount
+
+class InvoiceAutomation:
+    def __init__(self, doc, mode="submit"):
+        self.doc = doc
+        self.mode = mode
+
+    def process(self):
+        if self.doc.doctype == "Delivery Note" and self.doc.docstatus == 1:
+            self.create_invoice("Sales Invoice", "customer")
+        elif self.doc.doctype == "Purchase Receipt" and self.doc.docstatus == 1:
+            self.create_invoice("Purchase Invoice", "supplier")
+
+    def create_invoice(self, invoice_type, party_field):
+        inv = frappe.new_doc(invoice_type)
+        self.shift_details(self.doc, inv)
+        inv.set(party_field, self.doc.get(party_field))
+        inv.save()
+        if self.mode == "submit":
+            inv.submit()
+
+    def shift_details(self, source, target):
+        for df in source.meta.fields:
+            if df.fieldname not in ("name", "docstatus", "creation", "modified", "owner", "status", "title", "amended_from", "naming_series"):
+                if df.fieldtype not in ("Table", "Attach"):
+                    target.set(df.fieldname, source.get(df.fieldname))
+        for child in source.get("items") or []:
+            target.append("items", child.as_dict())
+
+def create_sales_invoice(doc, method):
+    raplbaddi_settings = frappe.get_cached_doc("Raplbaddi Settings", "Raplbaddi Settings")
+    if not raplbaddi_settings.is_create_sales_invoice_via_delivery_note:
+        return
+    submit = "submit" if raplbaddi_settings.is_submit_sales_invoice else None
+    InvoiceAutomation(doc, mode=submit).process()

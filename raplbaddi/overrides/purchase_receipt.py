@@ -23,6 +23,9 @@ from frappe.utils.dateutils import get_datetime
 def validate(doc, method):
     posting_datetime_same_as_creation(doc)
 
+def on_submit(doc, method):
+    create_purchase_invoice(doc, method)
+
 def posting_datetime_same_as_creation(doc):
     return
     creation_date = get_datetime(doc.creation)
@@ -63,3 +66,11 @@ class PurchaseReceipt(PurchaseReceipt):
                 fields=", ".join(each[0] for each in missing), doctype=self.doctype, name=self.name
             )
         )
+
+from .delivery_note import InvoiceAutomation
+def create_purchase_invoice(doc, method):
+    raplbaddi_settings = frappe.get_cached_doc("Raplbaddi Settings", "Raplbaddi Settings")
+    if not raplbaddi_settings.is_create_purchase_invoice_via_purchase_receipt:
+        return
+    submit = "submit" if raplbaddi_settings.is_submit_purchase_invoice else None
+    InvoiceAutomation(doc, mode=submit).process()

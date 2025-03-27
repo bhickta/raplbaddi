@@ -16,7 +16,11 @@ class RaplbaddiSettings(Document):
 		from raplbaddi.raplbaddi.doctype.holiday_sandwich.holiday_sandwich import HolidaySandwich
 
 		holiday_sandwich: DF.Table[HolidaySandwich]
+		is_create_purchase_invoice_via_purchase_receipt: DF.Check
+		is_create_sales_invoice_via_delivery_note: DF.Check
 		is_internal_receipt_for_service_centre_on_dn: DF.Check
+		is_submit_purchase_invoice: DF.Check
+		is_submit_sales_invoice: DF.Check
 		service_centre_customer_group: DF.Link | None
 		service_centre_supplier_group: DF.Link | None
 	# end: auto-generated types
