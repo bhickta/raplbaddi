@@ -158,6 +158,73 @@ custom_fields = {
             "insert_after": "supplier_name",
             "fieldtype": "Small Text",
         },
+        {
+            "is_system_generated": 1,
+            "label": "Internal Receipt",
+            "fieldname": "internal_receipt",
+            "insert_after": "is_return",
+            "fieldtype": "Link",
+            "options": "Stock Entry",
+            "is_hidden": 1,
+            "read_only": 1,
+            "no_copy": 1,
+            "reqd": 0,
+            "allow_on_submit": 1,
+        },
+        {
+            "is_system_generated": 1,
+            "label": "Driver Number",
+            "fieldname": "driver_number",
+            "insert_after": "lr_date",
+            "fieldtype": "Data",
+            "reqd": 1,
+            "allow_on_submit": 0,
+        },
+        {
+            "is_system_generated": 1,
+            "label": "Bilty/LR No,",
+            "fieldname": "bilty_no",
+            "insert_after": "driver_number",
+            "fieldtype": "Data",
+            "reqd": 1,
+            "allow_on_submit": 0,
+        },
+        {
+            "is_system_generated": 1,
+            "label": "Freight Status",
+            "fieldname": "freight_status",
+            "insert_after": "amount",
+            "fieldtype": "Select",
+            "default": "Already Paid by us",
+            "options": "Already Paid by us\nPlease pay to Driver",
+            "reqd": 1,
+            "allow_on_submit": 0,
+        },
+        {
+            "label": "Freight",
+            "fieldname": "freight",
+            "insert_after": "gst_vehicle_type",
+            "fieldtype": "Table",
+            "options": "Freight Table",
+            "reqd": 1,
+            "allow_on_submit": 1,
+        },
+        {
+            "label": "Amount",
+            "fieldname": "amount",
+            "insert_after": "vehicle_no",
+            "fieldtype": "Float",
+            "default": "0",
+            "reqd": 1,
+            "allow_on_submit": 1,
+        },
+        {
+            "label": "Vehicle No",
+            "fieldname": "custom_vehicle_no",
+            "insert_after": "gst_transporter_id",
+            "fieldtype": "Link",
+            "options": "Supplier",
+        }
     ],
     "Supplier Group": [
         {
@@ -175,3 +242,18 @@ custom_fields = {
 
 def execute():
     create_custom_fields(custom_fields)
+
+property_setters = [
+    {
+        "doctype": "Property Setter",
+        "name": "Purchase Receipt-vehicle_no-hidden",
+        "is_system_generated": 1,
+        "doctype_or_field": "DocField",
+        "module": "Raplbaddi",
+        "doc_type": "Purchase Receipt",
+        "field_name": "vehicle_no",
+        "property": "hidden",
+        "property_type": "Int",
+        "value": "1",
+    },
+]

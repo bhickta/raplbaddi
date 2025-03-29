@@ -1,10 +1,11 @@
 import frappe
 from ..sales import property_setters as selling_property_setters
 from ..hrms import get_property_setters as hrms_property_setters
+from ..buying import property_setters as buying_property_setters
 
 property_setters = []
 
-for ps in [selling_property_setters, hrms_property_setters()]:
+for ps in [selling_property_setters, hrms_property_setters(), buying_property_setters]:
     property_setters.extend(ps)
 
 def execute():

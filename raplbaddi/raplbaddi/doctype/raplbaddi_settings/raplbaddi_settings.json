@@ -22,7 +22,9 @@
   "selling_section",
   "is_create_sales_invoice_via_delivery_note",
   "column_break_fjkp",
-  "is_submit_sales_invoice"
+  "is_submit_sales_invoice",
+  "buying_tab",
+  "selling_tab"
  ],
  "fields": [
   {
@@ -118,12 +120,22 @@
   {
    "fieldname": "column_break_fjkp",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "buying_tab",
+   "fieldtype": "Tab Break",
+   "label": "Buying"
+  },
+  {
+   "fieldname": "selling_tab",
+   "fieldtype": "Tab Break",
+   "label": "Selling"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-03-27 08:23:51.670869",
+ "modified": "2025-03-28 08:13:21.808436",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Raplbaddi Settings",
