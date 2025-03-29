@@ -117,6 +117,14 @@ custom_fields = {
             "reqd": 1,
             "allow_on_submit": 1,
         },
+        {
+            "label": "Vehicle No",
+            "fieldname": "custom_vehicle_no",
+            "insert_after": "gst_transporter_id",
+            "fieldtype": "Link",
+            "options": "Supplier",
+            "reqd": 1,
+        }
     ],
     "Customer Group": [
         {
@@ -197,3 +205,22 @@ property_setters = [
         "doctype": "Property Setter",
     },
 ]
+
+fields_to_hide = ["vehicle_no", "driver_name", "driver"]
+
+hidden_properties = [
+    {
+        "doctype": "Property Setter",
+        "name": f"Purchase Receipt-{field}-hidden",
+        "is_system_generated": 1,
+        "doctype_or_field": "DocField",
+        "module": "Raplbaddi",
+        "doc_type": "Purchase Receipt",
+        "field_name": field,
+        "property": "hidden",
+        "property_type": "Int",
+        "value": "1",
+    }
+    for field in fields_to_hide
+]
+property_setters += hidden_properties

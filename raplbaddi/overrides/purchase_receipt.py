@@ -1,4 +1,5 @@
-from .delivery_note import set_naming_series
+from .delivery_note import set_naming_series, calculate_freight_amount
+from raplbaddi.utils.accounts import create_journal_entry
 
 def before_insert(doc, method):
     set_naming_series(doc)
@@ -22,9 +23,20 @@ from frappe.utils.dateutils import get_datetime
 
 def validate(doc, method):
     posting_datetime_same_as_creation(doc)
+    calculate_freight_amount(doc)
 
 def on_submit(doc, method):
     create_purchase_invoice(doc, method)
+    raplbaddi_settings = frappe.get_cached_doc("Raplbaddi Settings", "Raplbaddi Settings")
+    if raplbaddi_settings.is_create_journal_entry_for_transportation:
+        create_journal_entry(
+            source_doc=doc,
+            acc1="Inward Freight Expense - RAPL",
+            acc2="Creditors - RAPL",
+            party_type="Supplier", party=doc.custom_vehicle_no, 
+            acc1_amount=doc.amount, acc2_amount=doc.amount,
+            submit=True,
+        )
 
 def posting_datetime_same_as_creation(doc):
     return

@@ -39,6 +39,8 @@ class SupplierNaming:
         return supplier_group.abbreviation
 
     def get_name(self):
+        if self.doc.supplier_group == "Vehicle":
+            return self.doc.supplier_name
         if self.party_code:
             return self.party_code
         abbreviation = self.get_supplier_group_abb()

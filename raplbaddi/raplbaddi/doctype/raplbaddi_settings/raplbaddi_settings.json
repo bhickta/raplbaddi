@@ -24,7 +24,9 @@
   "column_break_fjkp",
   "is_submit_sales_invoice",
   "buying_tab",
-  "selling_tab"
+  "selling_tab",
+  "accounting_tab",
+  "is_create_journal_entry_for_transportation"
  ],
  "fields": [
   {
@@ -130,12 +132,23 @@
    "fieldname": "selling_tab",
    "fieldtype": "Tab Break",
    "label": "Selling"
+  },
+  {
+   "fieldname": "accounting_tab",
+   "fieldtype": "Tab Break",
+   "label": "Accounting"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_create_journal_entry_for_transportation",
+   "fieldtype": "Check",
+   "label": "Create JE on DN and PR"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-03-28 08:13:21.808436",
+ "modified": "2025-03-29 09:05:26.138208",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Raplbaddi Settings",
