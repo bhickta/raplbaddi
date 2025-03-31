@@ -5,6 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe import _
 from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
+from datetime import timedelta
 
 
 class AttendanceRapl(Document):
@@ -96,7 +97,7 @@ class AttendanceRapl(Document):
 			if item.duration and item.duration < 0:
 				frappe.throw(_("Duration of {0} must be greater than or equal to 0").format(item.name))
 			item.duration = time_diff_in_seconds(item.check_out, item.check_in)
-			self.remove_lunch_time(item, "13:30:00")
+			self.remove_lunch_time(item, str(timedelta(hours=13, minutes=30, seconds=0)))
 			if item.attendance == "Absent":
 				item.duration = 0
 				item.check_in = item.check_out = "06:00:00"
