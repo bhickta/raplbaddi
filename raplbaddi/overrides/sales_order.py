@@ -9,8 +9,10 @@ def validate_mandatory_fields(doc):
         return
     mandatory_fields = ["taxes_and_charges"]
     for field in mandatory_fields:
+        field_meta = frappe.get_meta(doc.doctype).get_field(field)
+        label = field_meta.label if field_meta else field
         if not doc.get(field):
-            frappe.throw(f"{field} is mandatory")
+            frappe.throw(f"{label} is mandatory")
 
 def validate_bill_to_ship_to(doc):
     bill_to_ship_to = doc.is_bill_to_ship_to
