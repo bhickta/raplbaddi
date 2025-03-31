@@ -32,21 +32,21 @@ def validate_naming_series(doc):
 from raplbaddi.utils.accounts import create_journal_entry
 def on_submit(doc, method):
     create_reverse_entry_for_internal_customers(doc)
-    create_sales_invoice(doc, method)
-    raplbaddi_settings = frappe.get_cached_doc("Raplbaddi Settings", "Raplbaddi Settings")
-    if raplbaddi_settings.is_create_journal_entry_for_transportation:
-        create_journal_entry(
-            source_doc=doc,
-            acc1="Outward Freight Expense - RAPL",
-            acc2="Creditors - RAPL",
-            party_type="Supplier", party=doc.custom_vehicle_no, 
-            acc1_amount=doc.amount, acc2_amount=doc.amount,
-            submit=True,
-        )
-
 
 def on_update_after_submit(doc, method):
     calculate_freight_amount(doc)
+    if doc.workflow_state == "Audited":
+        create_sales_invoice(doc, method)
+        raplbaddi_settings = frappe.get_cached_doc("Raplbaddi Settings", "Raplbaddi Settings")
+        if raplbaddi_settings.is_create_journal_entry_for_transportation:
+            create_journal_entry(
+                source_doc=doc,
+                acc1="Outward Freight Expense - RAPL",
+                acc2="Creditors - RAPL",
+                party_type="Supplier", party=doc.custom_vehicle_no, 
+                acc1_amount=doc.amount, acc2_amount=doc.amount,
+                submit=True,
+            )
 
 
 def create_reverse_entry_for_internal_customers(doc):

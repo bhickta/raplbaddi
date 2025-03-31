@@ -173,6 +173,9 @@ doc_events = {
         "on_submit": [
             "raplbaddi.overrides.purchase_receipt.on_submit",
         ],
+        "on_update_after_submit": [
+            "raplbaddi.overrides.purchase_receipt.on_update_after_submit",
+        ],
     },
     "Employee": {
         "autoname": [

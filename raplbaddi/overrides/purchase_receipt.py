@@ -26,17 +26,21 @@ def validate(doc, method):
     calculate_freight_amount(doc)
 
 def on_submit(doc, method):
-    create_purchase_invoice(doc, method)
-    raplbaddi_settings = frappe.get_cached_doc("Raplbaddi Settings", "Raplbaddi Settings")
-    if raplbaddi_settings.is_create_journal_entry_for_transportation:
-        create_journal_entry(
-            source_doc=doc,
-            acc1="Inward Freight Expense - RAPL",
-            acc2="Creditors - RAPL",
-            party_type="Supplier", party=doc.custom_vehicle_no, 
-            acc1_amount=doc.amount, acc2_amount=doc.amount,
-            submit=True,
-        )
+    pass
+
+def on_update_after_submit(doc, method):
+    if doc.workflow_state == "Audited":
+        create_purchase_invoice(doc, method)
+        raplbaddi_settings = frappe.get_cached_doc("Raplbaddi Settings", "Raplbaddi Settings")
+        if raplbaddi_settings.is_create_journal_entry_for_transportation:
+            create_journal_entry(
+                source_doc=doc,
+                acc1="Inward Freight Expense - RAPL",
+                acc2="Creditors - RAPL",
+                party_type="Supplier", party=doc.custom_vehicle_no, 
+                acc1_amount=doc.amount, acc2_amount=doc.amount,
+                submit=True,
+            )
 
 def posting_datetime_same_as_creation(doc):
     return
