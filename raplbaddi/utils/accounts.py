@@ -22,7 +22,6 @@ def create_journal_entry(
     je.multi_currency = True
     if not cost_center:
         cost_center = source_doc.cost_center
-    print(acc1_amount, acc2_amount)
     je.set(
         "accounts",
         [
@@ -44,7 +43,7 @@ def create_journal_entry(
             },
         ],
     )
-    je.save()
+    je.save(ignore_permissions=True)
     if kwargs.get("submit"):
-        je.submit()
+        je.submit(ignore_permissions=True)
     return je

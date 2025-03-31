@@ -135,9 +135,9 @@ class InvoiceAutomation:
         inv = frappe.new_doc(invoice_type)
         self.shift_details(self.doc, inv)
         inv.set(party_field, self.doc.get(party_field))
-        inv.save()
+        inv.save(ignore_permissions=True)
         if self.mode == "submit":
-            inv.submit()
+            inv.submit(ignore_permissions=True)
 
     def shift_details(self, source, target):
         for df in source.meta.fields:
