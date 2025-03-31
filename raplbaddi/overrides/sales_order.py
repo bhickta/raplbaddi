@@ -2,6 +2,15 @@ import frappe
 
 def validate(doc, method):
     validate_bill_to_ship_to(doc)
+    validate_mandatory_fields(doc)
+    
+def validate_mandatory_fields(doc):
+    if not doc.is_new():
+        return
+    mandatory_fields = ["taxes_and_charges"]
+    for field in mandatory_fields:
+        if not doc.get(field):
+            frappe.throw(f"{field} is mandatory")
 
 def validate_bill_to_ship_to(doc):
     bill_to_ship_to = doc.is_bill_to_ship_to
