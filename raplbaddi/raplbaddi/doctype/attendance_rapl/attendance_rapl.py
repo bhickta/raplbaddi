@@ -50,6 +50,14 @@ class AttendanceRapl(Document):
 	
 	def remove_lunch_time(self, row, lunch_end):
 		checkout_time = row.check_out
+
+		if not isinstance(checkout_time, timedelta):
+			try:
+				hours, minutes, seconds = map(int, str(checkout_time).split(":"))
+				checkout_time = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+			except ValueError:
+				frappe.throw(f"Invalid checkout time format: {checkout_time}")
+
 		if checkout_time > lunch_end:
 			lunch_time_duration = 0.5 * 60 * 60
 			row.duration -= lunch_time_duration
