@@ -49,8 +49,7 @@ class AttendanceRapl(Document):
 		self.add_attendance_for_sales_based_on_dsra()
 	
 	def remove_lunch_time(self, row, lunch_end):
-		checkout_time = get_datetime(row.check_out)
-		lunch_end = get_datetime(lunch_end)
+		checkout_time = row.check_out
 		if checkout_time > lunch_end:
 			lunch_time_duration = 0.5 * 60 * 60
 			row.duration -= lunch_time_duration
