@@ -8,7 +8,7 @@ from erpnext.controllers.taxes_and_totals import (
 class calculate_taxes_and_totals(base_calculate_taxes_and_totals):
 
     def _get_tax_rate(self, tax, item_tax_map):
-        if self.doc.custom_tax_rate:
+        if self.doc.get("custom_tax_rate"):
             return self.doc.custom_tax_rate
         if tax.account_head in item_tax_map:
             return flt(
@@ -45,7 +45,6 @@ class calculate_taxes_and_totals(base_calculate_taxes_and_totals):
         tax.tax_amount_after_discount_amount = flt(
             tax.tax_amount_after_discount_amount, tax.precision("tax_amount")
         )
-        print(tax.rate, self.doc.custom_grand_total, self.doc.custom_tax_rate)
         if self.doc.get("custom_grand_total") and self.doc.get("custom_tax_rate"):
             tax.tax_amount = self.doc.custom_grand_total * tax.rate * 0.01
             tax.tax_amount_after_discount_amount = tax.tax_amount
@@ -60,7 +59,7 @@ class calculate_taxes_and_totals(base_calculate_taxes_and_totals):
             self.doc.grand_total = flt(self.doc.net_total)
 
         if self.doc.get("taxes"):
-            if self.doc.custom_grand_total:
+            if self.doc.get("custom_grand_total"):
                 self.doc.total_taxes_and_charges = flt(
                     self.doc.grand_total
                     - self.doc.custom_grand_total
