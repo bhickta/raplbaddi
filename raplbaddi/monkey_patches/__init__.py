@@ -1,0 +1,4 @@
+from raplbaddi.utils.taxes_controller import calculate_taxes_and_totals as custom_taxes_and_totals
+from erpnext.controllers import taxes_and_totals
+
+taxes_and_totals.calculate_taxes_and_totals = custom_taxes_and_totals
