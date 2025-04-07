@@ -33,7 +33,7 @@ def itemwise_order_and_shortage_data(filters):
 					short = soi['pending_qty'] - bin_val['actual_qty']
 				soi['%'] = 100 - (short / soi['pending_qty']) * 100
 				soi['actual_qty'] = bin_val['actual_qty']
-				soi['short_qty'] = short
+				soi['short_qty'] = short or 0
 				city = get_city_from_shipping(soi.get('shipping_address_name', None))
 				soi["city"] = city
     
@@ -49,10 +49,10 @@ def itemwise_order_and_shortage_data(filters):
 
 	set_box_ordered_data(data)
 	for d in data:
-		d['box_short_qty'] = d['short_qty'] - d.get('box_order', 0) - d.get('box_stock_qty', 0)
+		d['box_short_qty'] = d.get('short_qty', 0) - d.get('box_order', 0) - d.get('box_stock_qty', 0)
 
 	append_city_count(data)
-	data.sort(reverse=True, key= lambda entry: entry['%'])
+	data.sort(reverse=True, key= lambda entry: entry.get('%', 0))
 	return data
 
 def set_box_ordered_data(data):
@@ -66,9 +66,9 @@ def set_box_ordered_data(data):
 		d['supplier'] = box_detail.get("supplier", None)
 
 def append_city_count(data):
-	city_counts = Counter(d['city'] for d in data)
+	city_counts = Counter(d.get('city', None) for d in data)
 	for d in data:
-		d['city_count'] = city_counts[d['city']]
+		d['city_count'] = city_counts[d.get('city', None)]
 
 def get_ordered_qty():
     query = f"""
@@ -128,7 +128,7 @@ def order_and_shortage_data(filters):
 		entry["color"] = soi["color"]
 		data.append(entry)
 	append_city_count(data)
-	data.sort(reverse=True, key= lambda entry: entry['%'])
+	data.sort(reverse=True, key= lambda entry: entry.get('%', 0))
 	return data
 
 def get_columns(filters=None):

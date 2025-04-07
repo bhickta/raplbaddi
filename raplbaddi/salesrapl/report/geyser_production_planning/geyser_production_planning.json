@@ -6,10 +6,10 @@
  "docstatus": 0,
  "doctype": "Report",
  "filters": [],
- "idx": 1,
+ "idx": 13,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2023-11-03 12:28:24.751930",
+ "modified": "2025-04-07 08:52:05.523576",
  "modified_by": "Administrator",
  "module": "SalesRapl",
  "name": "Geyser Production Planning",
@@ -19,9 +19,6 @@
  "report_name": "Geyser Production Planning",
  "report_type": "Script Report",
  "roles": [
-  {
-   "role": "Sales User"
-  },
   {
    "role": "Stock User"
   },
@@ -41,13 +38,11 @@
    "role": "Sales Order Approver"
   },
   {
-   "role": "Sales Rapl"
-  },
-  {
    "role": "Dispatch Bill"
   },
   {
    "role": "AM Rapl"
   }
- ]
+ ],
+ "timeout": 0
 }
