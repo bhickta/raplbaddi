@@ -51,7 +51,7 @@ class OrderAndShortageReport(BaseReport):
 
         entry["items"] = ', '.join(entry["items"])
         entry["brands"] = ', '.join(entry["brands"])
-        entry["%"] = 100 - (entry["so_shortage"] / entry["pending_qty"]) * 100
+        entry["%"] = 100 - (entry["so_shortage"] / entry["pending_qty"]) * 100 if entry["pending_qty"] else 0
         return entry
 
     def _build_columns(self):
