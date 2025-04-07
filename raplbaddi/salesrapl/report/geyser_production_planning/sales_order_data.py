@@ -11,7 +11,6 @@ def get_so_items(filters=None):
 		.left_join(soi).on(so.name == soi.parent)
 		.where(so.status.notin(['Stopped', 'Closed']) & so.docstatus == 1)
 		.where(so.delivery_status.isin(['Partly Delivered', 'Not Delivered']))
-		.where((soi.qty - soi.delivered_qty) > 0)
 		.select(
 			Case().when(so.submission_date, so.submission_date).else_(so.transaction_date).as_('date'),
 			soi.item_code.as_('item_code'),
@@ -25,6 +24,8 @@ def get_so_items(filters=None):
 			so.shipping_address_name.as_('shipping_address_name'),
 			so.name.as_('sales_order'),
 			soi.item_code.as_('item_code'),
+			soi.qty.as_('qty').as_('ordered_qty'),
+			soi.delivered_qty.as_('delivered_qty'),
 			report_utils.Greatest(0, soi.qty - soi.delivered_qty).as_('pending_qty'),
 			(soi.stock_reserved_qty).as_('stock_reserved_qty'),
 			soi.warehouse.as_('brand'),

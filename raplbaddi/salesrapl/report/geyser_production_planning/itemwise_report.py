@@ -29,7 +29,7 @@ class ItemwiseOrderAndShortageReport(BaseReport):
         for b in bin_stock:
             if b["item_code"] == row["item_code"] and b["warehouse"].replace("- RAPL", "") == row["brand"]:
                 short = max(0, row["pending_qty"] - b["actual_qty"])
-                row["%"] = 100 - (short / row["pending_qty"]) * 100
+                row["%"] = 100 - (short / row["pending_qty"]) * 100 if row["pending_qty"] else 0
                 row["actual_qty"] = b["actual_qty"]
                 row["short_qty"] = short
                 break
@@ -58,7 +58,9 @@ class ItemwiseOrderAndShortageReport(BaseReport):
             .add_column("Item", "Data", 100, "item_code") \
             .add_column("Brand", "Data", 100, "brand") \
             .add_column("Color", "Data", 100, "color") \
-            .add_column("Order Qty", "Int", 120, "pending_qty") \
+            .add_column("Order Qty", "Int", 120, "ordered_qty") \
+            .add_column("Pending Qty", "Int", 120, "pending_qty") \
+            .add_column("Delivered Qty", "Int", 120, "delivered_qty") \
             .add_column("Actual Qty", "Int", 120, "actual_qty") \
             .add_column("Short Qty", "Int", 120, "short_qty") \
             .add_column("Item Name", "Data", 130, "item_name") \

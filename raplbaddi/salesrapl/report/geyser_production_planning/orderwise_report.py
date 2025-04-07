@@ -21,6 +21,7 @@ class OrderAndShortageReport(BaseReport):
         entry = {
             "sales_order": so,
             "pending_qty": 0,
+            "ordered_qty": 0,
             "so_shortage": 0,
             "items": set(),
             "brands": set(),
@@ -39,6 +40,7 @@ class OrderAndShortageReport(BaseReport):
                 "color": item["color"]
             })
             entry["pending_qty"] += item["pending_qty"]
+            entry["ordered_qty"] += item["ordered_qty"]
             entry["items"].add(item["item_code"])
             entry["brands"].add(item["brand"].replace(" - RAPL", ""))
 
@@ -64,7 +66,8 @@ class OrderAndShortageReport(BaseReport):
             .add_column("City", "Data", 100, "city") \
             .add_column("City Count", "Int", 100, "city_count") \
             .add_column("Customer", "Link", 300, "customer", options="Customer") \
-            .add_column("Order Qty", "Int", 120, "pending_qty") \
+            .add_column("Ordered Qty", "Int", 120, "pending_qty") \
+            .add_column("Pending Qty", "Int", 120, "pending_qty") \
             .add_column("Shortage Qty", "Int", 100, "so_shortage") \
             .add_column("% Available", "Int", 100, "%", disable_total=True) \
             .add_column("Brand", "Data", 100, "brands") \
