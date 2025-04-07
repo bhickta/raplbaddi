@@ -19,7 +19,7 @@ custom_taxes_fields = [
         "insert_after": "custom_tax_rate",
     },
     {
-        "label": "Invoice Amount",
+        "label": "Taxable Amount In Invoice",
         "fieldname": "custom_grand_total",
         "insert_after": "custom_tax_column_break_1",
         "fieldtype": "Currency",
