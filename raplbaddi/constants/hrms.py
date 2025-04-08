@@ -5,9 +5,9 @@ custom_fields = {
         {
             "is_system_generated": 1,
             "label": "IDX",
-            "fieldname": "index",
+            "fieldname": "serial_number",
             "insert_after": "basic_details_tab",
-            "fieldtype": "Int",
+            "fieldtype": "Data",
             "reqd": 1,
         },
         {

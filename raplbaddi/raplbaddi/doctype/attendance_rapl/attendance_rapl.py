@@ -145,7 +145,8 @@ def get_employee_shift_info(doc):
 			'name': doc.get('employee')
 		})
  
-	employees = frappe.get_all('Employee', fields=['name', 'employee_name', 'default_shift'], filters=filters, order_by="idx")
+	employees = frappe.get_all('Employee', fields=['name', 'employee_name', 'default_shift'], filters=filters, order_by="serial_number asc")
+	print(f"Employees: {employees}")
 	shift_info = []
 
 	for employee in employees:
