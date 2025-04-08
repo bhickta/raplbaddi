@@ -125,6 +125,14 @@ class AttendanceRapl(Document):
 				if not self.get(field) == value:
 					frappe.throw(f"{field.capitalize()} must be {value}")
 
+import re
+
+def natural_sort_key(value):
+    return [
+        int(text) if text.isdigit() else text.lower()
+        for text in re.split(r'(\d+)', value or "")
+    ]
+
 @frappe.whitelist()
 def get_employee_shift_info(doc):
 	doc = frappe.parse_json(doc)
@@ -145,7 +153,8 @@ def get_employee_shift_info(doc):
 			'name': doc.get('employee')
 		})
  
-	employees = frappe.get_all('Employee', fields=['name', 'employee_name', 'default_shift'], filters=filters, order_by="serial_number asc")
+	employees = frappe.get_all('Employee', fields=['name', 'employee_name', 'default_shift', 'serial_number'], filters=filters)
+	employees.sort(key=lambda x: natural_sort_key(x['serial_number']))
 	shift_info = []
 
 	for employee in employees:
