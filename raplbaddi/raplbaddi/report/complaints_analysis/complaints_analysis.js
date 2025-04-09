@@ -22,6 +22,7 @@ frappe.query_reports["Complaints Analysis"] = {
 			"fieldtype": "Check",
 			"label": "Show Closed",
 			"default": 0,
+			"depends_on": "eval:doc.report_type == 'Customer Feedback Report'",
 		},
 	]
 };

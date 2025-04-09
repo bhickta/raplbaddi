@@ -42,7 +42,6 @@ class PendingComplaintReport(ServiceCentreReport):
             GROUP BY 
                 i.name
         """
-        print(query)
         return frappe.db.sql(query, params, as_dict=True)
 
     def fetch_columns(self):

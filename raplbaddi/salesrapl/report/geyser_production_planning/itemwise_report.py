@@ -23,7 +23,14 @@ class ItemwiseOrderAndShortageReport(BaseReport):
 
         self.count_cities(data)
         data.sort(key=lambda x: x.get("%", 0), reverse=True)
+        self.remove_delivered_items(data)
         return self._build_columns(), data
+    
+    def remove_delivered_items(self, data):
+        if self.filters.get("is_show_delivered_items"):
+            return
+        data[:] = [row for row in data if row["pending_qty"] != 0]
+
 
     def _enrich_with_stock(self, row, bin_stock):
         for b in bin_stock:

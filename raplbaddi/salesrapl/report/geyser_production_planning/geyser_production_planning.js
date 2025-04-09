@@ -23,5 +23,12 @@ frappe.query_reports["Geyser Production Planning"] = {
 			get_query: () => {
 			},
 		},
+		{
+			"fieldname": "is_show_delivered_items",
+			"label": __("Show Delivered Items"),
+			"fieldtype": "Check",
+			"default": 0,
+			"depends_on": "eval:doc.report_type == 'Itemwise Order and Shortage'",
+		},
 	]
 };
