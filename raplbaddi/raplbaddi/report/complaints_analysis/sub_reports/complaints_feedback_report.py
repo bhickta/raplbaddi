@@ -10,7 +10,15 @@ class CustomerFeedbackReport(ServiceCentreReport):
         super().__init__(filters)
 
     def fetch_data(self):
-        query = """
+        where_clause = """
+            ir.service_delivered = 'Yes'
+            AND ir.customer_confirmation IN ('Not Taken', 'Negative')
+            AND ir.docstatus != 2
+        """
+        if not self.filters.get("is_show_closed"):
+            where_clause += " AND ir.status != 'Closed'"
+
+        query = f"""
             SELECT
                 ir.name AS 'complaint_no',
                 CONCAT(
@@ -29,9 +37,7 @@ class CustomerFeedbackReport(ServiceCentreReport):
             LEFT JOIN
                 `tabContact Phone` AS cp ON ir.name = cp.parent
             WHERE
-                ir.service_delivered = 'Yes'
-                AND ir.customer_confirmation IN ('Not Taken', 'Negative')
-                and ir.docstatus != 2
+                {where_clause}
             GROUP BY
                 ir.name, ir.customer_name, ir.customer_confirmation, ir.service_delivered, ir.remarks
             ORDER BY 
@@ -39,6 +45,7 @@ class CustomerFeedbackReport(ServiceCentreReport):
         """
         raw_data = frappe.db.sql(query, as_dict=True)
         return raw_data
+
 
     def fetch_columns(self):
         return [
