@@ -23,3 +23,24 @@ frappe.ui.form.on("Purchase Order", {
     frm.toggle_display("set_posting_time", false)
   },
 });
+
+
+class rbPurchaseOrderController extends erpnext.buying.PurchaseOrderController {
+	make_purchase_receipt() {
+		frappe.model.open_mapped_doc({
+			method: "raplbaddi.overrides.purchase_order.make_purchase_receipt",
+			frm: cur_frm,
+			freeze_message: __("Creating Purchase Receipt ..."),
+		});
+	}
+
+	make_purchase_invoice() {
+		frappe.model.open_mapped_doc({
+			method: "raplbaddi.overrides.purchase_order.make_purchase_invoice",
+			frm: cur_frm,
+		});
+	}
+}
+
+
+extend_cscript(cur_frm.cscript, new rbPurchaseOrderController({ frm: cur_frm }));

@@ -45,3 +45,16 @@ frappe.ui.form.on("Purchase Receipt", {
   }
 
 });
+
+
+class rbPurchaseReceiptController extends erpnext.stock.PurchaseReceiptController {
+	make_purchase_invoice() {
+		frappe.model.open_mapped_doc({
+			method: "raplbaddi.overrides.purchase_receipt.make_purchase_invoice",
+			frm: cur_frm,
+		});
+	}
+}
+
+
+extend_cscript(cur_frm.cscript, new rbPurchaseReceiptController({ frm: cur_frm }));
