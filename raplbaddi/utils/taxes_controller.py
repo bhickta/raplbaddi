@@ -50,7 +50,23 @@ class calculate_taxes_and_totals(base_calculate_taxes_and_totals):
             tax.tax_amount_after_discount_amount = tax.tax_amount
 
 
+    def initialize_taxes_if_custom_grand_total_and_custom_tax_rate(self):
+        if self.doc.get("custom_grand_total") and self.doc.get("custom_tax_rate"):
+            tax = self.doc.append("taxes", {})
+            tax.category = "Total"
+            tax.add_deduct_tax = "Add"
+            tax.description = "Custom Tax"
+            tax.account_head = "Duties and Taxes - RAPL"
+            tax.charge_type = "On Net Total"
+            tax.rate = flt(self.doc.custom_tax_rate, tax.precision("rate"))
+            tax.tax_amount = flt(
+                self.doc.custom_grand_total * tax.rate * 0.01, tax.precision("tax_amount")
+            )
+            tax.total = tax.tax_amount + self.doc.custom_grand_total
+    
     def calculate_totals(self):
+        if not self.doc.get("taxes"):
+            self.initialize_taxes_if_custom_grand_total_and_custom_tax_rate()
         if self.doc.get("taxes"):
             self.doc.grand_total = flt(self.doc.get("taxes")[-1].total) + flt(
                 self.doc.get("grand_total_diff")
