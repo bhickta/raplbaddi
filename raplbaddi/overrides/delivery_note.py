@@ -132,12 +132,11 @@ class InvoiceAutomation:
             self.create_invoice("Purchase Invoice", "supplier")
 
     def create_invoice(self, invoice_type, party_field):
+        frappe.flags.ignore_permissions = True
         inv = frappe.new_doc(invoice_type)
         self.shift_details(self.doc, inv)
         inv.set(party_field, self.doc.get(party_field))
-        inv.save(ignore_permissions=True)
-        if self.mode == "submit":
-            inv.submit(ignore_permissions=True)
+        inv.save()
 
     def shift_details(self, source, target):
         for df in source.meta.fields:

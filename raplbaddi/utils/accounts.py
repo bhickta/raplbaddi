@@ -45,5 +45,5 @@ def create_journal_entry(
     )
     je.save(ignore_permissions=True)
     if kwargs.get("submit"):
-        je.submit(ignore_permissions=True)
+        je.submit()
     return je
