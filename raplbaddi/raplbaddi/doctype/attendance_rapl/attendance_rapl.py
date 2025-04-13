@@ -5,8 +5,9 @@ import frappe
 from frappe.model.document import Document
 from frappe import _
 from frappe.utils import time_diff_in_seconds, get_datetime, generate_hash
-from datetime import timedelta
-
+from datetime import datetime, timedelta
+import calendar
+from raplbaddi.raplbaddi.doctype.attendance_salary_bundle.attendance_salary_bundle import Holiday
 
 class AttendanceRapl(Document):
 	# begin: auto-generated types
@@ -47,6 +48,8 @@ class AttendanceRapl(Document):
 	def validate(self):
 		self.validate_employee_duration()
 		self.add_attendance_for_sales_based_on_dsra()
+		self.set_day_of_the_week()
+		self.is_holiday()
 	
 	def remove_lunch_time(self, row, lunch_end):
 		checkout_time = row.check_out
@@ -124,6 +127,16 @@ class AttendanceRapl(Document):
 			for field, value in item.items():
 				if not self.get(field) == value:
 					frappe.throw(f"{field.capitalize()} must be {value}")
+     
+	def set_day_of_the_week(self):
+		for item in self.items:
+			if isinstance(item.date, str):
+				item.date = datetime.strptime(item.date, "%Y-%m-%d").date()
+			item.day = calendar.day_name[item.date.weekday()]
+   
+	def is_holiday(self):
+		for item in self.items:
+			item.is_holiday = Holiday.is_holiday(item.employee, item.date)
 
 import re
 

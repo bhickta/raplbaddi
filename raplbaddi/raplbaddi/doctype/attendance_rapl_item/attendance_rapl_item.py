@@ -18,6 +18,7 @@ class AttendanceRaplItem(Document):
 		check_in: DF.Time
 		check_out: DF.Time
 		date: DF.Date | None
+		day: DF.Data | None
 		duration: DF.Duration | None
 		employee: DF.Link
 		employee_name: DF.Data

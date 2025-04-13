@@ -18,9 +18,11 @@
   "section_break_urya",
   "shift_type",
   "start_time",
+  "is_holiday",
   "column_break_fbsb",
   "end_time",
-  "date"
+  "date",
+  "day"
  ],
  "fields": [
   {
@@ -125,12 +127,26 @@
    "fieldtype": "Date",
    "label": "Date",
    "read_only": 1
+  },
+  {
+   "fieldname": "day",
+   "fieldtype": "Data",
+   "label": "Day",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_holiday",
+   "fieldtype": "Check",
+   "label": "Is Holiday",
+   "read_only": 1
   }
  ],
+ "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-29 20:51:37.539244",
+ "modified": "2025-04-13 22:18:01.267968",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Attendance Rapl Item",

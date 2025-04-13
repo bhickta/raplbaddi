@@ -259,9 +259,19 @@ class Holiday:
                 "attendance": "Present",
             },
         )
+        non_sunday_holiday = frappe.get_all(
+            "Attendance Rapl Item",
+            filters={
+                "employee": employee.name,
+                "docstatus": 1,
+                "date": ["between", [week_start, week_end]],
+                "day": ["!=", "Sunday"]
+                "is_holiday": 1
+            },
+        )
         if not attendance:
             return 0
-        return len(attendance)
+        return len(attendance + non_sunday_holiday)
 
     @staticmethod
     def get_list(employee) -> Dict:

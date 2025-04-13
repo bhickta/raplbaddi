@@ -20,3 +20,4 @@ execute:from raplbaddi.patches.reconcile_stock_cooler import execute; execute() 
 execute:#from raplbaddi.patches.sc_stock_recon import execute; execute() #2
 execute:#from raplbaddi.patches.merge_accounts import execute; execute() #1
 execute:from raplbaddi.patches.duplicate_index_column import execute; execute() #1
+execute:from raplbaddi.patches.set_day_of_the_week_in_attendance import execute; execute() #0.2
