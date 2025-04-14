@@ -144,7 +144,7 @@ def get_service_centre_details(filters):
     doc = frappe._dict({
         "set_warehouse": "",
         "rejected_warehouse": "",
-        "transaction_type": "",
+        "transaction_type_rapl": "",
     })
     if not filters:
         return doc
@@ -164,7 +164,7 @@ def get_service_centre_details(filters):
     if not docs:
         return doc
     doc = docs[0]
-    doc.transaction_type = "Service Centre Inward"
+    doc.transaction_type_rapl = "Service Centre Inward"
     doc.set_warehouse = doc.main_warehouse
     doc.rejected_warehouse = doc.defective_warehouse
     return docs[0]

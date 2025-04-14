@@ -76,7 +76,7 @@ custom_fields = {
         {
             "is_system_generated": 1,
             "label": "Transaction Type",
-            "fieldname": "transaction_type",
+            "fieldname": "transaction_type_rapl",
             "insert_after": "column_break1",
             "fieldtype": "Link",
             "options": "Transaction Type",
