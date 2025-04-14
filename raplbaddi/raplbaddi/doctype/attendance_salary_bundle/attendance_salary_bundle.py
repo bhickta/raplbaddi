@@ -265,7 +265,7 @@ class Holiday:
                 "employee": employee.name,
                 "docstatus": 1,
                 "date": ["between", [week_start, week_end]],
-                "day": ["!=", "Sunday"]
+                "day": ["!=", "Sunday"],
                 "is_holiday": 1
             },
         )
