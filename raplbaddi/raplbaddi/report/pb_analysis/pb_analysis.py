@@ -1,5 +1,6 @@
 import frappe
 
+
 class StockMovementReport:
     def __init__(self, filters=None):
         self.filters = filters or {}
@@ -8,13 +9,43 @@ class StockMovementReport:
 
     def get_columns(self):
         return [
-            {"label": "Item Code", "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 120},
-            {"label": "Item Name", "fieldname": "item_name", "fieldtype": "Data", "width": 150},
-            {"label": "Warehouse", "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 120},
-            {"label": "Stock Qty", "fieldname": "stock_qty", "fieldtype": "Float", "width": 100},
-            {"label": "DN Qty (Sales Range)", "fieldname": "dn_qty", "fieldtype": "Float", "width": 150},
-            {"label": "PR Qty (Purchase Range)", "fieldname": "pr_qty", "fieldtype": "Float", "width": 150},
-            {"label": "SO Qty (via DN)", "fieldname": "so_qty", "fieldtype": "Float", "width": 150},
+            {
+                "label": "Item Code",
+                "fieldname": "item_code",
+                "fieldtype": "Link",
+                "options": "Item",
+                "width": 120,
+            },
+            {
+                "label": "Item Name",
+                "fieldname": "item_name",
+                "fieldtype": "Data",
+                "width": 150,
+            },
+            {
+                "label": "Stock Qty",
+                "fieldname": "stock_qty",
+                "fieldtype": "Float",
+                "width": 100,
+            },
+            {
+                "label": "DN Qty (Sales Range)",
+                "fieldname": "dn_qty",
+                "fieldtype": "Float",
+                "width": 150,
+            },
+            {
+                "label": "PR Qty (Purchase Range)",
+                "fieldname": "pr_qty",
+                "fieldtype": "Float",
+                "width": 150,
+            },
+            {
+                "label": "SO Qty (via DN)",
+                "fieldname": "so_qty",
+                "fieldtype": "Float",
+                "width": 150,
+            },
         ]
 
     def fetch_items(self):
@@ -27,35 +58,46 @@ class StockMovementReport:
 
         where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
 
-        return frappe.db.sql(f"""
+        return frappe.db.sql(
+            f"""
             SELECT
-                i.item_code,
+                i.name AS item_code,
                 i.item_name
             FROM `tabItem` i
             {where_clause}
-        """, params, as_dict=1)
+        """,
+            params,
+            as_dict=1,
+        )
 
     def fetch_bin_data(self, item_codes):
         if not item_codes:
             return []
 
-        return frappe.db.sql("""
+        bin_data = frappe.db.sql(
+            """
             SELECT
                 bin.item_code,
-                bin.warehouse,
                 Sum(bin.actual_qty) AS actual_qty
             FROM `tabBin` bin
             WHERE bin.item_code IN %(item_codes)s
-        """, {"item_codes": item_codes}, as_dict=1)
+            GROUP BY bin.item_code
+        """,
+            {"item_codes": item_codes},
+            as_dict=1,
+        )
+        return bin_data
 
     def fetch_dn_quantities(self, item_codes):
-        if not item_codes or not (self.filters.get("sales_from_date") and self.filters.get("sales_to_date")):
+        if not item_codes or not (
+            self.filters.get("sales_from_date") and self.filters.get("sales_to_date")
+        ):
             return []
 
-        return frappe.db.sql("""
+        return frappe.db.sql(
+            """
             SELECT
                 dni.item_code as item_code,
-                dni.warehouse,
                 SUM(dni.qty) AS dn_qty
             FROM `tabDelivery Note Item` dni
             JOIN `tabDelivery Note` dn ON dn.name = dni.parent
@@ -63,18 +105,24 @@ class StockMovementReport:
                 dni.item_code IN %(item_codes)s
                 AND dn.posting_date BETWEEN %(from_date)s AND %(to_date)s
                 AND dn.docstatus = 1
-            GROUP BY dni.item_code, dni.warehouse
-        """, {
-            "item_codes": item_codes,
-            "from_date": self.filters["sales_from_date"],
-            "to_date": self.filters["sales_to_date"],
-        }, as_dict=1)
+            GROUP BY dni.item_code
+        """,
+            {
+                "item_codes": item_codes,
+                "from_date": self.filters["sales_from_date"],
+                "to_date": self.filters["sales_to_date"],
+            },
+            as_dict=1,
+        )
 
     def fetch_pr_quantities(self, item_codes):
-        if not item_codes or not (self.filters.get("pr_from_date") and self.filters.get("pr_to_date")):
+        if not item_codes or not (
+            self.filters.get("pr_from_date") and self.filters.get("pr_to_date")
+        ):
             return []
 
-        return frappe.db.sql("""
+        return frappe.db.sql(
+            """
             SELECT
                 pri.item_code,
                 SUM(pri.qty) AS pr_qty
@@ -85,34 +133,42 @@ class StockMovementReport:
                 AND pr.posting_date BETWEEN %(from_date)s AND %(to_date)s
                 AND pr.docstatus = 1
             GROUP BY pri.item_code
-        """, {
-            "item_codes": item_codes,
-            "from_date": self.filters["pr_from_date"],
-            "to_date": self.filters["pr_to_date"],
-        }, as_dict=1)
+        """,
+            {
+                "item_codes": item_codes,
+                "from_date": self.filters["pr_from_date"],
+                "to_date": self.filters["pr_to_date"],
+            },
+            as_dict=1,
+        )
 
     def fetch_so_quantities(self, item_codes):
-        if not item_codes or not (self.filters.get("sales_from_date") and self.filters.get("sales_to_date")):
+        if not item_codes or not (
+            self.filters.get("sales_from_date") and self.filters.get("sales_to_date")
+        ):
             return []
 
-        return frappe.db.sql("""
+        so_data = frappe.db.sql(
+            """
             SELECT
-                soi.custom_box as item_code,
-                dni.warehouse,
-                SUM(soi.qty) AS so_qty
-            FROM `tabDelivery Note Item` dni
-            JOIN `tabDelivery Note` dn ON dn.name = dni.parent
-            JOIN `tabSales Order Item` soi ON soi.name = dni.so_detail
+            soi.custom_box AS item_code,
+            SUM(soi.qty) AS so_qty
+            FROM `tabSales Order Item` soi
+            JOIN `tabSales Order` so ON so.name = soi.parent
             WHERE
-                soi.custom_box IN %(item_codes)s
-                AND dn.posting_date BETWEEN %(from_date)s AND %(to_date)s
-                AND dn.docstatus = 1
-            GROUP BY soi.custom_box, dni.warehouse
-        """, {
-            "item_codes": item_codes,
-            "from_date": self.filters["sales_from_date"],
-            "to_date": self.filters["sales_to_date"],
-        }, as_dict=1)
+            soi.custom_box IN %(item_codes)s
+            AND so.transaction_date BETWEEN %(from_date)s AND %(to_date)s
+            AND so.docstatus = 1
+            GROUP BY soi.custom_box
+        """,
+            {
+                "item_codes": item_codes,
+                "from_date": self.filters["sales_from_date"],
+                "to_date": self.filters["sales_to_date"],
+            },
+            as_dict=1,
+        )
+        return so_data
 
     def build_data(self):
         items = self.fetch_items()
@@ -126,36 +182,31 @@ class StockMovementReport:
         pr_data = self.fetch_pr_quantities(item_codes)
         so_data = self.fetch_so_quantities(item_codes)
 
-        # Create quick lookup dictionaries
-        bin_map = {}
-        for row in bin_data:
-            bin_map.setdefault(row.item_code, []).append({
-                "warehouse": row.warehouse,
-                "stock_qty": row.actual_qty
-            })
-
-        dn_map = {(row.item_code, row.warehouse): row.dn_qty for row in dn_data}
+        dn_map = {row.item_code: row.dn_qty for row in dn_data}
         pr_map = {row.item_code: row.pr_qty for row in pr_data}
-        so_map = {(row.item_code, row.warehouse): row.so_qty for row in so_data}
+        so_map = {row.item_code: row.so_qty for row in so_data}
 
+        bin_map = {}
+        for bin in bin_data:
+            bin_map[bin.item_code] = bin.actual_qty
+        
         # Build final rows
         for item in items:
-            bins = bin_map.get(item.item_code, [{"warehouse": "", "stock_qty": 0}])
-
-            for bin_info in bins:
-                self.data.append({
+            self.data.append(
+                {
                     "item_code": item.item_code,
                     "item_name": item.item_name,
-                    "warehouse": bin_info["warehouse"],
-                    "stock_qty": bin_info["stock_qty"],
-                    "dn_qty": dn_map.get((item.item_code, bin_info["warehouse"]), 0),
+                    "stock_qty": bin_map.get(item.item_code, 0),
+                    "dn_qty": dn_map.get(item.item_code, 0),
                     "pr_qty": pr_map.get(item.item_code, 0),
-                    "so_qty": so_map.get((item.item_code, bin_info["warehouse"]), 0),
-                })
+                    "so_qty": so_map.get(item.item_code, 0),
+                }
+            )
 
     def run(self):
         self.build_data()
         return self.columns, self.data
+
 
 def execute(filters=None):
     return StockMovementReport(filters).run()
