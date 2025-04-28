@@ -43,7 +43,7 @@ class StockMovementReport:
             SELECT
                 bin.item_code,
                 bin.warehouse,
-                bin.actual_qty
+                Sum(bin.actual_qty) AS actual_qty
             FROM `tabBin` bin
             WHERE bin.item_code IN %(item_codes)s
         """, {"item_codes": item_codes}, as_dict=1)
