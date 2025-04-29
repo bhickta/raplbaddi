@@ -90,7 +90,7 @@ class StockMovementReport:
 
     def fetch_dn_quantities(self, item_codes):
         if not item_codes or not (
-            self.filters.get("sales_from_date") and self.filters.get("sales_to_date")
+            self.filters.get("from_date") and self.filters.get("to_date")
         ):
             return []
 
@@ -109,15 +109,15 @@ class StockMovementReport:
         """,
             {
                 "item_codes": item_codes,
-                "from_date": self.filters["sales_from_date"],
-                "to_date": self.filters["sales_to_date"],
+                "from_date": self.filters["from_date"],
+                "to_date": self.filters["to_date"],
             },
             as_dict=1,
         )
 
     def fetch_pr_quantities(self, item_codes):
         if not item_codes or not (
-            self.filters.get("pr_from_date") and self.filters.get("pr_to_date")
+            self.filters.get("from_date") and self.filters.get("to_date")
         ):
             return []
 
@@ -136,15 +136,15 @@ class StockMovementReport:
         """,
             {
                 "item_codes": item_codes,
-                "from_date": self.filters["pr_from_date"],
-                "to_date": self.filters["pr_to_date"],
+                "from_date": self.filters["from_date"],
+                "to_date": self.filters["to_date"],
             },
             as_dict=1,
         )
 
     def fetch_so_quantities(self, item_codes):
         if not item_codes or not (
-            self.filters.get("sales_from_date") and self.filters.get("sales_to_date")
+            self.filters.get("from_date") and self.filters.get("to_date")
         ):
             return []
 
@@ -163,8 +163,8 @@ class StockMovementReport:
         """,
             {
                 "item_codes": item_codes,
-                "from_date": self.filters["sales_from_date"],
-                "to_date": self.filters["sales_to_date"],
+                "from_date": self.filters["from_date"],
+                "to_date": self.filters["to_date"],
             },
             as_dict=1,
         )
