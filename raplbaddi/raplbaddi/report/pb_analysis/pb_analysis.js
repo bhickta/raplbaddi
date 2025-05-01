@@ -5,7 +5,14 @@ frappe.query_reports["PB Analysis"] = {
             label: __("Item Group"),
             fieldtype: "Link",
             options: "Item Group",
+            default: "Packing Boxes",
             reqd: 1,
+        },
+        {
+            fieldname: "show_disabled",
+            label: __("Show Disabled"),
+            fieldtype: "Check",
+            default: 0,
         },
         {
             fieldname: "from_date_1",

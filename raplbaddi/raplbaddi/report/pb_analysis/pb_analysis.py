@@ -32,6 +32,8 @@ class StockMovementReport:
     def fetch_items(self):
         conditions = []
         params = {}
+        if not self.filters.get("show_disabled"):
+            conditions.append("i.disabled = 0")
         if self.filters.get("item_group"):
             conditions.append("i.item_group = %(item_group)s")
             params["item_group"] = self.filters.get("item_group")
