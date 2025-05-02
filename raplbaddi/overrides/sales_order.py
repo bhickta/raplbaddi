@@ -48,5 +48,8 @@ def update_custom_box_backend(item_code, name_of_brand, cdt, cdn):
         error.append(f"Packing Boxes: {', '.join([frappe.utils.get_link_to_form('Item', box['name']) for box in packing_boxes])}")
         frappe.throw("<br>".join(error))
 
+    if not packing_boxes:
+        error = [f"No packing box found for {item_code} with capacity {box_size_details['capacity']} and model {box_size_details['model']}. Please check the packing box item group."]
+
     custom_box = packing_boxes[0]['name']
     return {'custom_box': custom_box}
