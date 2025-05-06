@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from erpnext import get_default_company
 
 
 class GeyserBrandChangingEntry(Document):
@@ -21,7 +22,7 @@ def transfer(items, name, date, time):
     :items: Item to be moved
     """
     s = frappe.new_doc("Stock Entry")
-    s.company = "Real Appliances Private Limited"
+    s.company = get_default_company()
     s.stock_entry_type = "Geyser Brand Change"
     s.geyser_brand_changing_entry = name
     s.set_posting_time = 1

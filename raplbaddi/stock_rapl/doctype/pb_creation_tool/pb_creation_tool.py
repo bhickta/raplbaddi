@@ -1,5 +1,6 @@
 import frappe
 from frappe.model.document import Document
+from erpnext import get_default_company
 
 class PBCreationTool(Document):
     def get_item_code(self, item, item_type):
@@ -66,7 +67,7 @@ class PBCreationTool(Document):
             item.plain_box_type = self.box_particular
 
         if not item.item_defaults:
-            item.append("item_defaults", {"default_warehouse": 'Packing Boxes - Rapl', "company": 'Real Appliances Private Limited'})
+            item.append("item_defaults", {"default_warehouse": 'Packing Boxes - Rapl', "company": get_default_company()})
 
     def create_item(self, box_code, i):
         item = frappe.new_doc("Item")

@@ -1,4 +1,5 @@
 import frappe
+from erpnext import get_default_company
 
 def execute():
     StockReconciliationManager(["Cooler", "DLP-Price List"]).execute()
@@ -88,7 +89,7 @@ class StockReconciliationManager:
         mr.stock_entry_type = "Material Receipt"
         mr.posting_date = frappe.utils.nowdate()
         mr.posting_time = frappe.utils.nowtime()
-        mr.company = "Real Appliances Private Limited"
+        mr.company = get_default_company()
 
         for item, warehouse, qty in negative_stocks:
             mr.append(
@@ -129,7 +130,7 @@ class StockReconciliationManager:
         sr.posting_date = frappe.utils.nowdate()
         sr.posting_time = frappe.utils.nowtime()
         sr.set_posting_time = 1
-        sr.company = "Real Appliances Private Limited"
+        sr.company = get_default_company()
         
         sr.expense_account = (
             frappe.get_cached_value("Company", sr.company, "stock_adjustment_account")

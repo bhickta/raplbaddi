@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-
+from erpnext import get_default_company
 
 class ElementEntry(Document):
     def before_submit(self):
@@ -21,7 +21,7 @@ def issue(items, name, date, entry_type):
     :items: Item to be moved
     """
     s = frappe.new_doc("Stock Entry")
-    s.company = "Real Appliances Private Limited"
+    s.company = get_default_company()
 
     entry_map = {
         "Issue": "Material Issue",
