@@ -2,282 +2,375 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.query_builder import DocType
-from frappe.query_builder.functions import Concat, Sum, GroupConcat, Coalesce
-from frappe.utils import get_url
 from raplbaddi.utils import report_utils
 from raplbaddi.stock_rapl.report.pb_report.box_data import BoxRequirements
+from .sorting import (
+    BoxProductionSort,
+    BoxDispatchSort,
+    DeadStockSort,
+    UrgentDispatchSort,
+    BoxStockSort
+)
 
-box_data = BoxRequirements()
+# Initialize data source
+box_data_source = BoxRequirements()
 
-def execute(filters=None):
-    return columns(filters), join(filters)
+# --- Central Location Configuration ---
+class LocationConfig:
+    """
+    Configuration for a data location (warehouse or supplier).
+    Manages properties and standard key generation for each location.
+    """
+    def __init__(self, id, display_name, short_code, warehouse_fetch_name, data_source_name=None, has_projected_qty=False):
+        self.id = id
+        self.display_name = display_name
+        self.short_code = short_code
+        self.warehouse_fetch_name = warehouse_fetch_name
+        self.data_source_name = data_source_name # Name for fetching MR/PO/Priority if it's a supplier
+        self.has_projected_qty = has_projected_qty
 
-def get_box_data(box_name, mr_dict, column_name):
-    return mr_dict.get(box_name, {}).get(column_name, 0.0)
+    def is_supplier(self):
+        """Checks if this location is a supplier (has MR/PO/Priority data)."""
+        return bool(self.data_source_name)
+
+    # --- Key Generation Methods for standardized data dictionary keys ---
+    def stock_key(self): return f'stock_{self.id}'
+    def projected_key(self): return f'projected_{self.id}'
+    def paper_stock_key(self): return f'{self.id}_paper_stock'
+    def production_key(self): return f'production_{self.id}'
+    def dispatch_key(self): return f'dispatch_{self.id}'
+    def po_name_key(self): return f'po_name_{self.id}'
+    def remain_prod_key(self): return f'remain_prod_{self.id}'
+    def mr_key(self): return f'mr_{self.id}'
+    def priority_key(self): return f'priority_{self.id}'
+
+LOCATIONS_CONFIG = [
+    LocationConfig(
+        id='rapl',
+        display_name='RAPL',
+        short_code='RL',
+        warehouse_fetch_name='Packing Boxes - Rapl',
+        has_projected_qty=True
+    ),
+    LocationConfig(
+        id='jai',
+        display_name='JAI',
+        short_code='J',
+        warehouse_fetch_name='Jai Ambey Industries - RAPL',
+        data_source_name='Jai Ambey Industries'
+    ),
+    LocationConfig(
+        id='amit',
+        display_name='Amit',
+        short_code='A',
+        warehouse_fetch_name="Amit Print 'N' Pack - RAPL",
+        data_source_name="Amit Print 'N' Pack"
+    ),
+    LocationConfig(
+        id='rana',
+        display_name='Rana',
+        short_code='R',
+        warehouse_fetch_name="Rana, Packing Box - RAPL",
+        data_source_name="Rana, Packing Box"
+    ),
+]
+
+# Helper to safely get data from nested dictionaries
+def get_nested_value(data_dict, primary_key, secondary_key, default=0.0):
+    return data_dict.get(primary_key, {}).get(secondary_key, default)
 
 def get_warehouse_data(warehouse_name):
-    warehouse_data = box_data.warehouse_qty(warehouse=warehouse_name)
-    return {item['box']: item for item in warehouse_data}
+    # Consider adding caching here if warehouse_qty is expensive and called multiple times
+    warehouse_data_list = box_data_source.warehouse_qty(warehouse=warehouse_name)
+    return {item['box']: item for item in warehouse_data_list}
 
-class BoxProductionSort(report_utils.SortStrategy):
-    def sort(self, data):
-        return sorted(data, key=lambda x: x['short_qty'], reverse=True)
-
-class BoxDispatchSort(report_utils.SortStrategy):
-    def sort(self, data):
-        return sorted(data, key=lambda x: x['dispatch_need_to_complete_so'], reverse=True)
-
-class DeadStockSort(report_utils.SortStrategy):
-    def sort(self, data):
-        return sorted([item for item in data if item['dead_inventory'] > 0 and item['total_stock'] > 0], key=lambda x: x['total_stock'], reverse=True)
-
-class UrgentDispatchSort(report_utils.SortStrategy):
-    def sort(self, data):
-        return sorted([item for item in data if item['urgent_dispatch'] > 0], key=lambda x: x['urgent_dispatch_pending'], reverse=True)
-
-class BoxStockSort(report_utils.SortStrategy):
-    def sort(self, data):
-        return sorted([item for item in data if item['stock_rapl'] > 0], key=lambda x: x['stock_rapl'], reverse=True)
 
 class SortStrategyFactory:
     @staticmethod
     def get_strategy(report_type):
+        rapl_config = next((loc for loc in LOCATIONS_CONFIG if loc.id == 'rapl'), None)
+        # Fallback key if RAPL config is somehow not found (should not happen)
+        rapl_stock_key = rapl_config.stock_key() if rapl_config else 'stock_rapl'
+
         strategies = {
             'Box Production': BoxProductionSort(),
             'Box Dispatch': BoxDispatchSort(),
             'Dead Stock': DeadStockSort(),
             'Urgent Dispatch': UrgentDispatchSort(),
-            'Box Stock': BoxStockSort()
+            'Box Stock': BoxStockSort(central_stock_key=rapl_stock_key)
         }
         return strategies.get(report_type)
 
-class Supplier:
-    def __init__(self, name):
-        self.name = name
-        self.warehouse = get_warehouse_data(f"{name} - RAPL")
-        self.mr = report_utils.get_mapped_data(data=box_data.get_box_order_for_production(self.name), key='box')
-        self.po = report_utils.get_mapped_data(data=box_data.get_supplierwise_po(self.name), key='box')
-        self.priority = report_utils.get_mapped_data(data=box_data.get_paper_supplier_priority(self.name), key='box')
-    def get_supplier_data(self):
-        return self.warehouse, self.mr, self.po, self.priority
+# --- Data Joining and Processing ---
+def join_data_processing(filters=None):
+    all_boxes_list = box_data_source.all_boxes('Packing Boxes', 'box')
+    all_paper_list = box_data_source.all_boxes('Packing Paper', 'paper')
+    all_paper_map = {paper_item['paper']: paper_item for paper_item in all_paper_list}
+    so_map = report_utils.get_mapped_data(data=box_data_source.get_box_requirement_from_so(), key='box')
+
+    all_location_data_cache = _fetch_all_location_data_cache()
+    processed_boxes = [
+        _process_box_item(
+            box_item,
+            all_paper_map,
+            so_map,
+            all_location_data_cache
+        )
+        for box_item in all_boxes_list
+    ]
+
+    rapl_central_config = next((loc for loc in LOCATIONS_CONFIG if loc.id == 'rapl'), None)
+    for box_data_row in processed_boxes:
+        _add_calculated_fields(box_data_row, rapl_central_config)
+
+    report_type = filters.get('report_type') if filters else None
+    strategy = SortStrategyFactory.get_strategy(report_type)
+    return strategy.sort(data=processed_boxes) if strategy else processed_boxes
 
 
-def join(filters=None):
-    all_box = box_data.all_boxes('Packing Boxes', 'box')
-    all_paper = box_data.all_boxes('Packing Paper', 'paper')
-    so = report_utils.get_mapped_data(data=box_data.get_box_requirement_from_so(), key='box')
-    rapl_warehouse = get_warehouse_data('Packing Boxes - Rapl')
+def _fetch_all_location_data_cache():
+    cache = {}
+    for loc_config in LOCATIONS_CONFIG:
+        mr_data, po_data, priority_data = {}, {}, {}
+        if loc_config.is_supplier():
+            source_name = loc_config.data_source_name
+            mr_data = report_utils.get_mapped_data(
+                data=box_data_source.get_box_order_for_production(source_name), key='box'
+            )
+            po_data = report_utils.get_mapped_data(
+                data=box_data_source.get_supplierwise_po(source_name), key='box'
+            )
+            priority_data = report_utils.get_mapped_data(
+                data=box_data_source.get_paper_supplier_priority(source_name), key='box'
+            )
+        cache[loc_config.id] = {
+            'warehouse': get_warehouse_data(loc_config.warehouse_fetch_name),
+            'mr': mr_data,
+            'po': po_data,
+            'priority': priority_data,
+            'config': loc_config
+        }
+    return cache
 
 
-    warehouse_jai, mr_jai, po_jai, priority_jai = Supplier(name='Jai Ambey Industries').get_supplier_data()
-    warehouse_amit, mr_amit, po_amit, priority_amit = Supplier(name="Amit Print 'N' Pack").get_supplier_data()
-    warehouse_rana, mr_rana, po_rana, priority_rana = Supplier(name="Rana, Packing Box").get_supplier_data()
+def _process_box_item(box_item, all_paper_map, so_map, all_location_data_cache):
+    current_box_data = box_item.copy()
+    box_name = current_box_data.get('box', '-')
 
-    for box in all_box:
-        box_name = box.get('box', '-')
+    current_box_data['so_qty'] = get_nested_value(so_map, box_name, 'so_qty')
+    current_box_data['so_name'] = get_nested_value(so_map, box_name, 'so_name', '')
 
-        box['so_qty'] = so.get(box_name, {'so_qty': 0.0})['so_qty']
-        box['so_name'] = so.get(box_name, {'so_name': ''})['so_name']
-                    
-        box_particular = box.get('box_particular', '')
-        paper_name = box.get('paper_name', '')
-        paper_name = f'PP {box_particular} {paper_name}'
-        
-        warehouse_item = rapl_warehouse.get(box_name, {'warehouse_qty': 0.0, 'projected_qty': 0.0})
-        box['stock_rapl'] = warehouse_item['warehouse_qty']
-        box['projected_rapl'] = warehouse_item['projected_qty']
+    box_particular = current_box_data.get('box_particular', '')
+    paper_name_suffix = current_box_data.get('paper_name', '')
+    full_paper_item_name = f'PP {box_particular} {paper_name_suffix}' if box_particular and paper_name_suffix else ''
+    current_box_data['paper'] = all_paper_map.get(full_paper_item_name, {}).get('paper')
 
-        jai_warehouse_item = warehouse_jai.get(box_name, {'warehouse_qty': 0.0})
-        jai_warehouse_paper = warehouse_jai.get(paper_name, {'warehouse_qty': 0.0})
-        
-        amit_warehouse_item = warehouse_amit.get(box_name, {'warehouse_qty': 0.0})
-        amit_warehouse_paper = warehouse_amit.get(paper_name, {'warehouse_qty': 0.0})
-        
-        rana_warehouse_item = warehouse_rana.get(box_name, {'warehouse_qty': 0.0})
-        rana_warehouse_paper = warehouse_rana.get(paper_name, {'warehouse_qty': 0.0})
-        
-        found_paper = next((paper for paper in all_paper if paper['paper'] == paper_name), None)
+    for loc_id, loc_data_bundle in all_location_data_cache.items():
+        loc_config = loc_data_bundle['config']
+        loc_warehouse_map = loc_data_bundle['warehouse']
 
-        if found_paper is not None:
-            box['paper'] = found_paper['paper']
-            box['jai_paper_stock'] = jai_warehouse_paper.get('warehouse_qty', 0.0)
-            box['amit_paper_stock'] = amit_warehouse_paper.get('warehouse_qty', 0.0)
-            box['rana_paper_stock'] = rana_warehouse_paper.get('warehouse_qty', 0.0)
+        current_box_data[loc_config.stock_key()] = get_nested_value(loc_warehouse_map, box_name, 'warehouse_qty')
+        if loc_config.has_projected_qty:
+            current_box_data[loc_config.projected_key()] = get_nested_value(loc_warehouse_map, box_name, 'projected_qty')
+
+        if current_box_data['paper']:
+            current_box_data.setdefault(loc_config.paper_stock_key(), 0.0)
+            current_box_data[loc_config.paper_stock_key()] = get_nested_value(
+                loc_warehouse_map, current_box_data['paper'], 'warehouse_qty'
+            )
+
+        if loc_config.is_supplier():
+            loc_mr_map = loc_data_bundle['mr']
+            loc_po_map = loc_data_bundle['po']
+            loc_priority_map = loc_data_bundle['priority']
+
+            current_box_data[loc_config.production_key()] = get_nested_value(loc_mr_map, box_name, 'qty')
+            current_box_data[loc_config.dispatch_key()] = get_nested_value(loc_po_map, box_name, 'box_qty')
+            current_box_data[loc_config.po_name_key()] = get_nested_value(loc_po_map, box_name, 'po_name', '')
+            received_qty = get_nested_value(loc_mr_map, box_name, 'received_qty')
+            current_box_data[loc_config.remain_prod_key()] = current_box_data[loc_config.production_key()] - received_qty
+            current_box_data[loc_config.mr_key()] = get_nested_value(loc_mr_map, box_name, 'mr_name', '')
+            current_box_data[loc_config.priority_key()] = get_nested_value(loc_priority_map, box_name, 'priority')
+    return current_box_data
 
 
-        box['production_jai'] = get_box_data(box_name, mr_jai, 'qty')
-        box['dispatch_jai'] = po_jai.get(box_name, {'box_qty': 0.0})['box_qty']
-        box['po_name_jai'] = po_jai.get(box_name, {'po_name': ''})['po_name']
-        box['remain_prod_jai'] = box['production_jai'] - get_box_data(box_name, mr_jai, 'received_qty')
-        box['mr_jai'] = get_box_data(box_name, mr_jai, 'mr_name')
-        box['stock_jai'] = jai_warehouse_item['warehouse_qty']
-        box['priority_jai'] = priority_jai.get(box_name, {'priority': 0})['priority']
-
-        box['production_amit'] = get_box_data(box_name, mr_amit, 'qty')
-        box['dispatch_amit'] = po_amit.get(box_name, {'box_qty': 0.0})['box_qty']
-        box['po_name_amit'] = po_amit.get(box_name, {'po_name': ''})['po_name']
-        box['priority_amit'] = priority_amit.get(box_name, {'priority': 0})['priority']
-        box['stock_amit'] = amit_warehouse_item['warehouse_qty']
-        box['mr_amit'] = get_box_data(box_name, mr_amit, 'mr_name')
-        box['remain_prod_amit'] = box['production_amit'] - get_box_data(box_name, mr_amit, 'received_qty')
-        
-        box['production_rana'] = get_box_data(box_name, mr_rana, 'qty')
-        box['dispatch_rana'] = po_rana.get(box_name, {'box_qty': 0.0})['box_qty']
-        box['po_name_rana'] = po_rana.get(box_name, {'po_name': ''})['po_name']
-        box['priority_rana'] = priority_rana.get(box_name, {'priority': 0})['priority']
-        box['stock_rana'] = rana_warehouse_item['warehouse_qty']
-        box['mr_rana'] = get_box_data(box_name, mr_rana, 'mr_name')
-        box['remain_prod_rana'] = box['production_rana'] - get_box_data(box_name, mr_rana, 'received_qty')
-        
-
-    for box in all_box:
-        box['short_qty'] = max(0, (box['so_qty'] + box['msl']) - (box['stock_rapl'] + box['stock_jai'] + box['stock_amit'] + box['production_amit'] + box['production_jai'] + box['production_rana']))
-        box['dispatch_need_to_complete_so'] = abs(max(0,  box['rapl_msl'] + box['so_qty'] - box['stock_rapl'] - box['dispatch_amit'] -  box['dispatch_jai'] - box['dispatch_rana']))
-        box['total_stock'] = box['stock_amit'] + box['stock_rapl'] + box['stock_jai'] + box['stock_rana']
-        box['over_stock_qty'] = min(0, (box['so_qty'] + box['msl']) - (box['stock_rapl'] + box['stock_jai'] + box['stock_amit'] + box['production_amit'] + box['production_jai'] + box['production_rana']))
-        box['urgent_dispatch'] = box['so_qty'] - box['stock_rapl']
-        box['urgent_dispatch_pending'] = box['so_qty'] - box['stock_rapl'] - box['dispatch_amit'] -  box['dispatch_jai'] - box['dispatch_rana']
-        
-    strategy = SortStrategyFactory.get_strategy(filters.get('report_type'))
-    sorted_data = strategy.sort(data=all_box)
-    return sorted_data
-
-def priority_cols(builder):
-    cols = (builder
-        .add_column("J", "Int", 20, "priority_jai")
-        .add_column("A", "Int", 20, "priority_amit")
-        .add_column("R", "Int", 20, "priority_rana")
-        .build()
+def _add_calculated_fields(box_data_row, rapl_central_config):
+    all_stocks_sum = sum(box_data_row.get(loc.stock_key(), 0.0) for loc in LOCATIONS_CONFIG)
+    all_production_sum = sum(
+        box_data_row.get(loc.production_key(), 0.0) for loc in LOCATIONS_CONFIG if loc.is_supplier()
     )
-    return cols
-
-def links_cols(builder):
-    cols = (builder
-        .add_column("SOs", "HTML", 100, "so_name") 
-        .add_column("MR JAI", "HTML", 100, "mr_jai")
-        .add_column("MR Amit", "HTML", 100, "mr_amit")
-        .add_column("MR Rana", "HTML", 100, "mr_rana")
-        .add_column("POs Amit", "HTML", 100, "po_name_amit") 
-        .add_column("POs JAI", "HTML", 100, "po_name_jai")
-        .add_column("POs Rana", "HTML", 100, "po_name_rana")
-        .build()
+    all_dispatch_sum = sum(
+        box_data_row.get(loc.dispatch_key(), 0.0) for loc in LOCATIONS_CONFIG if loc.is_supplier()
     )
-    return cols
 
-def stock_cols(builder):
-    cols = (builder
-        .add_column("Rapl Stock", "Int", 100, "stock_rapl")
-        .add_column("JAI Stock", "Int", 100, "stock_jai")
-        .add_column("Amit Stock", "Int", 120, "stock_amit") 
-        .add_column("Total Stock", "Int", 120, "total_stock")
-        .build()
-    )
-    return cols
+    msl = box_data_row.get('msl', 0.0)
+    rapl_msl_val = box_data_row.get('rapl_msl', 0.0)
+    so_qty_val = box_data_row.get('so_qty', 0.0)
 
-def prod_cols(builder):
-    cols = (builder
-        .add_column("JAI Prod", "Int", 80, "production_jai") 
-        .add_column("Amit Prod", "Int", 80, "production_amit") 
-        .add_column("Rana Prod", "Int", 80, "production_rana")
-        .build()
-    )
-    return cols
+    stock_at_rapl_central = box_data_row.get(rapl_central_config.stock_key(), 0.0) if rapl_central_config else 0.0
 
-def dispatch_cols(builder):
-    cols = (builder
-        .add_column("Jai Disp", "Int", 90, "dispatch_jai")
-        .add_column("Amit Disp", "Int", 100, "dispatch_amit")
-        .add_column("Rana Disp", "Int", 100, "dispatch_rana")
-        .build()        
-    )
-    return cols
+    target_inventory_for_shortage = so_qty_val + msl
+    current_total_inventory_for_shortage = all_stocks_sum + all_production_sum
+    box_data_row['short_qty'] = max(0, target_inventory_for_shortage - current_total_inventory_for_shortage)
+    box_data_row['over_stock_qty'] = min(0, target_inventory_for_shortage - current_total_inventory_for_shortage)
 
-def common_cols(builder):
-    cols = (
-        builder
-        .add_column("D", "Check", 40, "dead_inventory") 
-        .add_column("Item", "Link", 180, "box", options="Item")
-        .build()
-    )
-    return cols
+    target_dispatch_need = rapl_msl_val + so_qty_val
+    current_dispatchable = stock_at_rapl_central + all_dispatch_sum
+    box_data_row['dispatch_need_to_complete_so'] = max(0, target_dispatch_need - current_dispatchable)
+    box_data_row['total_stock'] = all_stocks_sum
+    box_data_row['urgent_dispatch'] = max(0, so_qty_val - stock_at_rapl_central)
+    box_data_row['urgent_dispatch_pending'] = max(0, so_qty_val - stock_at_rapl_central - all_dispatch_sum)
 
-def paper_cols(builder):
-    cols = (
-        builder
-        .add_column("Paper", "Link", 180, "paper", options="Item")
-        .add_column("Amit Paper", "Int", 100, "amit_paper_stock", disable_total="True")
-        .add_column("Jai Paper", "Int", 100, "jai_paper_stock", disable_total="True")
-        .add_column("Rana Paper", "Int", 100, "rana_paper_stock", disable_total="True")
-        .build()
-    )
-    return cols
+# --- Column Definition Helpers ---
+def _add_common_cols(builder):
+    builder.add_column("D", "Check", 40, "dead_inventory")
+    builder.add_column("Item", "Link", 180, "box", options="Item")
+    return builder
 
-def urgent_dispatch_column(builder):
-    cols = (builder
-            .add_column("Urgent Dispatch", "Int", 120, "urgent_dispatch")
-            .add_column("Order Pending", "Int", 120, "urgent_dispatch_pending")
-    )
-    return cols
+def _add_location_specific_cols(builder, col_configs):
+    """Generic helper to add columns based on location configurations."""
+    for loc in LOCATIONS_CONFIG:
+        for col_config in col_configs:
+            if col_config.get("condition", lambda l: True)(loc): # Optional condition
+                label = col_config["label_format"].format(loc.display_name, loc.short_code)
+                fieldtype = col_config["fieldtype"]
+                width = col_config["width"]
+                fieldname = col_config["fieldname_format"].format(loc.id)
+                options = col_config.get("options")
+                disable_total = col_config.get("disable_total")
+                builder.add_column(label, fieldtype, width, fieldname, options=options, disable_total=disable_total)
+    return builder
 
-def dispatch_need_column(builder):
-    return builder.add_column("Dispatch Need", "Int", 120, "dispatch_need_to_complete_so")
+def _add_priority_cols(builder):
+    col_configs = [{
+        "label_format": "{}", # Uses short_code directly
+        "fieldtype": "Int", "width": 20,
+        "fieldname_format": LocationConfig(id='{}', display_name='', short_code='', warehouse_fetch_name='').priority_key(), # Get format from an instance
+        "condition": lambda loc: loc.is_supplier()
+    }]
+    # Special handling for label_format to use loc.short_code
+    for loc in LOCATIONS_CONFIG:
+        if loc.is_supplier():
+            builder.add_column(loc.short_code, "Int", 20, loc.priority_key())
+    return builder
 
-def shortage_column(builder):
-    return builder.add_column("Shortage", "Int", 100, "short_qty")
 
-def so(builder):
-    return builder.add_column("SO", "Int", 80, "so_qty").build()
+def _add_links_cols(builder):
+    builder.add_column("SOs", "HTML", 100, "so_name")
+    col_configs = [
+        {"label_format": "MR {}", "fieldtype": "HTML", "width": 100, "fieldname_format": LocationConfig(id='{}',display_name='',short_code='',warehouse_fetch_name='').mr_key(), "condition": lambda loc: loc.is_supplier()},
+        {"label_format": "POs {}", "fieldtype": "HTML", "width": 100, "fieldname_format": LocationConfig(id='{}',display_name='',short_code='',warehouse_fetch_name='').po_name_key(), "condition": lambda loc: loc.is_supplier()},
+    ]
+    return _add_location_specific_cols(builder, col_configs)
 
-def box_msl(builder):
-    return builder.add_column("MSL", "Int", 80, "msl").build()
+def _add_prod_cols(builder):
+    col_configs = [{
+        "label_format": "{} Prod", "fieldtype": "Int", "width": 80, "fieldname_format": LocationConfig(id='{}',display_name='',short_code='',warehouse_fetch_name='').production_key(),
+        "condition": lambda loc: loc.is_supplier()
+    }]
+    return _add_location_specific_cols(builder, col_configs)
 
-def rapl_msl(builder):
-    return builder.add_column("Rapl MSL", "Int", 80, "rapl_msl").build()
+def _add_dispatch_cols(builder):
+    col_configs = [{
+        "label_format": "{} Disp", "fieldtype": "Int", "width": 90, "fieldname_format": LocationConfig(id='{}',display_name='',short_code='',warehouse_fetch_name='').dispatch_key(),
+        "condition": lambda loc: loc.is_supplier()
+    }]
+    return _add_location_specific_cols(builder, col_configs)
 
-def over_cols(builder):
-    return builder.add_column("Over Stock", "Int", 100, "over_stock_qty").build()
+def _add_stock_cols(builder):
+    # Add individual stock columns
+    for loc in LOCATIONS_CONFIG:
+        builder.add_column(f"{loc.display_name} Stock", "Int", 100, loc.stock_key())
+        if loc.has_projected_qty:
+            builder.add_column(f"Projected {loc.display_name}", "Int", 100, loc.projected_key())
+    # Add overall total stock
+    builder.add_column("Total Stock", "Int", 120, "total_stock")
+    return builder
 
-def columns(filters=None):
-    cols = None
-    if filters.get('report_type') == 'Box Stock':
-        builder = report_utils.ColumnBuilder()
-        cols = common_cols(builder)
+def _add_paper_cols(builder):
+    builder.add_column("Paper", "Link", 180, "paper", options="Item")
+    col_configs = [{
+        "label_format": "{} Paper", "fieldtype": "Int", "width": 100, "fieldname_format": LocationConfig(id='{}',display_name='',short_code='',warehouse_fetch_name='').paper_stock_key(),
+        "disable_total": "True" # Note: disable_total expects a string "True" or "False" usually in Frappe
+    }]
+    return _add_location_specific_cols(builder, col_configs)
 
-    elif filters.get('report_type') == 'Box Production':
-        builder = report_utils.ColumnBuilder()
-        cols = common_cols(builder)
-        cols = box_msl(builder)
-        cols = prod_cols(builder)
+# Simple column adders remain unchanged
+def _add_urgent_dispatch_columns(builder):
+    builder.add_column("Urgent Dispatch", "Int", 120, "urgent_dispatch")
+    builder.add_column("Order Pending", "Int", 120, "urgent_dispatch_pending")
+    return builder
 
-    elif filters.get('report_type') == 'Box Dispatch':
-        builder = report_utils.ColumnBuilder()
-        cols = common_cols(builder)
-        cols = so(builder)
-        cols = rapl_msl(builder)
-        cols = dispatch_cols(builder)
-        cols = dispatch_need_column(builder)
+def _add_dispatch_need_column(builder):
+    builder.add_column("Dispatch Need", "Int", 120, "dispatch_need_to_complete_so")
+    return builder
 
-    elif filters.get('report_type') == 'Dead Stock':
-        builder = report_utils.ColumnBuilder()
-        cols = common_cols(builder)
+def _add_shortage_column(builder):
+    builder.add_column("Shortage", "Int", 100, "short_qty")
+    return builder
 
-    elif filters.get('report_type') == 'Urgent Dispatch':
-        builder = report_utils.ColumnBuilder()
-        cols = common_cols(builder)
-        cols = so(builder)
-        cols = dispatch_cols(builder)
-        cols = urgent_dispatch_column(builder)
+def _add_so_column(builder):
+    builder.add_column("SO", "Int", 80, "so_qty")
+    return builder
 
-    if filters.get('box_stock'):
-        cols = stock_cols(builder)
+def _add_box_msl_column(builder):
+    builder.add_column("MSL", "Int", 80, "msl")
+    return builder
+
+def _add_rapl_msl_column(builder):
+    builder.add_column("Rapl MSL", "Int", 80, "rapl_msl")
+    return builder
+
+def _add_over_stock_column(builder):
+    builder.add_column("Over Stock", "Int", 100, "over_stock_qty")
+    return builder
+
+# --- Main Columns Function ---
+def define_columns(filters=None):
+    filters = filters or {}
+    builder = report_utils.ColumnBuilder()
+    report_type = filters.get('report_type')
+
+    # Report-type specific columns
+    if report_type == 'Box Stock':
+        _add_common_cols(builder)
+    elif report_type == 'Box Production':
+        _add_common_cols(builder)
+        _add_box_msl_column(builder)
+        _add_prod_cols(builder)
+        _add_shortage_column(builder)
+    elif report_type == 'Box Dispatch':
+        _add_common_cols(builder)
+        _add_so_column(builder)
+        _add_rapl_msl_column(builder)
+        _add_dispatch_cols(builder)
+        _add_dispatch_need_column(builder)
+    elif report_type == 'Dead Stock':
+        _add_common_cols(builder)
+    elif report_type == 'Urgent Dispatch':
+        _add_common_cols(builder)
+        _add_so_column(builder)
+        _add_dispatch_cols(builder)
+        _add_urgent_dispatch_columns(builder)
+    else: # Default set of columns
+        _add_common_cols(builder)
+
+    # General columns added based on filters
+    if filters.get('box_stock'): # Consider renaming filter keys for clarity e.g., 'show_stock_summary'
+        _add_stock_cols(builder)
     if filters.get('paper_stock'):
-        cols = paper_cols(builder)
+        _add_paper_cols(builder)
     if filters.get('over_stock'):
-        cols = over_cols(builder)
+        _add_over_stock_column(builder)
     if filters.get('add_links'):
-        cols = links_cols(builder)
+        _add_links_cols(builder)
     if filters.get('add_priority'):
-        cols = priority_cols(builder)
-    
-    return cols
+        _add_priority_cols(builder)
+
+    return builder.build()
+
+# --- Main Execution Function ---
+def execute(filters=None):
+    data = join_data_processing(filters) # Data processing first
+    cols = define_columns(filters)       # Then define columns
+    return cols, data
