@@ -36,6 +36,20 @@ LOCATIONS_CONFIG = [
         has_projected_qty=True
     ),
     LocationConfig(
+        id='rsi',
+        display_name='RSI',
+        short_code='RSI',
+        warehouse_fetch_name='Packing Box RSI - RAPL',
+        has_projected_qty=True
+    ),
+    LocationConfig(
+        id='pb_top_floor',
+        display_name='PB Top Floor',
+        short_code='PBTF',
+        warehouse_fetch_name='PB Top Floor RAPL - RAPL',
+        has_projected_qty=True
+    ),
+    LocationConfig(
         id='jai',
         display_name='JAI',
         short_code='J',
@@ -50,10 +64,17 @@ LOCATIONS_CONFIG = [
         data_source_name="Amit Print 'N' Pack"
     ),
     LocationConfig(
-        id='rana',
-        display_name='Rana',
-        short_code='R',
-        warehouse_fetch_name="Rana, Packing Box - RAPL",
-        data_source_name="Rana, Packing Box"
+        id='mahaluxmi',
+        display_name='Mahaluxmi',
+        short_code='M',
+        warehouse_fetch_name="Mahaluxmi - RAPL",
+        data_source_name="Mahaluxmi"
+    ),
+    LocationConfig(
+        id='baba_international',
+        display_name='Baba International',
+        short_code='B',
+        warehouse_fetch_name="Baba International - RAPL",
+        data_source_name="Baba International"
     ),
 ]
