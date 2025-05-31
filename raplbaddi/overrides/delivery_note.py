@@ -6,6 +6,8 @@ def before_insert(doc, method):
 
 
 def set_naming_series(doc):
+    if frappe.flags.in_patch:
+        return
     naming_series_map = {
         "Real Appliances Private Limited": {
             False: "DN-.YY.-RAPL-.####",
