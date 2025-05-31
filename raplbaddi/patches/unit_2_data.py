@@ -14,13 +14,41 @@ class Unit2DataImporter:
         file_path = frappe.utils.get_files_path("unit_2_sales_data.csv")
         with open(file_path, "rb") as file:
             self.data = csvutils.read_csv_content(file.read())
+    
+    def enable_disabled_items(self):
+        self.disabled_items = frappe.get_all(
+            "Item",
+            filters={"disabled": 1},
+            fields=["name"],
+        )
+        # enable all disabled items
+        frappe.db.sql(
+            """
+            UPDATE `tabItem`
+            SET disabled = 0
+            WHERE name IN %(names)s
+            """,
+            {"names": [item.name for item in self.disabled_items]},            
+        )
+    
+    def redisable_items(self):
+        # disable all items that were previously disabled
+        frappe.db.sql(
+            """
+            UPDATE `tabItem`
+            SET disabled = 1
+            WHERE name IN %(names)s
+            """,
+            {"names": [item.name for item in self.disabled_items]},
+        )
 
     def process_data(self):
+        self.enable_disabled_items()
         self.create_dict()
         self.clean_data()
         self.group_data()
         self.create_delivery_note()
-        frappe.db.commit()
+        self.redisable_items()
 
     def create_dict(self):
         self.data_dict = []
