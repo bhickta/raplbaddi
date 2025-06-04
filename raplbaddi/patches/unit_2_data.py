@@ -134,6 +134,8 @@ class Unit2DataImporter:
             doc.customer_name = customer_name
             doc.naming_series = "DNU2-.####."
             doc.sales_person = sales_person
+            doc.set_posting_time = 1
+            doc.posting_date = "2024-04-01"
 
             for item in items:
                 doc.append(
