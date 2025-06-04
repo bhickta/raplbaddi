@@ -5,10 +5,10 @@ from collections import defaultdict
 
 class Unit2DataImporter:
 
-    def execute(self):
+    def execute(self, delete=False):
         frappe.flags.in_patch = True
         self.set_data()
-        self.process_data()
+        self.process_data(delete=delete)
 
     def set_data(self):
         file_path = frappe.utils.get_files_path("unit_2_sales_data.csv")
@@ -42,7 +42,10 @@ class Unit2DataImporter:
             {"names": [item.name for item in self.disabled_items]},
         )
 
-    def process_data(self):
+    def process_data(self, delete=False):
+        if delete:
+            self.cancel_and_delete_delivery_notes()
+            return
         self.enable_disabled_items()
         self.create_dict()
         self.clean_data()
@@ -162,7 +165,32 @@ class Unit2DataImporter:
             doc.submit()
             print(doc)
 
+    def cancel_and_delete_delivery_notes(self):
+            delivery_notes = frappe.get_all(
+                "Delivery Note",
+                filters={"naming_series": "DNU2-.####."},
+                fields=["name"]
+            )
+            from erpnext.stock.doctype.repost_item_valuation.repost_item_valuation import repost_entries
+            repost_entries()
+            for dn_name in delivery_notes:
+                repost_entry = frappe.get_doc("Repost Item Valuation", {"voucher_type": "Delivery Note", "voucher_no": dn_name.name})
+                if repost_entry:
+                    repost_entry.cancel()
+                    repost_entry.delete(delete_permanently=True)
+                try:
+                    print(f"Processing Delivery Note: {dn_name.name}")
+                    doc = frappe.get_doc("Delivery Note", dn_name.name)
+                    if doc.docstatus == 1: # Check if submitted
+                        doc.cancel()
+                        print(f"Cancelled Delivery Note: {doc.name}")
+                    if doc.docstatus == 0: # Now it should be draft or already draft
+                        print(f"Deleted Delivery Note: {doc.name}")
+                    doc.delete(delete_permanently=True)
+                except Exception as e:
+                    frappe.log_error(f"Error processing Delivery Note {dn_name.name}: {e}")
+                    raise e
 
-def execute():
+def execute(delete=False):
     importer = Unit2DataImporter()
-    importer.execute()
+    importer.execute(delete=delete)
