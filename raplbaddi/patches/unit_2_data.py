@@ -174,10 +174,11 @@ class Unit2DataImporter:
             from erpnext.stock.doctype.repost_item_valuation.repost_item_valuation import repost_entries
             repost_entries()
             for dn_name in delivery_notes:
-                repost_entry = frappe.get_doc("Repost Item Valuation", {"voucher_type": "Delivery Note", "voucher_no": dn_name.name})
+                repost_entry = frappe.get_all("Repost Item Valuation", {"voucher_type": "Delivery Note", "voucher_no": dn_name.name})
                 if repost_entry:
-                    repost_entry.cancel()
-                    repost_entry.delete(delete_permanently=True)
+                    repost_doc = frappe.get_doc("Repost Item Valuation", repost_entry[0].name)
+                    repost_doc.cancel()
+                    repost_doc.delete(delete_permanently=True)
                 try:
                     print(f"Processing Delivery Note: {dn_name.name}")
                     doc = frappe.get_doc("Delivery Note", dn_name.name)
