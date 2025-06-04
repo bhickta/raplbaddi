@@ -175,6 +175,7 @@ class Unit2DataImporter:
             repost_entries()
             for dn_name in delivery_notes:
                 repost_entry = frappe.get_all("Repost Item Valuation", {"voucher_type": "Delivery Note", "voucher_no": dn_name.name})
+                print(f"Repost Entry: {repost_entry}")
                 if repost_entry:
                     repost_doc = frappe.get_doc("Repost Item Valuation", repost_entry[0].name)
                     print(f"Reposting Item Valuation for Delivery Note: {dn_name.name}")
