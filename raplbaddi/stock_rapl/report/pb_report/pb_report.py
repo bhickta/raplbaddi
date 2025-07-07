@@ -12,6 +12,7 @@ from .sorting import (
     BoxStockSort
 )
 from .config import LOCATIONS_CONFIG
+import datetime
 
 # Initialize data source
 box_data_source = BoxRequirements()
@@ -137,6 +138,9 @@ def _process_box_item(box_item, all_paper_map, so_map, all_location_data_cache):
 
 
 def _add_calculated_fields(box_data_row, rapl_central_config):
+    current_date = datetime.date.today()
+    is_winter_season = current_date.month >= 11 or current_date.month <= 3
+
     all_stocks_sum = sum(box_data_row.get(loc.stock_key(), 0.0) for loc in LOCATIONS_CONFIG)
     all_production_sum = sum(
         box_data_row.get(loc.production_key(), 0.0) for loc in LOCATIONS_CONFIG if loc.is_supplier()
@@ -146,6 +150,10 @@ def _add_calculated_fields(box_data_row, rapl_central_config):
     )
 
     msl = box_data_row.get('msl', 0.0)
+    
+    if is_winter_season:
+        msl *= 0.70
+
     rapl_msl_val = box_data_row.get('rapl_msl', 0.0)
     so_qty_val = box_data_row.get('so_qty', 0.0)
 
