@@ -37,7 +37,7 @@ class CustomerNaming:
             "Customer",
             filters={"name": ["like", f"{base_name}%"]},
             fields=["name"],
-            order_by="name desc",
+            order_by="creation desc",
             limit_page_length=1,
         )
         next_count = 1
