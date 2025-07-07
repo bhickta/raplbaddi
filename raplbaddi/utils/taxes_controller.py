@@ -23,7 +23,7 @@ class calculate_taxes_and_totals(base_calculate_taxes_and_totals):
 
         if self.doc.get("custom_grand_total") and self.doc.get("custom_tax_rate"):
             tax.total = flt(
-                self.doc.custom_grand_total + tax_amount, tax.precision("total")
+                self.doc.total + tax_amount, tax.precision("total")
             )
             tax.rate = flt(self.doc.custom_tax_rate, tax.precision("rate"))
         elif row_idx == 0:
@@ -62,7 +62,7 @@ class calculate_taxes_and_totals(base_calculate_taxes_and_totals):
             tax.tax_amount = flt(
                 self.doc.custom_grand_total * tax.rate * 0.01, tax.precision("tax_amount")
             )
-            tax.total = tax.tax_amount + self.doc.custom_grand_total
+            tax.total = tax.tax_amount + self.doc.total
     
     def calculate_totals(self):
         if not self.doc.get("taxes"):
@@ -78,7 +78,7 @@ class calculate_taxes_and_totals(base_calculate_taxes_and_totals):
             if self.doc.get("custom_grand_total"):
                 self.doc.total_taxes_and_charges = flt(
                     self.doc.grand_total
-                    - self.doc.custom_grand_total
+                    - self.doc.total
                     - flt(self.doc.get("grand_total_diff")),
                     self.doc.precision("total_taxes_and_charges"),
                 )
