@@ -17,4 +17,4 @@ def validate(doc, method):
     manager.sync_name_on_update()
     
     # Step 3: Create the link between the Customer and Supplier.
-    manager.sync_party_link()
+    # manager.sync_party_link()
