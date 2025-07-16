@@ -4,10 +4,11 @@ from raplbaddi.salesrapl.report.geyser_production_planning import sales_order_da
 
 class ItemwiseOrderAndShortageReport(BaseReport):
     def run(self):
+        as_on_date = self.filters.get("as_on_date")
         data = sales_order_data.get_so_items(self.filters)
-        bin_stock = sales_order_data.get_bin_stock()
-        box_stock = sales_order_data.get_box_qty()
-        ordered_boxes = self.get_ordered_box_qty()
+        bin_stock = sales_order_data.get_bin_stock(as_on_date)
+        box_stock = sales_order_data.get_box_qty(as_on_date)
+        ordered_boxes = self.get_ordered_box_qty(as_on_date)
 
         for row in data:
             row["brand"] = row["brand"].replace("- RAPL", "")

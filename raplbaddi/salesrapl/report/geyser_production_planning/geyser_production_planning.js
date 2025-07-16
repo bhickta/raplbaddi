@@ -30,5 +30,12 @@ frappe.query_reports["Geyser Production Planning"] = {
 			"default": 0,
 			"depends_on": "eval:doc.report_type == 'Itemwise Order and Shortage'",
 		},
+		{
+			"fieldname": "as_on_date",
+			"label": __("As On Date"),
+			"fieldtype": "Date",
+			"default": frappe.datetime.get_today(),
+			"reqd": 1,
+		},
 	]
 };

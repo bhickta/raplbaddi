@@ -4,6 +4,7 @@ from pypika import Case
 from frappe.utils import get_url
 from raplbaddi.utils import report_utils
 import frappe
+import datetime
 
 class BoxRequirements:
     _instance = None
@@ -25,6 +26,7 @@ class BoxRequirements:
         self.poi = DocType('Purchase Order Item')
         self.po = DocType('Purchase Order')
         self.psp = DocType('Paper Supplier Priority')
+        self.sle = DocType('Stock Ledger Entry')
 
     def get_paper_supplier_priority(self, supplier):
         query = (
@@ -67,7 +69,7 @@ class BoxRequirements:
         else:
             pb_warehouses = frappe.get_list("Warehouse", {"warehouse_type": "Packing Boxes"}, pluck="name")
             qty_query = qty_query.where(self.bin.warehouse.isin(pb_warehouses))
-        return report_utils.remove_negative(['warehouse_qty'], qty_query.run(as_dict=True))
+        return qty_query.run(as_dict=True)
 
     def get_box_requirement_from_so(self):
         so_query = (
@@ -145,3 +147,37 @@ class BoxRequirements:
             .groupby(self.poi.item_code)
         )
         return query.run(as_dict=True)
+
+    def get_stock_as_on_date(self, as_on_date, warehouse=None):
+        if isinstance(as_on_date, str):
+            as_on_date = datetime.datetime.strptime(as_on_date, "%Y-%m-%d")
+        elif isinstance(as_on_date, datetime.date) and not isinstance(as_on_date, datetime.datetime):
+            as_on_date = datetime.datetime.combine(as_on_date, datetime.time.min)
+
+        sle_date = self.sle.posting_date
+        sle_time = self.sle.posting_time
+
+        condition = (sle_date < as_on_date.date()) | \
+                    ((sle_date == as_on_date.date()) & (sle_time <= as_on_date.time()))
+
+        sle_query = (
+            frappe.qb
+            .from_(self.sle)
+            .where(condition)
+        )
+
+        if warehouse:
+            sle_query = sle_query.where(self.sle.warehouse == warehouse)
+        else:
+            pb_warehouses = frappe.get_list("Warehouse", {"warehouse_type": "Packing Boxes"}, pluck="name")
+            sle_query = sle_query.where(self.sle.warehouse.isin(pb_warehouses))
+
+        sle_query = (
+            sle_query
+            .select(
+                self.sle.item_code.as_('box'),
+                Sum(self.sle.actual_qty).as_('warehouse_qty')
+            )
+            .groupby(self.sle.item_code)
+        )
+        return sle_query.run(as_dict=True)
