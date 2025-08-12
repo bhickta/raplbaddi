@@ -61,7 +61,7 @@ class PartyManager:
         existing_name = self._find_party_by_gstin(include_self=False)
         
         if existing_name and self.doc.name != existing_name:
-            frappe.rename_doc(self.doctype, self.doc.name, existing_name, ignore_permissions=True)
+            frappe.rename_doc(self.doctype, self.doc.name, existing_name)
             frappe.msgprint(f"Renamed to {frappe.bold(existing_name)} to match party with the same GSTIN.", title="Name Synchronized", indicator="green")
             self.doc.reload()
 
