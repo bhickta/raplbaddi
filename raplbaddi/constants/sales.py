@@ -41,6 +41,24 @@ custom_fields = {
             "in_list_view": 1,
             "columns": 1,
             "reqd": 1,
+        },
+        {
+            "is_system_generated": 1,
+            "label": "Remarks",
+            "fieldname": "remarks",
+            "insert_after": "color",
+            "fieldtype": "Text",
+            "allow_on_submit": 1,
+            "in_list_view": 1,
+            "columns": 1,
+            "read_only": 1,
+        },
+        {
+            "is_system_generated": 1,
+            "label": "Select Remarks",
+            "fieldname": "select_remarks",
+            "insert_after": "remarks",
+            "fieldtype": "Button",
         }
     ],
     "Delivery Note": [

@@ -16,11 +16,7 @@ class Remark(Document):
 
 		description: DF.SmallText | None
 		is_disabled: DF.Check
-		parent: DF.Data
-		parentfield: DF.Data
-		parenttype: DF.Data
 		product: DF.Data | None
-		sales_order: DF.Link | None
 		title: DF.Data | None
 	# end: auto-generated types
 	pass

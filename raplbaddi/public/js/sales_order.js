@@ -109,6 +109,24 @@ frappe.ui.form.on('Sales Order', {
 });
 
 frappe.ui.form.on('Sales Order Item', {
+  select_remarks: function(frm, cdt, cdn) {
+        new raplbaddi.GenericMultiSelectDialog({
+            frm: frm,
+            cdt: cdt,
+            cdn: cdn,
+            source_fieldname: 'remarks',
+            target_doctype: "Remark",
+            
+            filters: {
+                is_disabled: 0
+            },
+            
+            callback: function(selected_list) {
+                const final_value = selected_list.join(', ');
+                frappe.model.set_value(cdt, cdn, 'remarks', final_value);
+            }
+        });
+  },
   items_add(frm, cdt, cdn) {
     copyPrevious(frm, locals[cdt][cdn], ['name_of_brand']);
   },
