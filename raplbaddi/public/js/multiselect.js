@@ -2,7 +2,8 @@ frappe.provide("raplbaddi");
 
 /**
  * A robust, self-contained multi-select dialog for child tables.
- * It reads existing values from a source field and returns the new selection.
+ * It reads existing values from a source field, returns the new selection,
+ * and ensures the table always has at least one row to start.
  *
  * @class GenericMultiSelectDialog
  * @param {object} opts - Options for the dialog.
@@ -16,7 +17,6 @@ frappe.provide("raplbaddi");
  */
 class GenericMultiSelectDialog {
     constructor(opts) {
-        // Store all options
         this.frm = opts.frm;
         this.cdt = opts.cdt;
         this.cdn = opts.cdn;
@@ -25,18 +25,13 @@ class GenericMultiSelectDialog {
         this.filters = opts.filters || {};
         this.callback = opts.callback;
 
-        // Automatically read and parse the existing values
         this.read_existing_values();
-
-        // Build and show the dialog
         this.make_dialog();
     }
 
     read_existing_values() {
         const row = locals[this.cdt][this.cdn];
         const source_value = row[this.source_fieldname] || '';
-        
-        // Use a robust regex to split the string, handling commas with or without spaces
         this.existing_values = source_value ? source_value.split(/\s*,\s*/).filter(d => d) : [];
     }
 
@@ -47,9 +42,10 @@ class GenericMultiSelectDialog {
             fields: this.get_dialog_fields(),
             primary_action_label: __("Update"),
             primary_action: () => this.on_update(),
+            on_page_show: () => {
+                this.render_existing_data();
+            }
         });
-
-        this.render_existing_data();
         this.dialog.show();
     }
 
@@ -70,9 +66,12 @@ class GenericMultiSelectDialog {
     }
 
     render_existing_data() {
-        const data = this.existing_values.map(val => ({ selection_entry: val }));
         const table = this.dialog.get_field("selection_table");
-        table.set_value(data);
+        const data = this.existing_values.map(val => ({ "selection_entry": val }));
+        table.df.data = data;
+        if (table.df.data.length === 0) {
+            table.df.data.push({});
+        }
         table.grid.refresh();
     }
 
@@ -89,6 +88,5 @@ class GenericMultiSelectDialog {
         this.dialog.hide();
     }
 }
-
 
 raplbaddi.GenericMultiSelectDialog = GenericMultiSelectDialog;
