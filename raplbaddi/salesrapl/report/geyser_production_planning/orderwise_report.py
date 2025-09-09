@@ -4,10 +4,9 @@ from raplbaddi.salesrapl.report.geyser_production_planning import sales_order_da
 
 class OrderAndShortageReport(BaseReport):
     def run(self):
-        as_on_date = self.filters.get("as_on_date")
         raw_data = sales_order_data.get_so_items(self.filters)
-        bin_stock = sales_order_data.get_bin_stock(as_on_date)
         so_mapped = report_utils.accum_mapper(data=raw_data, key="sales_order")
+        bin_stock = sales_order_data.get_bin_stock()
         data = []
 
         for so, items in so_mapped.items():

@@ -36,49 +36,20 @@ def get_so_items(filters=None):
 	)
 	if filters and filters.get('item_group'):
 		query = query.where(soi.item_group.isin(filters.get('item_group')))
-	if filters and filters.get("as_on_date"):
-		query = query.where(so.transaction_date <= filters.get("as_on_date"))
 	data = query.run(as_dict=True)
 	return data
 
-import datetime
-from frappe.query_builder import functions as fn
+def get_bin_stock():
+	bin = frappe.qb.DocType('Bin')
+	query = (
+		frappe.qb
+		.from_(bin)
+		.select(bin.item_code, bin.warehouse, bin.actual_qty)
+	)
+	return query.run(as_dict=True)
 
-def get_bin_stock(as_on_date=None):
-    if as_on_date:
-        if isinstance(as_on_date, str):
-            as_on_date = datetime.datetime.strptime(as_on_date, "%Y-%m-%d")
-        elif isinstance(as_on_date, datetime.date) and not isinstance(as_on_date, datetime.datetime):
-            as_on_date = datetime.datetime.combine(as_on_date, datetime.time.min)
-
-    if not as_on_date:
-        bin = frappe.qb.DocType('Bin')
-        query = (
-            frappe.qb
-            .from_(bin)
-            .select(bin.item_code, bin.warehouse, bin.actual_qty)
-        )
-        return query.run(as_dict=True)
-
-    sle = frappe.qb.DocType("Stock Ledger Entry")
-    query = (
-        frappe.qb
-        .from_(sle)
-        .where(sle.posting_date <= as_on_date.date())
-        .where((sle.posting_date < as_on_date.date()) | (sle.posting_time <= as_on_date.time()))
-        .groupby(sle.item_code, sle.warehouse)
-        .select(
-            sle.item_code,
-            sle.warehouse,
-            fn.Sum(sle.actual_qty).as_("actual_qty")
-        )
-    )
-    return query.run(as_dict=True)
-
-
-def get_box_qty(as_on_date=None):
+def get_box_qty():
     from raplbaddi.stock_rapl.report.pb_report.box_data import BoxRequirements
     box = BoxRequirements()
-    if as_on_date:
-        return box.get_stock_as_on_date(as_on_date)
-    return box.warehouse_qty()
+    box_qty = box.warehouse_qty()
+    return box_qty
