@@ -12,6 +12,7 @@ class ItemwiseOrderAndShortageReport(BaseReport):
         for row in data:
             row["brand"] = row["brand"].replace("- RAPL", "")
             row["item_name"] = f"{row['item_code']} {row['brand']}"
+            row["billing_rule"] = row.get("billing_rule") or "None"
             self._enrich_with_stock(row, bin_stock)
             self._enrich_with_box(row, box_stock)
             row["unit"] = self.set_item_unit(row["item_code"])
@@ -58,14 +59,13 @@ class ItemwiseOrderAndShortageReport(BaseReport):
             .add_column("Order Date", "Date", 100, "date") \
             .add_column("Planning Remarks", "HTML", 100, "planning_remarks") \
             .add_column("Dispatch Remarks", "HTML", 100, "dispatch_remarks") \
+            .add_column("Billing Rule", "Data", 120, "billing_rule") \
             .add_column("SO Number", "Link", 100, "sales_order", options="Sales Order") \
             .add_column("City", "Data", 100, "city") \
             .add_column("City Count", "Int", 100, "city_count") \
             .add_column("Customer", "Link", 300, "customer", options="Customer") \
-            .add_column("Item", "Data", 100, "item_code") \
             .add_column("Brand", "Data", 100, "brand") \
             .add_column("Color", "Data", 100, "color") \
-            .add_column("Order Qty", "Int", 120, "ordered_qty") \
             .add_column("Pending Qty", "Int", 120, "pending_qty") \
             .add_column("Delivered Qty", "Int", 120, "delivered_qty") \
             .add_column("Actual Qty", "Int", 120, "actual_qty") \
@@ -79,3 +79,5 @@ class ItemwiseOrderAndShortageReport(BaseReport):
             .add_column("Supplier", "Data", 120, "supplier") \
             .add_column("Unit", "Data", 130, "unit") \
             .build()
+            # .add_column("Item", "Data", 100, "item_code") \
+            # .add_column("Order Qty", "Int", 120, "ordered_qty") \

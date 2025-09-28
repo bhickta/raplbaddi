@@ -40,6 +40,7 @@ class OrderAndShortageReport(BaseReport):
                 "color": item["color"]
             })
             entry["pending_qty"] += item["pending_qty"]
+            entry["billing_rule"] = item.get("billing_rule") or "None"
             entry["ordered_qty"] += item["ordered_qty"]
             entry["items"].add(item["item_code"])
             entry["brands"].add(item["brand"].replace(" - RAPL", ""))
@@ -61,15 +62,16 @@ class OrderAndShortageReport(BaseReport):
             .add_column("Items", "Data", 100, "items") \
             .add_column("Planning Remarks", "HTML", 100, "planning_remarks") \
             .add_column("Dispatch Remarks", "HTML", 100, "dispatch_remarks") \
-            .add_column("Status", "Data", 100, "status") \
+            .add_column("Billing Rule", "Data", 120, "billing_rule") \
             .add_column("Sales Order", "Link", 100, "sales_order", options="Sales Order") \
             .add_column("City", "Data", 100, "city") \
             .add_column("City Count", "Int", 100, "city_count") \
             .add_column("Customer", "Link", 300, "customer", options="Customer") \
-            .add_column("Ordered Qty", "Int", 120, "pending_qty") \
             .add_column("Pending Qty", "Int", 120, "pending_qty") \
             .add_column("Shortage Qty", "Int", 100, "so_shortage") \
             .add_column("% Available", "Int", 100, "%", disable_total=True) \
             .add_column("Brand", "Data", 100, "brands") \
             .add_column("SO Remark", "HTML", 130, "so_remarks") \
             .build()
+            # .add_column("Status", "Data", 100, "status") \
+            # .add_column("Ordered Qty", "Int", 120, "pending_qty") \

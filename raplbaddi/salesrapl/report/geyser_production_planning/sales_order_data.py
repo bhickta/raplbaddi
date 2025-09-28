@@ -22,6 +22,7 @@ def get_so_items(filters=None):
 			so.planning_remarks.as_('planning_remarks'),
 			so.dispatch_remarks.as_('dispatch_remarks'),
 			so.shipping_address_name.as_('shipping_address_name'),
+			so.taxes_and_charges.as_('billing_rule'),
 			so.name.as_('sales_order'),
 			soi.item_code.as_('item_code'),
 			soi.qty.as_('qty').as_('ordered_qty'),
