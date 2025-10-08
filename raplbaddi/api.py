@@ -126,7 +126,8 @@ def get_poi(item_code):
         .select(
             poi.material_request_item.as_('material_request_item'), poi.material_request,
             (poi.qty - poi.received_qty).as_('remaining_qty'),
-            poi.name.as_('purchase_order_item'), poi.parent.as_('purchase_order')
+            poi.name.as_('purchase_order_item'), poi.parent.as_('purchase_order'),
+            poi.rate.as_('rate'),
         )
     )
     return query.run(as_dict=True)
