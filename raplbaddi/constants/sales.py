@@ -26,36 +26,6 @@ custom_fields = {
             "reqd": 0,
             "allow_on_submit": 0,
         },
-        {
-            "is_system_generated": 1,
-            "label": "Remarks Section",
-            "fieldname": "remarks_section",
-            "insert_after": "customer_group",
-            "fieldtype": "Section Break",
-            "collapsible": 1,
-        },
-        {
-            "is_system_generated": 1,
-            "label": "Remarks Unit 1",
-            "fieldname": "remarks_unit_1",
-            "insert_after": "remarks_section",
-            "fieldtype": "Small Text",
-            "read_only": 0,
-        },
-        {
-            "is_system_generated": 1,
-            "fieldname": "remarks_col_break_1",
-            "insert_after": "remarks_unit_1",
-            "fieldtype": "Column Break",
-        },
-        {
-            "is_system_generated": 1,
-            "label": "Remarks Unit 2",
-            "fieldname": "remarks_unit_2",
-            "insert_after": "remarks_col_break_1",
-            "fieldtype": "Small Text",
-            "read_only": 0,
-        },
     ],
     "Sales Order Item": [
         {
