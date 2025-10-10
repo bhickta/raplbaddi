@@ -71,8 +71,7 @@ class ItemwiseOrderAndShortageReport(BaseReport):
             .add_column("Actual Qty", "Int", 120, "actual_qty") \
             .add_column("Short Qty", "Int", 120, "short_qty") \
             .add_column("Item Name", "Data", 130, "item_name") \
-            .add_column("Remark Unit 1", "HTML", 130, "remarks_unit_1") \
-            .add_column("Remarks Unit 2", "HTML", 130, "remarks_unit_2") \
+            .add_column("SO Remark", "HTML", 130, "so_remarks") \
             .add_column("Box name", "Link", 100, "box", options="Item") \
             .add_column("Box Qty", "Int", 120, "box_stock_qty") \
             .add_column("Box Shortage", "Int", 120, "box_short_qty") \

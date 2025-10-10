@@ -33,8 +33,7 @@ class OrderAndShortageReport(BaseReport):
                 "status": item["status"],
                 "planning_remarks": item["planning_remarks"],
                 "dispatch_remarks": item["dispatch_remarks"],
-                "remarks_unit_1": item["remarks_unit_1"],
-                "remarks_unit_2": item["remarks_unit_2"],
+                "so_remarks": item["so_remarks"],
                 "date": item["date"],
                 "customer": item["customer"],
                 "customer_name": item["customer_name"],
@@ -72,8 +71,7 @@ class OrderAndShortageReport(BaseReport):
             .add_column("Shortage Qty", "Int", 100, "so_shortage") \
             .add_column("% Available", "Int", 100, "%", disable_total=True) \
             .add_column("Brand", "Data", 100, "brands") \
-            .add_column("Remarks Unit 1", "HTML", 130, "remarks_unit_1") \
-            .add_column("Remarks Unit 2", "HTML", 130, "remarks_unit_2") \
+            .add_column("SO Remark", "HTML", 130, "so_remarks") \
             .build()
             # .add_column("Status", "Data", 100, "status") \
             # .add_column("Ordered Qty", "Int", 120, "pending_qty") \
