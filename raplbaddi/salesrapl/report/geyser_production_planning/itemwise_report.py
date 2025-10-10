@@ -58,7 +58,8 @@ class ItemwiseOrderAndShortageReport(BaseReport):
         return builder \
             .add_column("Order Date", "Date", 100, "date") \
             .add_column("Planning Remarks", "HTML", 100, "planning_remarks") \
-            .add_column("Dispatch Remarks", "HTML", 100, "dispatch_remarks") \
+            .add_column("Remarks Unit 1", "HTML", 100, "remarks_unit_1") \
+            .add_column("Remarks Unit 2", "HTML", 100, "remarks_unit_2") \
             .add_column("Billing Rule", "Data", 120, "billing_rule") \
             .add_column("SO Number", "Link", 100, "sales_order", options="Sales Order") \
             .add_column("City", "Data", 100, "city") \
