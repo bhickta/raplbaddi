@@ -19,7 +19,6 @@ class PendingComplaintReport(ServiceCentreReport):
                 i.customer_address AS address,
                 i.product AS product,
                 i.brand_name AS brand,
-                i.issue_type AS issue,
                 i.service_delivered AS status,
                 GROUP_CONCAT(j.phone SEPARATOR ', ') AS contact,
                 1 as No
@@ -92,12 +91,6 @@ class PendingComplaintReport(ServiceCentreReport):
                 "width": 100,
             },
             {
-                "label": "Issue",
-                "fieldname": "issue",
-                "fieldtype": "Data",
-                "width": 100,
-            },
-                    {
                 "label": "Status",
                 "fieldname": "status",
                 "fieldtype": "Data",
