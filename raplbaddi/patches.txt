@@ -14,6 +14,7 @@ execute:from raplbaddi.patches.set_distance_issuerapl import execute; execute() 
 execute:from raplbaddi.patches.customer_name_dsra import execute; execute() #2
 execute:from raplbaddi.patches.brand_warehouse import execute; execute() #2
 execute:from raplbaddi.patches.issues_table import execute; execute() #1
+execute:#from raplbaddi.patches.disable_non_bom_items import execute; execute() #1
 execute:from raplbaddi.patches.raplbaddi_data import execute; execute() #1
 execute:from raplbaddi.patches.remove_allow_negative_stock_items import execute; execute() #2
 execute:from raplbaddi.patches.reconcile_stock_cooler import execute; execute() #2
