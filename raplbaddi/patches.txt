@@ -18,8 +18,9 @@ execute:#from raplbaddi.patches.disable_non_bom_items import execute; execute() 
 execute:from raplbaddi.patches.raplbaddi_data import execute; execute() #1
 execute:from raplbaddi.patches.remove_allow_negative_stock_items import execute; execute() #2
 execute:from raplbaddi.patches.reconcile_stock_cooler import execute; execute() #2
+execute:from raplbaddi.patches.zero_stock import execute; execute() #0.5
 execute:#from raplbaddi.patches.sc_stock_recon import execute; execute() #2
 execute:#from raplbaddi.patches.merge_accounts import execute; execute() #1
 execute:from raplbaddi.patches.duplicate_index_column import execute; execute() #1
 execute:from raplbaddi.patches.set_day_of_the_week_in_attendance import execute; execute() #0.2
-execute:from raplbaddi.patches.unit_2_data import execute; execute(delete=False) #3
+execute:#from raplbaddi.patches.unit_2_data import execute; execute(delete=False) #3
