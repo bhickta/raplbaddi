@@ -1,85 +1,110 @@
-# Copyright (c) 2025, Nishant Bhickta and contributors
-# For license information, please see license.txt
-
 import frappe
 
 def execute(filters=None):
-    if not filters:
-        filters = {}
+    filters = filters or {}
+    conditions = []
 
-    # --- Build dynamic filter conditions ---
-    conditions = ""
-    if filters.get("brand"):
-        conditions += " AND i.brand = %(brand)s"
+    # ✅ Status filter
+    selected_status = filters.get("status")
+    if selected_status == "Submitted":
+        conditions.append("dn.docstatus = 1")
+    elif selected_status == "Cancelled":
+        conditions.append("dn.docstatus = 2")
+    else:
+        conditions.append("dn.docstatus IN (1, 2)")
+
+    # ✅ Additional filters (safely escaped)
+    if filters.get("item_group"):
+        conditions.append(f"i.item_group = {frappe.db.escape(filters.get('item_group'))}")
     if filters.get("customer"):
-        conditions += " AND dn.customer = %(customer)s"
-    if filters.get("item_code"):
-        conditions += " AND dni.item_code = %(item_code)s"
+        conditions.append(f"dn.customer = {frappe.db.escape(filters.get('customer'))}")
+    if filters.get("brand"):
+        conditions.append(f"dni.brand = {frappe.db.escape(filters.get('brand'))}")
+    if filters.get("from_date"):
+        conditions.append(f"dn.posting_date >= {frappe.db.escape(filters.get('from_date'))}")
+    if filters.get("to_date"):
+        conditions.append(f"dn.posting_date <= {frappe.db.escape(filters.get('to_date'))}")
 
-    # --- Main query: Fetch Delivery Note Item data with Brand, Customer, and Item ---
-    data = frappe.db.sql(f"""
+    where_clause = ""
+    if conditions:
+        where_clause = "WHERE " + " AND ".join(conditions)
+
+    # ✅ STEP 1: Fetch DN-level freight (dn.amount) and quantity
+    dn_query = f"""
         SELECT
-            i.brand AS brand,
+            dn.name AS dn_name,
             dn.customer AS customer,
-            dni.item_code AS item_code,
-            dni.item_name AS item_name,
-            SUM(dni.qty) AS total_qty
-        FROM
-            `tabDelivery Note Item` dni
-            INNER JOIN `tabDelivery Note` dn ON dni.parent = dn.name
-            INNER JOIN `tabItem` i ON dni.item_code = i.name
-        WHERE
-            dn.docstatus = 1 {conditions}
-        GROUP BY
-            i.brand, dn.customer, dni.item_code, dni.item_name
-        ORDER BY
-            i.brand, dn.customer
-    """, filters, as_dict=1)
+            dn.customer_name AS customer_name,
+            GROUP_CONCAT(DISTINCT dni.item_code SEPARATOR ', ') AS item_codes,
+            GROUP_CONCAT(DISTINCT dni.brand SEPARATOR ', ') AS brand_names,
+            SUM(dni.qty) AS total_qty,
+            IFNULL(dn.amount, 0) AS total_freight,
+            CASE 
+                WHEN dn.docstatus = 1 THEN 'Submitted'
+                WHEN dn.docstatus = 2 THEN 'Cancelled'
+                ELSE 'Draft'
+            END AS status
+        FROM `tabDelivery Note` dn
+        LEFT JOIN `tabDelivery Note Item` dni ON dn.name = dni.parent
+        LEFT JOIN `tabItem` i ON i.name = dni.item_code
+        {where_clause}
+        GROUP BY dn.name, dn.customer, dn.customer_name, dn.amount, dn.docstatus
+    """
 
-    # --- Calculate Brand-wise Totals and Unique Customer List ---
-    brand_summary = {}
-    for row in data:
-        brand = row.get("brand") or "No Brand"
-        if brand not in brand_summary:
-            brand_summary[brand] = {"total_qty": 0, "customers": set()}
-        brand_summary[brand]["total_qty"] += row["total_qty"]
-        brand_summary[brand]["customers"].add(row["customer"])
+    dn_data = frappe.db.sql(dn_query, as_dict=True)
 
-    # --- Calculate overall total quantity (for percentage calculation) ---
-    total_all_brands = sum(details["total_qty"] for details in brand_summary.values()) or 1
+    # ✅ STEP 2: Aggregate per customer (each DN counted only once)
+    customer_totals = {}
+    for row in dn_data:
+        cust = row.get("customer") or "Unknown"
+        if cust not in customer_totals:
+            customer_totals[cust] = {
+                "customer_name": row.get("customer_name"),
+                "item_codes": set(),
+                "brand_names": set(),
+                "total_qty": 0,
+                "total_freight": 0,
+                "status": row.get("status"),
+            }
 
-    # --- Sort brands by total quantity descending ---
-    sorted_brands = sorted(
-        brand_summary.items(),
-        key=lambda x: x[1]["total_qty"],
-        reverse=True
-    )
+        # Only add once per DN
+        customer_totals[cust]["total_qty"] += row.get("total_qty") or 0
+        customer_totals[cust]["total_freight"] += row.get("total_freight") or 0
 
-    # --- Prepare summary rows (Brand Totals) ---
-    summary_rows = []
-    for brand, details in sorted_brands:
-        # Convert customer set to a comma-separated string
-        customer_list = ", ".join(sorted(details["customers"]))
-        percent = round((details["total_qty"] / total_all_brands) * 100, 2)
+        if row.get("item_codes"):
+            for item in (row["item_codes"].split(", ")):
+                customer_totals[cust]["item_codes"].add(item.strip())
+        if row.get("brand_names"):
+            for brand in (row["brand_names"].split(", ")):
+                customer_totals[cust]["brand_names"].add(brand.strip())
 
-        summary_rows.append({
-            "brand": f"{brand} (Total)",
-            "customer": f"{customer_list} ({len(details['customers'])} Customers)",
-            "item_code": "",
-            "item_name": f"{percent}% of Total",
-            "total_qty": details["total_qty"]
+    # ✅ STEP 3: Prepare final data
+    data = []
+    for cust, vals in customer_totals.items():
+        qty = vals["total_qty"]
+        freight = vals["total_freight"]
+        freight_per_item = round(freight / qty, 2) if qty else 0
+        item_list = ", ".join(sorted(vals["item_codes"])) if vals["item_codes"] else "-"
+        brand_list = ", ".join(sorted(vals["brand_names"])) if vals["brand_names"] else "-"
+        data.append({
+            "customer_name": vals["customer_name"],
+            "brand": brand_list,
+            "item_code": item_list,
+            "total_qty": qty,
+            "total_freight": freight,
+            "freight_per_item": freight_per_item,
+            "status": vals["status"],
         })
 
-    # --- Combine detailed data and summary rows ---
-    final_data = data + summary_rows
-
-    # --- Define report columns ---
+    # ✅ STEP 4: Define columns
     columns = [
-        {"label": "Brand", "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 150},
-        {"label": "Customer", "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 280},
-        {"label": "Item Code", "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 120},
-        {"label": "Item Name", "fieldname": "item_name", "fieldtype": "Data", "width": 220},
-        {"label": "Total Qty", "fieldname": "total_qty", "fieldtype": "Float", "width": 120}
+        {"fieldname": "customer_name", "label": "Customer Name", "fieldtype": "Data", "width": 250},
+        {"fieldname": "brand", "label": "Brand", "fieldtype": "Data", "width": 150},
+        {"fieldname": "item_code", "label": "Item Code(s)", "fieldtype": "Data", "width": 250},
+        {"fieldname": "total_qty", "label": "Total Quantity", "fieldtype": "Float", "width": 130},
+        {"fieldname": "total_freight", "label": "Total Freight", "fieldtype": "Currency", "width": 150},
+        {"fieldname": "freight_per_item", "label": "Freight per Item", "fieldtype": "Currency", "width": 150},
+        {"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 120},
     ]
 
-    return columns, final_data
+    return columns, data
