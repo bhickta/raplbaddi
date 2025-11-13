@@ -5,6 +5,7 @@ from erpnext import get_default_company
 from io import BytesIO
 
 def execute(file_name_or_id="/files/zero_stock_nov_2025_01.xlsx"):
+    return
     manager = StockReconciliationManager(file_name_or_id)
     manager.execute_custom_reconciliation()
 
