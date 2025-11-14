@@ -4,7 +4,7 @@ def execute(filters=None):
     filters = filters or {}
     conditions = []
 
-    # ✅ Status filter
+    # STATUS FILTER
     selected_status = filters.get("status")
     if selected_status == "Submitted":
         conditions.append("dn.docstatus = 1")
@@ -13,7 +13,7 @@ def execute(filters=None):
     else:
         conditions.append("dn.docstatus IN (1, 2)")
 
-    # ✅ Additional filters (safely escaped)
+    # Additional filters
     if filters.get("item_group"):
         conditions.append(f"i.item_group = {frappe.db.escape(filters.get('item_group'))}")
     if filters.get("customer"):
@@ -29,7 +29,7 @@ def execute(filters=None):
     if conditions:
         where_clause = "WHERE " + " AND ".join(conditions)
 
-    # ✅ STEP 1: Fetch DN-level freight (dn.amount) and quantity
+    # STEP 1: Query
     dn_query = f"""
         SELECT
             dn.name AS dn_name,
@@ -53,10 +53,11 @@ def execute(filters=None):
 
     dn_data = frappe.db.sql(dn_query, as_dict=True)
 
-    # ✅ STEP 2: Aggregate per customer (each DN counted only once)
+    # STEP 2: Aggregate per customer
     customer_totals = {}
     for row in dn_data:
         cust = row.get("customer") or "Unknown"
+
         if cust not in customer_totals:
             customer_totals[cust] = {
                 "customer_name": row.get("customer_name"),
@@ -67,36 +68,35 @@ def execute(filters=None):
                 "status": row.get("status"),
             }
 
-        # Only add once per DN
         customer_totals[cust]["total_qty"] += row.get("total_qty") or 0
         customer_totals[cust]["total_freight"] += row.get("total_freight") or 0
 
         if row.get("item_codes"):
-            for item in (row["item_codes"].split(", ")):
+            for item in row["item_codes"].split(", "):
                 customer_totals[cust]["item_codes"].add(item.strip())
+
         if row.get("brand_names"):
-            for brand in (row["brand_names"].split(", ")):
+            for brand in row["brand_names"].split(", "):
                 customer_totals[cust]["brand_names"].add(brand.strip())
 
-    # ✅ STEP 3: Prepare final data
+    # STEP 3: Final output
     data = []
     for cust, vals in customer_totals.items():
         qty = vals["total_qty"]
         freight = vals["total_freight"]
         freight_per_item = round(freight / qty, 2) if qty else 0
-        item_list = ", ".join(sorted(vals["item_codes"])) if vals["item_codes"] else "-"
-        brand_list = ", ".join(sorted(vals["brand_names"])) if vals["brand_names"] else "-"
+
         data.append({
             "customer_name": vals["customer_name"],
-            "brand": brand_list,
-            "item_code": item_list,
+            "brand": ", ".join(sorted(vals["brand_names"])) or "-",
+            "item_code": ", ".join(sorted(vals["item_codes"])) or "-",
             "total_qty": qty,
             "total_freight": freight,
             "freight_per_item": freight_per_item,
             "status": vals["status"],
         })
 
-    # ✅ STEP 4: Define columns
+    # STEP 4: Columns
     columns = [
         {"fieldname": "customer_name", "label": "Customer Name", "fieldtype": "Data", "width": 250},
         {"fieldname": "brand", "label": "Brand", "fieldtype": "Data", "width": 150},
