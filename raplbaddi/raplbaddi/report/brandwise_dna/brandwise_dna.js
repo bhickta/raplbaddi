@@ -26,14 +26,14 @@ frappe.query_reports["Brandwise_DNA"] = {
       fieldtype: "Link",
       options: "Brand"
     },
-
-    // ⭐ NEW FILTER ADDED HERE
+ // ⭐ NEW FILTER ADDED HERE
     {
       fieldname: "customer_group",
       label: "Customer Group",
       fieldtype: "Link",
       options: "Customer Group"
     },
+
 
     {
       fieldname: "customer",
