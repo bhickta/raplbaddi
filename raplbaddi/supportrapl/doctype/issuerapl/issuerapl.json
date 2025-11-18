@@ -92,10 +92,9 @@
   {
    "depends_on": "eval:doc.product == \"Geyser\"",
    "fieldname": "model",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Geyser Model",
-   "mandatory_depends_on": "eval:doc.product == \"Geyser\"",
-   "options": "Geyser Model"
+   "mandatory_depends_on": "eval:doc.product == \"Geyser\""
   },
   {
    "fieldname": "service_centre_tab",
@@ -195,7 +194,7 @@
   {
    "depends_on": "eval:doc.product == \"Geyser\"",
    "fieldname": "brand_name",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Brand Name",
    "mandatory_depends_on": "eval:doc.product == \"Geyser\"",
    "options": "Brand"
@@ -228,10 +227,9 @@
   {
    "depends_on": "eval:doc.product == \"Geyser\"",
    "fieldname": "geyser_capacity",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Geyser Capacity",
-   "mandatory_depends_on": "eval:doc.product == \"Geyser\"",
-   "options": "Geyser Capacity"
+   "mandatory_depends_on": "eval:doc.product == \"Geyser\""
   },
   {
    "fetch_from": "service_centre.pincode",
@@ -385,7 +383,7 @@
  "grid_page_length": 50,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-08 08:11:31.163731",
+ "modified": "2025-11-17 10:40:41.886458",
  "modified_by": "Administrator",
  "module": "SupportRapl",
  "name": "IssueRapl",
@@ -419,6 +417,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

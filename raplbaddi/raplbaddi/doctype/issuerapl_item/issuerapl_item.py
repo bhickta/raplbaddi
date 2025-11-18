@@ -14,10 +14,10 @@ class IssueRaplItem(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		issue_type: DF.Link
+		issue_type: DF.Data | None
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
-		sub_issue: DF.Link | None
+		sub_issue: DF.Data | None
 	# end: auto-generated types
 	pass

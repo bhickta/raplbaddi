@@ -24,7 +24,7 @@ class IssueRapl(Document):
         aerial_kilometer: DF.Int
         amended_from: DF.Link | None
         amount: DF.Currency
-        brand_name: DF.Link | None
+        brand_name: DF.Data | None
         coins: DF.Float
         complaint_source_group: DF.Data | None
         cooler_model: DF.Link | None
@@ -37,14 +37,14 @@ class IssueRapl(Document):
         customer_phone_number: DF.Data | None
         expected_visit_date: DF.Date | None
         extra_cost: DF.Float
-        geyser_capacity: DF.Link | None
+        geyser_capacity: DF.Data | None
         invoice_date: DF.Date | None
         is_custom_amount: DF.Check
         issuerapl_items: DF.Table[IssueRaplItem]
         kilometer: DF.Float
         latitude: DF.Data | None
         longitude: DF.Data | None
-        model: DF.Link | None
+        model: DF.Data | None
         naming_series: DF.Literal["RAPL-"]
         no_of_pcs: DF.Float
         no_of_visits: DF.Int
