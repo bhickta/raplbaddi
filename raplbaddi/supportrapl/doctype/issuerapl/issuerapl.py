@@ -5,10 +5,10 @@ import frappe
 from .maps import GoogleMapClient
 from frappe.model.document import Document
 
-mapclient = GoogleMapClient()
 
 
 class IssueRapl(Document):
+    mapclient = GoogleMapClient()
     # begin: auto-generated types
     # This code is auto-generated. Do not modify anything in this block.
 
