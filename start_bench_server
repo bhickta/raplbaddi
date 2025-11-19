@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# This script forcefully stops all known processes related to a Frappe Bench
+# development server, addressing both "Address already in use" errors (via port checks)
+# and zombie processes (via process name checks).
+#
+
+echo "--- Frappe Bench Cleanup Script ---"
+
+# 1. Clear processes holding specific ports (web, socketio, redis-queue, redis-cache)
+echo "1. Checking and clearing processes on common Frappe development ports..."
+PORTS_TO_CLEAR=(8000 9000 11000 13000)
+
+for PORT in "${PORTS_TO_CLEAR[@]}"; do
+    # Find the Process ID (PID) listening on the port
+    PID=$(lsof -t -i :$PORT -sTCP:LISTEN)
+
+    if [ -n "$PID" ]; then
+        echo "  - Found process (PID: $PID) listening on port $PORT. Killing..."
+        # Kill the process, suppressing the error output if it fails
+        kill -9 $PID 2>/dev/null
+        if [ $? -eq 0 ]; then
+            echo "  - Successfully stopped process $PID."
+        else
+            echo "  - Failed to stop process $PID (might require 'sudo')."
+        fi
+    fi
+done
+
+echo "-----------------------------------"
+
+# 2. Clear known zombie Frappe Python processes (schedule, worker, etc.)
+echo "2. Checking and clearing zombie 'frappe-bench' Python processes..."
+
+# Find all PIDs running from the current frappe-bench path.
+# This catches schedule, worker, and any other stuck processes.
+# awk '{print $2}' extracts the PID from the ps aux output.
+BENCH_PIDS=$(ps aux | grep 'frappe-bench' | grep -v 'grep' | awk '{print $2}')
+
+if [ -n "$BENCH_PIDS" ]; then
+    echo "  - Found zombie PIDs running from frappe-bench. Killing them now..."
+    # Use 'xargs' to pass the PIDs to the 'kill -9' command.
+    echo "$BENCH_PIDS" | xargs kill -9 2>/dev/null
+    echo "  - Done killing bench helper processes."
+else
+    echo "  - No zombie 'frappe-bench' processes found."
+fi
+
+echo "-----------------------------------"
+echo "Cleanup complete."
+echo "Please remember to ensure your Procfile has the '--noreload' flag set for the 'web' service."
+echo "You can now try running 'bench start' again."
+
+bench start
