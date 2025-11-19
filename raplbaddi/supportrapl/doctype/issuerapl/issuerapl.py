@@ -37,7 +37,7 @@ class IssueRapl(Document):
         customer_phone_number: DF.Data | None
         expected_visit_date: DF.Date | None
         extra_cost: DF.Float
-        geyser_capacity: DF.Link | None
+        geyser_capacity: DF.Data | None
         invoice_date: DF.Date | None
         is_custom_amount: DF.Check
         issuerapl_items: DF.Table[IssueRaplItem]
