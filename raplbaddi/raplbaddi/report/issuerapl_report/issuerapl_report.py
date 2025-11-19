@@ -1,61 +1,117 @@
 import frappe
+from frappe import _
 
 def execute(filters=None):
-    filters = filters or {}
+    if not filters:
+        filters = {}
 
-    # -------------------- COLUMNS --------------------
-    columns = [
-        {"label": "Issue ID", "fieldname": "issue_id", "fieldtype": "Link", "options": "IssueRapl", "width": 140},
-        {"label": "Status", "fieldname": "status", "fieldtype": "Data", "width": 120},
-        {"label": "Brand Name", "fieldname": "brand_name", "fieldtype": "Data", "width": 150},
-        {"label": "Geyser Capacity", "fieldname": "geyser_capacity", "fieldtype": "Data", "width": 120},
-        {"label": "Model", "fieldname": "model", "fieldtype": "Data", "width": 120},
-        {"label": "Customer Address", "fieldname": "customer_address", "fieldtype": "Small Text", "width": 240},
-        {"label": "State", "fieldname": "customer_address_state", "fieldtype": "Data", "width": 120},
-        {"label": "Issue Type", "fieldname": "issue_type", "fieldtype": "Data", "width": 150},
-        {"label": "Sub Issue", "fieldname": "sub_issue", "fieldtype": "Data", "width": 180},
-    ]
-
-    # -------------------- CONDITIONS --------------------
-    conditions = "1=1"
-
-    if filters.get("status"):
-        conditions += f" AND issue.status = '{filters['status']}'"
-
-    if filters.get("brand_name"):
-        conditions += f" AND issue.brand_name LIKE '%{filters['brand_name']}%'"
-
-    if filters.get("geyser_capacity"):
-        conditions += f" AND issue.geyser_capacity LIKE '%{filters['geyser_capacity']}%'"
-
-    if filters.get("model"):
-        conditions += f" AND issue.model LIKE '%{filters['model']}%'"
-
-    if filters.get("customer_address_state"):
-        conditions += f" AND issue.customer_address_state LIKE '%{filters['customer_address_state']}%'"
-
-    # -------------------- MAIN QUERY --------------------
-    query = f"""
-        SELECT
-            issue.name AS issue_id,
-            issue.status,
-            issue.brand_name,
-            issue.geyser_capacity,
-            issue.model,
-            issue.customer_address,
-            issue.customer_address_state,
-            child.issue_type,
-            child.sub_issue
-        FROM
-            `tabIssueRapl` issue
-        LEFT JOIN 
-            `tabIssueRapl Item` child 
-            ON child.parent = issue.name
-        WHERE
-            {conditions}
-        ORDER BY issue.creation DESC
-    """
-
-    data = frappe.db.sql(query, as_dict=True)
+    columns = get_columns()
+    data = get_data(filters)
 
     return columns, data
+
+def extract_year_month(serial_no):
+    if not serial_no:
+        return "NA", "NA"
+
+    s = serial_no.strip().upper()
+
+    # 1️⃣ Numeric format
+    if s.isdigit() and len(s) >= 3:
+        try:
+            year = 2000 + int(s[0])
+            month = int(s[1:3])
+            if 1 <= month <= 12:
+                return year, month
+        except:
+            pass
+
+    # 2️⃣ RGS format
+    if s.startswith("RGS") and len(s) >= 7:
+        try:
+            year = 2000 + int(s[3:5])
+            month = int(s[5:7])
+            if 1 <= month <= 12:
+                return year, month
+        except:
+            pass
+
+    return "NA", "NA"
+
+def get_columns():
+    return [
+        {"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 120},
+        {"label": _("Brand Name"), "fieldname": "brand_name", "fieldtype": "Data", "width": 150},
+        {"label": _("Issue Type"), "fieldname": "issue_type", "fieldtype": "Data", "width": 150},
+        {"label": _("Sub Issue"), "fieldname": "sub_issue", "fieldtype": "Data", "width": 250},
+        {"label": _("State"), "fieldname": "state", "fieldtype": "Data", "width": 120},
+        {"label": _("Geyser Capacity"), "fieldname": "geyser_capacity", "fieldtype": "Data", "width": 140},
+        {"label": _("Geyser Model"), "fieldname": "geyser_model", "fieldtype": "Data", "width": 150},
+        {"label": _("Serial No"), "fieldname": "serial_no", "fieldtype": "Data", "width": 120},
+        {"label": _("Year"), "fieldname": "year", "fieldtype": "Int", "width": 80},
+        {"label": _("Month"), "fieldname": "month", "fieldtype": "Int", "width": 80},
+        {"label": _("Creation Date"), "fieldname": "creation_date", "fieldtype": "Date", "width": 120},
+        {"label": _("Sale Date"), "fieldname": "sale_date", "fieldtype": "Date", "width": 120}
+    ]
+
+def get_data(filters):
+    conditions = []
+    values = {}
+
+    if filters.get("status"):
+        conditions.append("status = %(status)s")
+        values["status"] = filters.get("status")
+
+    if filters.get("brand_name"):
+        conditions.append("brand_name = %(brand_name)s")
+        values["brand_name"] = filters.get("brand_name")
+
+    if filters.get("issue_type"):
+        conditions.append("issue_type = %(issue_type)s")
+        values["issue_type"] = filters.get("issue_type")
+
+    if filters.get("sub_issue"):
+        conditions.append("sub_issue = %(sub_issue)s")
+        values["sub_issue"] = filters.get("sub_issue")
+
+    if filters.get("state"):
+        conditions.append("state = %(state)s")
+        values["state"] = filters.get("state")
+
+    if filters.get("geyser_capacity"):
+        conditions.append("geyser_capacity = %(geyser_capacity)s")
+        values["geyser_capacity"] = filters.get("geyser_capacity")
+
+    if filters.get("geyser_model"):
+        conditions.append("geyser_model = %(geyser_model)s")
+        values["geyser_model"] = filters.get("geyser_model")
+
+    condition_str = " and ".join(conditions)
+    if condition_str:
+        condition_str = " where " + condition_str
+
+    query = f"""
+        SELECT
+            ir.status,
+            ir.brand_name,
+            iri.issue_type,
+            IFNULL(iri.sub_issue , 'Not Specified') as sub_issue,
+            ir.customer_address_state as state,
+            ir.geyser_capacity,
+            ir.model as geyser_model,
+            ir.custom_serial_number as serial_no,
+            ir.custom_creation_date as creation_date,
+            ir.invoice_date as sale_date
+        FROM `tabIssue` AS ir
+        LEFT JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
+        {condition_str}
+    """
+
+    rows = frappe.db.sql(query, values, as_dict=True)
+
+    for r in rows:
+        year, month = extract_year_month(r.serial_no)
+        r.year = year
+        r.month = month
+
+    return rows
