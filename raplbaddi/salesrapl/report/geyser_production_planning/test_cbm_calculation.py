@@ -97,5 +97,43 @@ class TestCBMCalculation(unittest.TestCase):
             self.assertEqual(data[0]['total_cbm'], 15.0)
             print("Orderwise CBM Verified: (10 * 0.5) + (5 * 2.0) = 15.0")
 
+    def test_none_cbm(self):
+        # Mock data with None CBM
+        mock_data = [
+            {
+                "item_code": "ITEM-1",
+                "brand": "BrandA - RAPL",
+                "pending_qty": 10,
+                "cbm": None,
+                "shipping_address_name": "Address 1",
+                "status": "Pending",
+                "planning_remarks": "",
+                "remarks_unit_1": "",
+                "remarks_unit_2": "",
+                "so_remarks": "",
+                "date": "2023-01-01",
+                "customer": "Cust1",
+                "customer_name": "Customer 1",
+                "color": "Red",
+                "billing_rule": "Rule1",
+                "ordered_qty": 10,
+                "box": "Box1"
+            }
+        ]
+        
+        with patch('raplbaddi.salesrapl.report.geyser_production_planning.sales_order_data.get_so_items', return_value=mock_data), \
+             patch('raplbaddi.salesrapl.report.geyser_production_planning.sales_order_data.get_bin_stock', return_value=[]), \
+             patch('raplbaddi.salesrapl.report.geyser_production_planning.sales_order_data.get_box_qty', return_value=[]), \
+             patch.object(itemwise_report.ItemwiseOrderAndShortageReport, 'get_ordered_box_qty', return_value={}), \
+             patch.object(itemwise_report.ItemwiseOrderAndShortageReport, 'set_item_unit', return_value="Unit1"), \
+             patch.object(itemwise_report.ItemwiseOrderAndShortageReport, 'get_city_from_shipping', return_value="City1"), \
+             patch.object(itemwise_report.ItemwiseOrderAndShortageReport, 'count_cities'):
+
+            report = itemwise_report.ItemwiseOrderAndShortageReport({})
+            columns, data = report.run()
+            
+            self.assertEqual(data[0]['total_cbm'], 0.0)
+            print("None CBM Verified: 10 * None = 0.0")
+
 if __name__ == '__main__':
     unittest.main()

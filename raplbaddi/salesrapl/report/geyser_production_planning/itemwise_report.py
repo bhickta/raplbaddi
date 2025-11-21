@@ -21,7 +21,7 @@ class ItemwiseOrderAndShortageReport(BaseReport):
             row["box_short_qty"] = (
                 row.get("short_qty", 0) - row.get("box_order", 0) - row.get("box_stock_qty", 0)
             )
-            row["total_cbm"] = row.get("pending_qty", 0) * row.get("cbm", 0)
+            row["total_cbm"] = (row.get("pending_qty") or 0) * (row.get("cbm") or 0)
 
         self.count_cities(data)
         data.sort(key=lambda x: x.get("%", 0), reverse=True)
@@ -72,6 +72,7 @@ class ItemwiseOrderAndShortageReport(BaseReport):
             .add_column("Delivered Qty", "Int", 120, "delivered_qty") \
             .add_column("Actual Qty", "Int", 120, "actual_qty") \
             .add_column("Short Qty", "Int", 120, "short_qty") \
+            .add_column("Total CBM", "Float", 100, "total_cbm") \
             .add_column("Item Name", "Data", 130, "item_name") \
             .add_column("SO Remark", "HTML", 130, "so_remarks") \
             .add_column("Box name", "Link", 100, "box", options="Item") \
@@ -80,7 +81,6 @@ class ItemwiseOrderAndShortageReport(BaseReport):
             .add_column("Box Order", "HTML", 130, "box_order") \
             .add_column("Supplier", "Data", 120, "supplier") \
             .add_column("Unit", "Data", 130, "unit") \
-            .add_column("Total CBM", "Float", 100, "total_cbm") \
             .build()
             # .add_column("Item", "Data", 100, "item_code") \
             # .add_column("Order Qty", "Int", 120, "ordered_qty") \
