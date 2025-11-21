@@ -5,10 +5,12 @@ from pypika import Case
 def get_so_items(filters=None):
 	so = frappe.qb.DocType('Sales Order')
 	soi = frappe.qb.DocType('Sales Order Item')
+	item = frappe.qb.DocType('Item')
 	query = (
 		frappe.qb
 		.from_(so)
 		.left_join(soi).on(so.name == soi.parent)
+		.left_join(item).on(soi.item_code == item.item_code)
 		.where(so.status.notin(['Stopped', 'Closed']) & so.docstatus == 1)
 		.where(so.delivery_status.isin(['Partly Delivered', 'Not Delivered']))
 		.select(
@@ -33,7 +35,8 @@ def get_so_items(filters=None):
 			soi.warehouse.as_('brand'),
 			soi.color.as_('color'),
 			so.delivery_status,
-			so.delivery_status.as_('delivery_status')
+			so.delivery_status.as_('delivery_status'),
+			item.cbm.as_('cbm')
 		)
 	)
 	if filters and filters.get('item_group'):
