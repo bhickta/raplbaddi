@@ -2,6 +2,25 @@ from frappe.model.document import Document
 from datetime import datetime
 
 class ProductionDoc(Document):
+    # begin: auto-generated types
+    # This code is auto-generated. Do not modify anything in this block.
+
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from frappe.types import DF
+        from raplbaddi.raplbaddi.doctype.production_doc_item.production_doc_item import ProductionDocItem
+
+        amended_from: DF.Link | None
+        cycle_time: DF.Float
+        date_of_production: DF.Date | None
+        department: DF.Link | None
+        items: DF.Table[ProductionDocItem]
+        manpower: DF.Int
+        remarks: DF.SmallText | None
+        shift: DF.Literal["Morning", "Evening", "Night"]
+        supervisor_name: DF.Link | None
+    # end: auto-generated types
 
     def validate(self):
 

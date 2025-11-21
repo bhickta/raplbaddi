@@ -6,7 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
-  "operation_name",
+  "operator_name",
   "start_time",
   "end_time",
   "breakdown_time",
@@ -21,11 +21,6 @@
    "fieldtype": "Link",
    "label": "Item Code",
    "options": "Item"
-  },
-  {
-   "fieldname": "operation_name",
-   "fieldtype": "Data",
-   "label": "Operation Name"
   },
   {
    "fieldname": "start_time",
@@ -61,13 +56,18 @@
    "fieldname": "standard_production_80",
    "fieldtype": "Float",
    "label": "Standard Production @80%"
+  },
+  {
+   "fieldname": "operator_name",
+   "fieldtype": "Data",
+   "label": "Operator Name"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-14 11:19:10.254473",
+ "modified": "2025-11-21 09:44:42.309269",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Production Doc Item",
