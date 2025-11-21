@@ -13,7 +13,9 @@
   "standard_production_100",
   "actual_production",
   "standard_production_80",
-  "manpower"
+  "manpower",
+  "operation_name",
+  "cycle_time"
  ],
  "fields": [
   {
@@ -59,15 +61,27 @@
   },
   {
    "fieldname": "operator_name",
-   "fieldtype": "Data",
-   "label": "Operator Name"
+   "fieldtype": "Link",
+   "label": "Operator Name",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "operation_name",
+   "fieldtype": "Link",
+   "label": "Operation Name",
+   "options": "Operation"
+  },
+  {
+   "fieldname": "cycle_time",
+   "fieldtype": "Int",
+   "label": "CycleTime"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-21 09:44:42.309269",
+ "modified": "2025-11-21 20:43:09.050193",
  "modified_by": "Administrator",
  "module": "Raplbaddi",
  "name": "Production Doc Item",
