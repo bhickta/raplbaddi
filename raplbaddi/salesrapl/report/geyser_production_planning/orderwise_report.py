@@ -25,6 +25,7 @@ class OrderAndShortageReport(BaseReport):
             "so_shortage": 0,
             "items": set(),
             "brands": set(),
+            "total_cbm": 0.0,
         }
 
         for item in items:
@@ -45,6 +46,7 @@ class OrderAndShortageReport(BaseReport):
             entry["ordered_qty"] += item["ordered_qty"]
             entry["items"].add(item["item_code"])
             entry["brands"].add(item["brand"].replace(" - RAPL", ""))
+            entry["total_cbm"] += (item.get("pending_qty") or 0) * (item.get("cbm") or 0)
 
             for b in bin_stock:
                 if b["item_code"] == item["item_code"] and b["warehouse"] == item["brand"]:
@@ -71,6 +73,7 @@ class OrderAndShortageReport(BaseReport):
             .add_column("Customer", "Link", 300, "customer", options="Customer") \
             .add_column("Pending Qty", "Int", 120, "pending_qty") \
             .add_column("Shortage Qty", "Int", 100, "so_shortage") \
+            .add_column("Total CBM", "Float", 100, "total_cbm") \
             .add_column("% Available", "Int", 100, "%", disable_total=True) \
             .add_column("Brand", "Data", 100, "brands") \
             .add_column("SO Remark", "HTML", 130, "so_remarks") \
