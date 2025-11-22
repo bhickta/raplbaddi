@@ -102,7 +102,7 @@ class IssueRapl(Document):
         sc_lat, sc_lng = frappe.get_cached_value(
             "Service Centre", self.service_centre, ["latitude", "longitude"]
         )
-        new_kilometer = mapclient.road_distance(
+        new_kilometer = self.mapclient.road_distance(
             origin=(org_lat, org_lng), destination=(sc_lat, sc_lng)
         )
         if new_kilometer != self.kilometer:
@@ -192,7 +192,7 @@ class IssueRapl(Document):
     def _nearest_sc(self, top: int = 3):
         self.areal_distances = []
         for sc in self.service_centres:
-            distance = mapclient._get_lat_lng_distance(
+            distance = self.mapclient._get_lat_lng_distance(
                 (self.latitude, self.longitude), (sc["latitude"], sc["longitude"])
             )
             self.areal_distances.append(
