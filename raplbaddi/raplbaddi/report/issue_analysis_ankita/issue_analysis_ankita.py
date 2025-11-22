@@ -1,18 +1,3 @@
-# Copyright (c) 2025, Nishant Bhickta and contributors
-# For license information, please see license.txt
-
-# import frappe
-# Copyright (c) 2025, Nishant Bhickta and contributors
-# For license information, please see license.txt
-
-# import frappe
-# Copyright (c) 2025, Nishant Bhickta
-# For license information, please see license.txt
-
-# Copyright (c) 2025, Nishant Bhickta and contributors
-# For license information, please see license.txt
-
-# import frappe
 import frappe
 from frappe import _
 
@@ -26,49 +11,18 @@ def execute(filters=None):
     return columns, data
 
 
-def extract_year_month(serial):
-    if not serial:
+def extract_year_month(serial_no):
+    if not serial_no:
         return "NA", "NA"
 
-    month_map = {
-            "A": "01", "B": "02", "C": "03", "D": "04",
-            "E": "05", "F": "06", "G": "07", "H": "08",
-            "I": "09", "J": "10", "K": "11", "L": "12"
-        }
-    # ----------------------------------------------------
-    s = serial.strip().upper()
-	# Example: F3XXXX
-    if len(s) >= 2 and s[0].isalpha() and s[1].isdigit():
-        month_letter = s[0]
-        year_digit = s[1]
-
-
-        if month_letter in month_map:
-            month = int(month_map[month_letter])   # Convert "06" → 6
-            year = 2020 + int(year_digit)          # "3" → 2023
-            return year, month
-    # ----------------------------------------------------
-	#RS4K → 4 → 2024, K → 11 (November)
-    # ----------------------------------------------------
-    if serial.startswith("RS") and len(serial) >= 4:
-        year_digit = serial[2]        # "4"
-        month_letter = serial[3]      # "K"
-
-        if year_digit.isdigit():
-            year = "202" + year_digit  # → 2024
-        else:
-            year = None
-
-        month = month_map.get(month_letter, None)
-
-        return year, month
+    s = serial_no.strip().upper()
 
     # ----------------------------------------------------
-    # Numeric only: YMMxxxxx  (4120590 → 2024, 12)
+    # 1️⃣ Numeric only: YMMxxxxx  (4120590 → 2024, 12)
     # ----------------------------------------------------
     if s.isdigit() and len(s) >= 3:
         try:
-            year = 2000 + int(s[0])          # "4" → 2024
+            year = 2020 + int(s[0])          # "4" → 2024
             month = int(s[1:3])              # "12" → December
             if 1 <= month <= 12:
                 return year, month
@@ -76,7 +30,7 @@ def extract_year_month(serial):
             pass
 
     # ----------------------------------------------------
-    # RGS format: RGS + YYMM  (RGS2207 → 2022, July)
+    #  RGS format: RGS + YYMM  (RGS2207 → 2022, July)
     # ----------------------------------------------------
     if s.startswith("RGS") and len(s) >= 7:
         try:
@@ -86,26 +40,49 @@ def extract_year_month(serial):
                 return year, month
         except:
             pass
-from datetime import datetime
+    
+    
 
-def get_mfg_date(year, month):
-    """Convert extracted year + month → proper date object (1st of month)."""
-    if not year or not month:
-        return None
-    try:
-        return datetime.strptime(f"{year}-{int(month):02d}-01", "%Y-%m-%d")
-    except:
-        return None
+    # ----------------------------------------------------
+    # RS format: RS + Y + CODE_LETTER  (RS4K6811 → 2024, 11)
+    # ----------------------------------------------------
+    if s.startswith("RS") and len(s) >= 4:
+        try:
+            year_digit = s[2]      # 4
+            month_letter = s[3]    # K
 
-def get_date_difference(mfg_date, complaint_date):
-    """Return difference in days."""
-    if not mfg_date or not complaint_date:
-        return None
-    try:
-        return (complaint_date - mfg_date).days
-    except:
-        return None
+            month_map = {
+                "A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6,
+                "G": 7, "H": 8, "I": 9, "J": 10, "K": 11, "L": 12
+            }
 
+            year = 2020 + int(year_digit)  
+            month = month_map.get(month_letter)
+
+            if month:
+                return year, month
+        except:
+            pass
+    
+    # ----------------------------------------------------
+    # F3XXXX type (Letter + Digit)
+    #    F = June (06), 3 = 2023
+    # ----------------------------------------------------
+    month_map = {
+        "A": 1, "B": 2, "C": 3, "D": 4,
+        "E": 5, "F": 6, "G": 7, "H": 8,
+        "I": 9, "J": 10, "K": 11, "L": 12
+    }
+    if len(s) >= 2 and s[0].isalpha() and s[1].isdigit():
+        month_letter = s[0]
+        year_digit = s[1]
+
+        if month_letter in month_map:
+            month = month_map[month_letter]
+            year = 2020 + int(year_digit)  # 3 → 2023
+            return year, month
+
+    return "NA", "NA"
 
 def get_columns():
     return [
@@ -120,9 +97,8 @@ def get_columns():
         {"label": _("Year"), "fieldname": "year", "fieldtype": "Int", "width": 80},
         {"label": _("Month"), "fieldname": "month", "fieldtype": "Int", "width": 80},
         {"label": _("Creation Date"), "fieldname": "creation_date", "fieldtype": "Date", "width": 120},
-        {"label": _("Sale Date"), "fieldname": "sale_date", "fieldtype": "Date", "width": 120},
-        {"label": _("Mfg Date"), "fieldname": "mfg_date", "fieldtype": "Date", "width": 120},
-        {"label": _("Age in Days"), "fieldname": "age_in_days", "fieldtype": "Int", "width": 120}
+        {"label": _("Sale Date"), "fieldname": "sale_date", "fieldtype": "Date", "width": 120},{"label": _("Mfg Date"), "fieldname": "mfg_date", "fieldtype": "Date", "width": 150},
+
     ]
 
 def get_data(filters):
@@ -175,31 +151,19 @@ def get_data(filters):
             ir.invoice_date as sale_date
         FROM tabIssueRapl AS ir
 JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
-
 {condition_str}
 """
 
     rows = frappe.db.sql(query, values, as_dict=True)
 
     # Add Year + Month extracted fields
-    from datetime import datetime
-
     for r in rows:
-        year, month = extract_year_month(r.serial_no) or (None, None)
+        year, month = extract_year_month(r.serial_no)
         r.year = year
         r.month = month
-
-        # Mfg date
-        r.mfg_date = get_mfg_date(r.year, r.month)
-
-        # Age in days
-        if r.creation_date:
-            if isinstance(r.creation_date, str):
-                complaint_date = datetime.strptime(r.creation_date, "%Y-%m-%d")
-            else:
-                complaint_date = r.creation_date
-            r.age_in_days = get_date_difference(r.mfg_date, complaint_date)
-        else:
-            r.age_in_days = None
-            
+         #  Add manufacturing date if year & month are valid
+    if isinstance(year, int) and isinstance(month, int) and 1 <= month <= 12:
+        r.mfg_date = f"{year}-{month:02d}-01"
+    else:
+        r.mfg_date = None
     return rows
