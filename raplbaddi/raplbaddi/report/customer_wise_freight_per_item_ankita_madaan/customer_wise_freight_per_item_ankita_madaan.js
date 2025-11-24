@@ -1,4 +1,4 @@
-frappe.query_reports["Customer_Wise_Freight_per_item_Ankita_Madaan"] = {
+frappe.query_reports["Customer Wise Freight Per Item Ankita Madaan"] = {
     "filters": [
         {
             "fieldname": "from_date",

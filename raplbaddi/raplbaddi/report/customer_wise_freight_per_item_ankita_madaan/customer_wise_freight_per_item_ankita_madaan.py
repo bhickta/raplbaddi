@@ -21,9 +21,11 @@ def get_columns():
         {"label": _("Customer"), "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 200},
         {"label": _("Customer Name"), "fieldname": "customer_name", "fieldtype": "Data", "width": 200},
         {"label": _("Brand"), "fieldname": "brand", "fieldtype": "Link", "options": "Brand", "width": 120},
-        {"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "item", "width": 150},
+        {"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 150},
         {"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link","options": "Item Group", "width": 120},
-        {"label": _("Total Quantity"), "fieldname": "total_qty", "fieldtype": "Int", "width": 100},
+        {"label": _("Unit"), "fieldname": "unit", "fieldtype": "Data", "width": 120},
+        {"label": _("Tank Material"), "fieldname": "tank_material", "fieldtype": "Data", "width": 150},
+        {"label": _("Qty"), "fieldname": "total_qty", "fieldtype": "Int", "width": 100},
         {"label": _("Freight per Item"), "fieldname": "freight_per_item", "fieldtype": "Currency", "width": 120},
         {"label": _("Freight Amount"), "fieldname": "freight_amount", "fieldtype": "Currency", "width": 120}   
     ]
@@ -48,6 +50,8 @@ def get_data(filters):
             IFNULL(NULLIF(dni.brand, ''), 'No Brand') AS brand,
             dni.item_code,
             i.item_group,
+            IFNULL(NULLIF(i.unit, ''), 'Not Mentioned') AS unit,
+            IFNULL(NULLIF(i.tank_material, ''), 'Not Specified') AS tank_material,
             dn.total_qty,
         	ROUND(SUM(dn.amount) / NULLIF(SUM(dn.total_qty), 0), 2) AS freight_per_item,
             SUM(dn.amount) AS freight_amount
@@ -63,5 +67,5 @@ def get_data(filters):
         GROUP BY 
             dn.customer_name, dni.item_code, dni.brand
     """
-
+ 
     return frappe.db.sql(query, filters, as_dict=True)
