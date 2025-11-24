@@ -1,5 +1,6 @@
 import frappe
 from frappe import _
+from datetime import datetime
 
 def execute(filters=None):
     if not filters:
@@ -18,7 +19,7 @@ def extract_year_month(serial_no):
     s = serial_no.strip().upper()
 
     # ----------------------------------------------------
-    # 1️⃣ Numeric only: YMMxxxxx  (4120590 → 2024, 12)
+    # Numeric only: YMMxxxxx  (4120590 → 2024, 12)
     # ----------------------------------------------------
     if s.isdigit() and len(s) >= 3:
         try:
@@ -161,9 +162,9 @@ JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
         year, month = extract_year_month(r.serial_no)
         r.year = year
         r.month = month
-         #  Add manufacturing date if year & month are valid
-    if isinstance(year, int) and isinstance(month, int) and 1 <= month <= 12:
+    if year and month:
         r.mfg_date = f"{year}-{month:02d}-01"
     else:
         r.mfg_date = None
+
     return rows
