@@ -162,6 +162,7 @@ JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
     else:
         r.mfg_date = None
 
+
     def get_mfg_date(year, month):
         if not isinstance(year, int) or not isinstance(month, int):
             return None
