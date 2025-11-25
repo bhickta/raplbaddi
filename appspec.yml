@@ -3,6 +3,7 @@ os: linux
 files:
   - source: /
     destination: /home/frappe/codedeploy-artifacts/raplbaddi
+    overwrite: yes
 hooks:
   AfterInstall:
     - location: scripts/deploy_router.sh
