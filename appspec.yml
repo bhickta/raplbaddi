@@ -7,4 +7,4 @@ hooks:
   AfterInstall:
     - location: scripts/deploy_router.py
       timeout: 600
-      runas: root
+      runas: frappe
