@@ -5,7 +5,7 @@ import sys
 import shutil
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict
 from enum import Enum
 
 
@@ -30,19 +30,21 @@ class DeploymentConfig:
 
 class CommandExecutor(ABC):
     @abstractmethod
-    def execute(self, cmd: str, cwd: Optional[str] = None) -> subprocess.CompletedProcess:
+    def execute(self, cmd: str, cwd: Optional[str] = None, capture_output: bool = False) -> subprocess.CompletedProcess:
         pass
 
 
 class RootCommandExecutor(CommandExecutor):
-    def execute(self, cmd: str, cwd: Optional[str] = None) -> subprocess.CompletedProcess:
+    def execute(self, cmd: str, cwd: Optional[str] = None, capture_output: bool = False) -> subprocess.CompletedProcess:
         print(f"EXEC [ROOT]: {cmd}")
         return subprocess.run(
             cmd,
             shell=True,
             check=True,
             executable='/bin/bash',
-            cwd=cwd
+            cwd=cwd,
+            capture_output=capture_output,
+            text=True
         )
 
 
@@ -50,14 +52,16 @@ class UserCommandExecutor(CommandExecutor):
     def __init__(self, user: str = "frappe"):
         self.user = user
 
-    def execute(self, cmd: str, cwd: Optional[str] = None) -> subprocess.CompletedProcess:
+    def execute(self, cmd: str, cwd: Optional[str] = None, capture_output: bool = False) -> subprocess.CompletedProcess:
         full_cmd = f"sudo -u {self.user} bash -c 'cd {cwd} && {cmd}'"
         print(f"EXEC [{self.user.upper()}]: {full_cmd}")
         return subprocess.run(
             full_cmd,
             shell=True,
             check=True,
-            executable='/bin/bash'
+            executable='/bin/bash',
+            capture_output=capture_output,
+            text=True
         )
 
 
@@ -66,24 +70,44 @@ class NvmCommandExecutor(CommandExecutor):
         self.user = user
         self.nvm_load = r'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"'
 
-    def execute(self, cmd: str, cwd: Optional[str] = None) -> subprocess.CompletedProcess:
+    def execute(self, cmd: str, cwd: Optional[str] = None, capture_output: bool = False) -> subprocess.CompletedProcess:
         full_cmd = f"sudo -i -u {self.user} bash -c '{self.nvm_load} && cd {cwd} && {cmd}'"
         print(f"EXEC [NVM]: {full_cmd}")
         return subprocess.run(
             full_cmd,
             shell=True,
             check=True,
-            executable='/bin/bash'
+            executable='/bin/bash',
+            capture_output=capture_output,
+            text=True
         )
 
 
 class DeploymentStep(ABC):
-    def __init__(self, executor: CommandExecutor):
+    def __init__(self, executor: CommandExecutor, optional: bool = False):
         self.executor = executor
+        self.optional = optional
 
     @abstractmethod
     def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
         pass
+
+    def safe_execute(self, config: DeploymentConfig, bench: BenchConfig) -> bool:
+        try:
+            self.execute(config, bench)
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] Step {self.__class__.__name__} failed")
+            print(f"[ERROR] Return code: {e.returncode}")
+            if e.stdout:
+                print(f"[STDOUT] {e.stdout}")
+            if e.stderr:
+                print(f"[STDERR] {e.stderr}")
+            
+            if self.optional:
+                print(f"[WARNING] Optional step failed, continuing...")
+                return True
+            return False
 
 
 class InstallCodeStep(DeploymentStep):
@@ -116,34 +140,78 @@ class InstallCodeStep(DeploymentStep):
 
 class PipInstallStep(DeploymentStep):
     def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        self.executor.execute(
-            f"./env/bin/pip install -e apps/{config.app_name}",
-            cwd=bench.path
-        )
+        try:
+            self.executor.execute(
+                f"./env/bin/pip install -e apps/{config.app_name}",
+                cwd=bench.path,
+                capture_output=True
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] pip install failed")
+            print(f"[STDOUT] {e.stdout}")
+            print(f"[STDERR] {e.stderr}")
+            raise
 
 
 class SetupRequirementsStep(DeploymentStep):
     def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        self.executor.execute("bench setup requirements", cwd=bench.path)
+        try:
+            result = self.executor.execute(
+                "bench setup requirements",
+                cwd=bench.path,
+                capture_output=True
+            )
+            if result.stdout:
+                print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] bench setup requirements failed")
+            print(f"[STDOUT] {e.stdout}")
+            print(f"[STDERR] {e.stderr}")
+            raise
 
 
 class MigrateStep(DeploymentStep):
     def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
         cmd = f"bench --site {bench.site} migrate" if bench.site else "bench migrate"
-        self.executor.execute(cmd, cwd=bench.path)
+        try:
+            result = self.executor.execute(cmd, cwd=bench.path, capture_output=True)
+            if result.stdout:
+                print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] Migration failed")
+            print(f"[STDOUT] {e.stdout}")
+            print(f"[STDERR] {e.stderr}")
+            raise
 
 
 class BuildStep(DeploymentStep):
     def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        self.executor.execute(
-            f"bench build --app {config.app_name}",
-            cwd=bench.path
-        )
+        try:
+            result = self.executor.execute(
+                f"bench build --app {config.app_name}",
+                cwd=bench.path,
+                capture_output=True
+            )
+            if result.stdout:
+                print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] Build failed")
+            print(f"[STDOUT] {e.stdout}")
+            print(f"[STDERR] {e.stderr}")
+            raise
 
 
 class RestartStep(DeploymentStep):
     def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        self.executor.execute("bench restart", cwd=bench.path)
+        try:
+            result = self.executor.execute("bench restart", cwd=bench.path, capture_output=True)
+            if result.stdout:
+                print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] Restart failed")
+            print(f"[STDOUT] {e.stdout}")
+            print(f"[STDERR] {e.stderr}")
+            raise
 
 
 class DeploymentPipeline:
@@ -151,8 +219,10 @@ class DeploymentPipeline:
         self.steps = steps
 
     def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        for step in self.steps:
-            step.execute(config, bench)
+        for i, step in enumerate(self.steps, 1):
+            print(f"\n=== Step {i}/{len(self.steps)}: {step.__class__.__name__} ===")
+            if not step.safe_execute(config, bench):
+                raise RuntimeError(f"Pipeline failed at step: {step.__class__.__name__}")
 
 
 class DeploymentPipelineFactory:
@@ -187,7 +257,13 @@ class DeploymentOrchestrator:
             sys.exit(1)
 
         bench = self._get_bench_config(group)
-        self.pipeline.execute(self.config, bench)
+        
+        try:
+            self.pipeline.execute(self.config, bench)
+            print("\n=== Deployment completed successfully ===")
+        except Exception as e:
+            print(f"\n=== Deployment failed: {e} ===")
+            sys.exit(1)
 
     def _get_bench_config(self, group: DeploymentGroup) -> BenchConfig:
         if group == DeploymentGroup.PRODUCTION:
