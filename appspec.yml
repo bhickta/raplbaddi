@@ -5,6 +5,6 @@ files:
     destination: /home/frappe/codedeploy-artifacts/raplbaddi
 hooks:
   AfterInstall:
-    - location: scripts/install.sh
+    - location: scripts/deploy_router.py
       timeout: 600
       runas: root
