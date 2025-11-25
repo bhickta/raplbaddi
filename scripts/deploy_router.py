@@ -20,7 +20,8 @@ def run_root(cmd):
     subprocess.run(cmd, shell=True, check=True, executable='/bin/bash')
 
 def run_frappe(cmd, cwd):
-    full_cmd = f"sudo -i -u frappe bash -c 'cd {cwd} && {cmd}'"
+    nvm_load = 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
+    full_cmd = f"sudo -i -u frappe bash -c '{nvm_load} && cd {cwd} && {cmd}'"
     print(f"EXEC_FRAPPE: {full_cmd}")
     subprocess.run(full_cmd, shell=True, check=True, executable='/bin/bash')
 
