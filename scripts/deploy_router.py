@@ -5,99 +5,53 @@ import sys
 import shutil
 import datetime
 
-# ==============================================================================
-#  CONFIGURATION
-# ==============================================================================
 CONFIG = {
     "GROUP_PROD": "Rapl-Prod-Group",
     "GROUP_DEV":  "Rapl-Dev-Group",
-
-    # Server Paths
-    "PROD_BENCH_DIR": "/home/frappe/prod-bench",
-    "DEV_BENCH_DIR":  "/home/frappe/dev-bench",
-    
-    # This is where CodeDeploy temporarily unzips the new code
-    # MUST match the destination in appspec.yml
-    "TEMP_ARTIFACT_DIR": "/home/frappe/codedeploy-artifacts/raplbaddi",
-
-    "APP_NAME": "raplbaddi",
-    "DEV_SITE_NAME": "devrapl",
-    "DEV_SUPERVISOR": "frappe-bench-dev-web: frappe-bench-dev-workers:"
+    "PROD_BENCH": "/home/frappe/prod-bench",
+    "DEV_BENCH":  "/home/frappe/dev-bench",
+    "ARTIFACT":   "/home/frappe/codedeploy-artifacts/raplbaddi",
+    "APP":        "raplbaddi",
+    "DEV_SITE":   "devrapl"
 }
-# ==============================================================================
 
-def log(msg):
-    print(f"[{datetime.datetime.now()}] {msg}")
-    sys.stdout.flush()
+def run_root(cmd):
+    print(f"EXEC: {cmd}")
+    subprocess.run(cmd, shell=True, check=True, executable='/bin/bash')
 
-def run_command(command, cwd=None):
-    try:
-        log(f"EXEC: {command}")
-        subprocess.run(command, shell=True, check=True, cwd=cwd, executable='/bin/bash')
-    except subprocess.CalledProcessError as e:
-        log(f"[FATAL] Command failed: {e.returncode}")
-        sys.exit(1)
+def run_frappe(cmd, cwd):
+    full_cmd = f"sudo -i -u frappe bash -c 'cd {cwd} && {cmd}'"
+    print(f"EXEC_FRAPPE: {full_cmd}")
+    subprocess.run(full_cmd, shell=True, check=True, executable='/bin/bash')
 
-def deploy_app_code(bench_dir):
-    """
-    Wipes the old app code and replaces it with the new artifact.
-    """
-    target_app_path = os.path.join(bench_dir, "apps", CONFIG["APP_NAME"])
-    source_code_path = CONFIG["TEMP_ARTIFACT_DIR"]
-
-    log(f"--> Replacing code in: {target_app_path}")
-
-    # 1. Remove OLD code (Clean slate to avoid ghost files)
-    if os.path.exists(target_app_path):
-        shutil.rmtree(target_app_path)
-    
-    # 2. Move NEW code from Temp dir to Apps dir
-    # We use copytree because the temp dir might contain other scripts we need later
-    # or we can just move it.
-    shutil.copytree(source_code_path, target_app_path)
-
-    # 3. Fix Permissions (Crucial because CodeDeploy might write as root)
-    run_command(f"chown -R frappe:frappe {target_app_path}", cwd=bench_dir)
+def install_code(bench_path):
+    target = os.path.join(bench_path, "apps", CONFIG["APP"])
+    if os.path.exists(target):
+        shutil.rmtree(target)
+    shutil.copytree(CONFIG["ARTIFACT"], target)
+    run_root(f"chown -R frappe:frappe {target}")
 
 def main():
-    deploy_group = os.environ.get('DEPLOYMENT_GROUP_NAME')
-    log(f"Starting Git-Less Deployment for: {deploy_group}")
+    group = os.environ.get('DEPLOYMENT_GROUP_NAME')
+    print(f"Deploying: {group}")
 
-    if deploy_group == CONFIG["GROUP_PROD"]:
-        # --- PRODUCTION LOGIC ---
-        # Note: For Prod, you usually want to be careful about wiping folders.
-        # But for consistency, we replace the code.
-        deploy_app_code(CONFIG["PROD_BENCH_DIR"])
+    if group == CONFIG["GROUP_PROD"]:
+        install_code(CONFIG["PROD_BENCH"])
         
-        # Bench Update usually does a git pull, but since we updated files manually,
-        # we just run requirements and migrate.
-        run_command("bench setup requirements", cwd=CONFIG["PROD_BENCH_DIR"])
-        run_command("bench migrate", cwd=CONFIG["PROD_BENCH_DIR"])
-        
-        # Optional: Build assets if JS/CSS changed
-        run_command("bench build --app raplbaddi", cwd=CONFIG["PROD_BENCH_DIR"])
-        
-        log("[SUCCESS] Production Deployment Complete.")
+        run_frappe("bench setup requirements", CONFIG["PROD_BENCH"])
+        run_frappe("bench migrate", CONFIG["PROD_BENCH"])
+        run_frappe(f"bench build --app {CONFIG['APP']}", CONFIG["PROD_BENCH"])
+        run_frappe("bench restart", CONFIG["PROD_BENCH"])
 
-    elif deploy_group == CONFIG["GROUP_DEV"]:
-        # --- DEV LOGIC ---
-        
-        # 1. Replace Code
-        deploy_app_code(CONFIG["DEV_BENCH_DIR"])
+    elif group == CONFIG["GROUP_DEV"]:
+        install_code(CONFIG["DEV_BENCH"])
 
-        # 2. Install Dependencies (Python reqs)
-        run_command("bench setup requirements", cwd=CONFIG["DEV_BENCH_DIR"])
-
-        # 3. Migrate DB
-        run_command(f"bench --site {CONFIG['DEV_SITE_NAME']} migrate", cwd=CONFIG["DEV_BENCH_DIR"])
-
-        # 4. Restart
-        run_command(f"sudo supervisorctl restart {CONFIG['DEV_SUPERVISOR']}", cwd=CONFIG["DEV_BENCH_DIR"])
-
-        log("[SUCCESS] Dev Deployment Complete.")
+        run_frappe("bench setup requirements", CONFIG["DEV_BENCH"])
+        run_frappe(f"bench --site {CONFIG['DEV_SITE']} migrate", CONFIG["DEV_BENCH"])
+        run_frappe(f"bench build --app {CONFIG['APP']}", CONFIG["DEV_BENCH"])
+        run_frappe("bench restart", CONFIG["DEV_BENCH"])
 
     else:
-        log(f"[ERROR] Unknown Group: {deploy_group}")
         sys.exit(1)
 
 if __name__ == "__main__":
