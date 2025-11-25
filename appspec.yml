@@ -1,0 +1,12 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: DEPLOY_DESTINATION
+    overwrite: yes
+
+hooks:
+  AfterInstall:
+    - location: scripts/bench_deploy.sh
+      timeout: 300
+      runas: frappe
