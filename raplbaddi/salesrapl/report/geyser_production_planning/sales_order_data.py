@@ -1,6 +1,7 @@
 import frappe
 from raplbaddi.utils import report_utils
 from pypika import Case
+from frappe.query_builder.functions import Coalesce
 
 def get_so_items(filters=None):
 	so = frappe.qb.DocType('Sales Order')
@@ -10,7 +11,7 @@ def get_so_items(filters=None):
 		frappe.qb
 		.from_(so)
 		.left_join(soi).on(so.name == soi.parent)
-		.left_join(item).on(soi.item_code == item.item_code)
+ 		.left_join(item).on(item.name == soi.item_code)
 		.where(so.status.notin(['Stopped', 'Closed']) & so.docstatus == 1)
 		.where(so.delivery_status.isin(['Partly Delivered', 'Not Delivered']))
 		.select(
@@ -36,7 +37,10 @@ def get_so_items(filters=None):
 			soi.color.as_('color'),
 			so.delivery_status,
 			so.delivery_status.as_('delivery_status'),
-			item.cbm.as_('cbm')
+				Case()
+					.when(item.cbm > 0, item.cbm)
+					.else_((Coalesce(item.cbm_length, 0) * Coalesce(item.cbm_width, 0) * Coalesce(item.cbm_height, 0)) / 1000000000.0)
+					.as_('cbm')
 		)
 	)
 	if filters and filters.get('item_group'):

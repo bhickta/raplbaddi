@@ -220,4 +220,13 @@ JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
         r["year"]            = year if year is not None else "0"
         r["month"]           = month if month is not None else "0"
         
+        year, month = extract_year_month(r.serial_no)
+        r.year = year
+        r.month = month
+    if year and month:
+        r.mfg_date = f"{year}-{month:02d}-01"
+    else:
+        r.mfg_date = None
+
+
     return rows
