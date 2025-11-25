@@ -19,10 +19,20 @@ class DeploymentConfig:
 
 def run_command(cmd, user="frappe", cwd=None, use_nvm=False):
     prefix = f"sudo -u {user} bash -c"
+    
     if use_nvm:
+        # Use sudo -i to get full login environment
         prefix = f"sudo -i -u {user} bash -c"
-        nvm_load = 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"'
-        cmd = f"{nvm_load} && {cmd}"
+        
+        # KEY FIX: Use semicolons (;) so it doesn't stop if NVM warns us.
+        # Check for bench and node locations for debugging.
+        nvm_load = (
+            'export NVM_DIR="$HOME/.nvm"; '
+            '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; '
+            'echo "DEBUG: Node is $(which node)"; '
+            'echo "DEBUG: Bench is $(which bench)"; '
+        )
+        cmd = f"{nvm_load} {cmd}"
     
     full_cmd = f"{prefix} 'cd {cwd or '.'} && {cmd}'"
     print(f"EXEC: {full_cmd}")
@@ -45,7 +55,7 @@ def run_command(cmd, user="frappe", cwd=None, use_nvm=False):
         print("--- STDERR ---")
         print(e.stderr)
         print("--------------\n")
-        raise e
+        sys.exit(1)
 
 class DeploymentStep:
     def execute(self, config, bench):
@@ -122,6 +132,7 @@ def main():
     group_name = os.environ.get('DEPLOYMENT_GROUP_NAME')
     if not group_name:
         print("DEPLOYMENT_GROUP_NAME environment variable not set")
+        # Default to dev for testing if needed, or exit
         sys.exit(1)
 
     try:
