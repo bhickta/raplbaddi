@@ -23,7 +23,7 @@ jobs:
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           if [ "$BRANCH" = "develop" ]; then
             DEST="/home/frappe/dev-bench/apps/raplbaddi"
-          elif [ "$BRANCH" = "prod" ]; then
+          elif [ "$BRANCH" = "production" ]; then
             DEST="/home/frappe/prod-bench/apps/raplbaddi"
           else
             echo "Unsupported branch: $BRANCH"
