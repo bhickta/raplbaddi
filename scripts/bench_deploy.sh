@@ -6,8 +6,8 @@
 # This assumes scripts/bench_deploy.sh is running from the app root or handled by appspec
 APP_DIR=$(pwd) 
 CONFIG_FILE="$APP_DIR/.deploy_config"
-SITE_NAME="metrack"
-APP="metrack"
+SITE_NAME="devrapl"  # Will be overridden based on BENCH_DIR
+APP="raplbaddi"
 NVM_INIT_SCRIPT="/home/frappe/.nvm/nvm.sh"
 
 # Default BENCH_DIR (fallback if .deploy_config not found)
@@ -22,6 +22,13 @@ if [ -f "$CONFIG_FILE" ]; then
 fi
 
 VENV_ACTIVATE="$BENCH_DIR/env/bin/activate"
+
+# Determine site name based on bench directory
+if [[ "$BENCH_DIR" == *"prod-bench" ]]; then
+    SITE_NAME="prodrapl"
+else
+    SITE_NAME="devrapl"
+fi
 
 # --- Error Handling ---
 set -e
