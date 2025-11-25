@@ -1,4 +1,4 @@
-name: Deploy raplbaddi
+name: Deploy raplbaddi app
 
 on:
   push:
