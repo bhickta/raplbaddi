@@ -20,8 +20,7 @@ def run_root(cmd):
     subprocess.run(cmd, shell=True, check=True, executable='/bin/bash')
 
 def run_frappe(cmd, cwd):
-    nvm_load = 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
-    full_cmd = f"sudo -i -u frappe bash -c '{nvm_load} && cd {cwd} && {cmd}'"
+    full_cmd = f"sudo -i -u frappe bash -c 'cd {cwd} && {cmd}'"
     print(f"EXEC_FRAPPE: {full_cmd}")
     subprocess.run(full_cmd, shell=True, check=True, executable='/bin/bash')
 
@@ -39,7 +38,7 @@ def main():
     if group == CONFIG["GROUP_PROD"]:
         install_code(CONFIG["PROD_BENCH"])
         
-        run_frappe("bench setup requirements", CONFIG["PROD_BENCH"])
+        # run_frappe("bench setup requirements", CONFIG["PROD_BENCH"])
         run_frappe("bench migrate", CONFIG["PROD_BENCH"])
         run_frappe(f"bench build --app {CONFIG['APP']}", CONFIG["PROD_BENCH"])
         run_frappe("bench restart", CONFIG["PROD_BENCH"])
@@ -47,7 +46,7 @@ def main():
     elif group == CONFIG["GROUP_DEV"]:
         install_code(CONFIG["DEV_BENCH"])
 
-        run_frappe("bench setup requirements", CONFIG["DEV_BENCH"])
+        # run_frappe("bench setup requirements", CONFIG["DEV_BENCH"])
         run_frappe(f"bench --site {CONFIG['DEV_SITE']} migrate", CONFIG["DEV_BENCH"])
         run_frappe(f"bench build --app {CONFIG['APP']}", CONFIG["DEV_BENCH"])
         run_frappe("bench restart", CONFIG["DEV_BENCH"])
