@@ -2,107 +2,102 @@
 import os
 import subprocess
 import sys
+import shutil
+import datetime
 
 # ==============================================================================
-#  CENTRAL CONFIGURATION
+#  CONFIGURATION
 # ==============================================================================
 CONFIG = {
-    # 1. AWS CodeDeploy Group Names (Must match AWS Console exactly)
     "GROUP_PROD": "Rapl-Prod-Group",
     "GROUP_DEV":  "Rapl-Dev-Group",
 
-    # 2. Server Directory Paths
+    # Server Paths
     "PROD_BENCH_DIR": "/home/frappe/prod-bench",
     "DEV_BENCH_DIR":  "/home/frappe/dev-bench",
+    
+    # This is where CodeDeploy temporarily unzips the new code
+    # MUST match the destination in appspec.yml
+    "TEMP_ARTIFACT_DIR": "/home/frappe/codedeploy-artifacts/raplbaddi",
 
-    # 3. Application Details
-    "APP_NAME": "raplbaddi",          # The folder name inside 'apps/'
-    "DEV_SITE_NAME": "devrapl",       # The specific site to migrate in Dev
-    "DEV_BRANCH": "origin/develop",   # The branch to reset to in Dev
-
-    # 4. Service Management
-    # The supervisor group/process names to restart after dev deployment
-    # Note: Ensure colons are used correctly if restarting groups
-    "DEV_SUPERVISOR_PROCESSES": "frappe-bench-dev-web: frappe-bench-dev-workers:"
+    "APP_NAME": "raplbaddi",
+    "DEV_SITE_NAME": "devrapl",
+    "DEV_SUPERVISOR": "frappe-bench-dev-web: frappe-bench-dev-workers:"
 }
 # ==============================================================================
 
-def run_command(command, cwd=None):
-    """
-    Runs a shell command in a specific directory.
-    If it fails, it prints the error and exits the script.
-    """
-    try:
-        # Print clearly for CloudWatch/CodeDeploy logs
-        print(f"--> Executing: {command}")
-        if cwd:
-            print(f"    Context: {cwd}")
-        
-        # flush=True ensures logs appear immediately in the AWS console
-        sys.stdout.flush()
+def log(msg):
+    print(f"[{datetime.datetime.now()}] {msg}")
+    sys.stdout.flush()
 
-        subprocess.run(
-            command,
-            shell=True,
-            check=True,
-            cwd=cwd,
-            executable='/bin/bash'
-        )
+def run_command(command, cwd=None):
+    try:
+        log(f"EXEC: {command}")
+        subprocess.run(command, shell=True, check=True, cwd=cwd, executable='/bin/bash')
     except subprocess.CalledProcessError as e:
-        print(f"\n[ERROR] Command failed with return code {e.returncode}")
-        print(f"Failed Command: {command}")
+        log(f"[FATAL] Command failed: {e.returncode}")
         sys.exit(1)
 
+def deploy_app_code(bench_dir):
+    """
+    Wipes the old app code and replaces it with the new artifact.
+    """
+    target_app_path = os.path.join(bench_dir, "apps", CONFIG["APP_NAME"])
+    source_code_path = CONFIG["TEMP_ARTIFACT_DIR"]
+
+    log(f"--> Replacing code in: {target_app_path}")
+
+    # 1. Remove OLD code (Clean slate to avoid ghost files)
+    if os.path.exists(target_app_path):
+        shutil.rmtree(target_app_path)
+    
+    # 2. Move NEW code from Temp dir to Apps dir
+    # We use copytree because the temp dir might contain other scripts we need later
+    # or we can just move it.
+    shutil.copytree(source_code_path, target_app_path)
+
+    # 3. Fix Permissions (Crucial because CodeDeploy might write as root)
+    run_command(f"chown -R frappe:frappe {target_app_path}", cwd=bench_dir)
+
 def main():
-    # Retrieve the Deployment Group from AWS Environment Variables
     deploy_group = os.environ.get('DEPLOYMENT_GROUP_NAME')
-
-    print("==========================================")
-    print(f"Deployment Triggered for Group: {deploy_group}")
-    print("==========================================\n")
-
-    # --- LOGIC SWITCHER ---
+    log(f"Starting Git-Less Deployment for: {deploy_group}")
 
     if deploy_group == CONFIG["GROUP_PROD"]:
-        # ----------------------------------------
-        # PRODUCTION LOGIC
-        # ----------------------------------------
-        print("Status: Starting Production Deployment (Full Update)...")
-
-        # 1. Update Bench (Safe production update)
-        run_command("bench update --patch --no-backup", cwd=CONFIG["PROD_BENCH_DIR"])
-
-        print("\n[SUCCESS] Production Deployment Complete.")
+        # --- PRODUCTION LOGIC ---
+        # Note: For Prod, you usually want to be careful about wiping folders.
+        # But for consistency, we replace the code.
+        deploy_app_code(CONFIG["PROD_BENCH_DIR"])
+        
+        # Bench Update usually does a git pull, but since we updated files manually,
+        # we just run requirements and migrate.
+        run_command("bench setup requirements", cwd=CONFIG["PROD_BENCH_DIR"])
+        run_command("bench migrate", cwd=CONFIG["PROD_BENCH_DIR"])
+        
+        # Optional: Build assets if JS/CSS changed
+        run_command("bench build --app raplbaddi", cwd=CONFIG["PROD_BENCH_DIR"])
+        
+        log("[SUCCESS] Production Deployment Complete.")
 
     elif deploy_group == CONFIG["GROUP_DEV"]:
-        # ----------------------------------------
-        # DEV LOGIC
-        # ----------------------------------------
-        print("Status: Starting Dev Deployment (Rapl App Only)...")
+        # --- DEV LOGIC ---
+        
+        # 1. Replace Code
+        deploy_app_code(CONFIG["DEV_BENCH_DIR"])
 
-        app_dir = os.path.join(CONFIG["DEV_BENCH_DIR"], "apps", CONFIG["APP_NAME"])
+        # 2. Install Dependencies (Python reqs)
+        run_command("bench setup requirements", cwd=CONFIG["DEV_BENCH_DIR"])
 
-        # 1. Manual Git Pull
-        # Using variables for branch and path
-        run_command("git fetch --all", cwd=app_dir)
-        run_command(f"git reset --hard {CONFIG['DEV_BRANCH']}", cwd=app_dir)
-
-        # 2. Migrate ONLY the specific site
+        # 3. Migrate DB
         run_command(f"bench --site {CONFIG['DEV_SITE_NAME']} migrate", cwd=CONFIG["DEV_BENCH_DIR"])
 
-        # 3. Restart Dev Processes
-        # Using variable for process names
-        restart_cmd = f"sudo supervisorctl restart {CONFIG['DEV_SUPERVISOR_PROCESSES']}"
-        run_command(restart_cmd, cwd=CONFIG["DEV_BENCH_DIR"])
+        # 4. Restart
+        run_command(f"sudo supervisorctl restart {CONFIG['DEV_SUPERVISOR']}", cwd=CONFIG["DEV_BENCH_DIR"])
 
-        print("\n[SUCCESS] Dev Deployment Complete.")
+        log("[SUCCESS] Dev Deployment Complete.")
 
     else:
-        # ----------------------------------------
-        # SAFETY CATCH
-        # ----------------------------------------
-        print(f"[ERROR] Unknown Deployment Group: {deploy_group}")
-        print("Aborting to prevent accidental data loss.")
+        log(f"[ERROR] Unknown Group: {deploy_group}")
         sys.exit(1)
 
 if __name__ == "__main__":

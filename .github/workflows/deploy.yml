@@ -6,15 +6,11 @@ on:
       - production
       - develop
 
-# ======================================================
-#  CONFIGURATION VARIABLES
-# ======================================================
 env:
-  CODEDEPLOY_APP_NAME: RaplBaddi-App   # Must match AWS Application Name
-  CD_GROUP_PROD:       Rapl-Prod-Group # Must match AWS Prod Group
-  CD_GROUP_DEV:        Rapl-Dev-Group  # Must match AWS Dev Group
-  S3_FOLDER_PREFIX:    raplbaddi       # Folder inside your S3 bucket
-# ======================================================
+  CODEDEPLOY_APP_NAME: RaplBaddi-App
+  CD_GROUP_PROD:       Rapl-Prod-Group
+  CD_GROUP_DEV:        Rapl-Dev-Group
+  S3_FOLDER_PREFIX:    raplbaddi
 
 permissions:
   id-token: write
@@ -22,7 +18,6 @@ permissions:
 
 jobs:
   deploy:
-    name: Build & Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -44,13 +39,10 @@ jobs:
             echo "group_name=${{ env.CD_GROUP_DEV }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Zip Deployment Scripts
+      - name: Zip Application
         run: |
-          mkdir -p build_artifact
-          cp appspec.yml build_artifact/
-          cp -r scripts/ build_artifact/
-          cd build_artifact
-          zip -r ../deploy.zip .
+          # Create zip, excluding the hidden .git folder to save space/time
+          zip -r deploy.zip . -x "*.git*"
 
       - name: Push to S3
         run: |
@@ -62,4 +54,4 @@ jobs:
             --application-name ${{ env.CODEDEPLOY_APP_NAME }} \
             --deployment-group-name ${{ steps.target.outputs.group_name }} \
             --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},key=${{ env.S3_FOLDER_PREFIX }}/${{ github.sha }}.zip,bundleType=zip \
-            --description "Commit ${{ github.sha }} to ${{ steps.target.outputs.group_name }}"
+            --description "Artifact Deploy ${{ github.sha }}"
