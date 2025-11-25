@@ -1,0 +1,65 @@
+name: Deploy RaplBaddi
+
+on:
+  push:
+    branches:
+      - production
+      - develop
+
+# ======================================================
+#  CONFIGURATION VARIABLES
+# ======================================================
+env:
+  CODEDEPLOY_APP_NAME: RaplBaddi-App   # Must match AWS Application Name
+  CD_GROUP_PROD:       Rapl-Prod-Group # Must match AWS Prod Group
+  CD_GROUP_DEV:        Rapl-Dev-Group  # Must match AWS Dev Group
+  S3_FOLDER_PREFIX:    raplbaddi       # Folder inside your S3 bucket
+# ======================================================
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Determine Deployment Group
+        id: target
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
+            echo "group_name=${{ env.CD_GROUP_PROD }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "group_name=${{ env.CD_GROUP_DEV }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Zip Deployment Scripts
+        run: |
+          mkdir -p build_artifact
+          cp appspec.yml build_artifact/
+          cp -r scripts/ build_artifact/
+          cd build_artifact
+          zip -r ../deploy.zip .
+
+      - name: Push to S3
+        run: |
+          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET_NAME }}/${{ env.S3_FOLDER_PREFIX }}/${{ github.sha }}.zip
+
+      - name: Trigger CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODEDEPLOY_APP_NAME }} \
+            --deployment-group-name ${{ steps.target.outputs.group_name }} \
+            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},key=${{ env.S3_FOLDER_PREFIX }}/${{ github.sha }}.zip,bundleType=zip \
+            --description "Commit ${{ github.sha }} to ${{ steps.target.outputs.group_name }}"

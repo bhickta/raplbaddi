@@ -2,14 +2,9 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: DEPLOY_DESTINATION
-    overwrite: yes
-
+    destination: /home/frappe/codedeploy-artifacts/raplbaddi
 hooks:
   AfterInstall:
-    - location: scripts/bench_deploy.sh
-      timeout: 300
+    - location: scripts/install.sh
+      timeout: 600
       runas: frappe
-      environment:
-        # Pass environment variables to the script
-        APP_DIR: "DEPLOY_DESTINATION"
