@@ -1,6 +1,10 @@
 import frappe
 from frappe import _
 from datetime import datetime
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
 def execute(filters=None):
     if not filters:
@@ -14,7 +18,7 @@ def execute(filters=None):
 
 def extract_year_month(serial_no):
     if not serial_no:
-        return "NA", "NA"
+        return None, None
 
     s = serial_no.strip().upper()
 
@@ -157,6 +161,7 @@ JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
 
     rows = frappe.db.sql(query, values, as_dict=True)
 
+<<<<<<< Updated upstream
     # Add Year + Month extracted fields
     for r in rows:
         year, month = extract_year_month(r.serial_no)
@@ -166,5 +171,15 @@ JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
         r.mfg_date = f"{year}-{month:02d}-01"
     else:
         r.mfg_date = None
+=======
+    def get_mfg_date(year, month):
+        if not isinstance(year, int) or not isinstance(month, int):
+            return None
+        try:
+            return datetime(year, month, 1).date()
+        except:
+            return None
+
+>>>>>>> Stashed changes
 
     return rows
