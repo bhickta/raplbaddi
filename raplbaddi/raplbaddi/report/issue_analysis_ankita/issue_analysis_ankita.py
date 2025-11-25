@@ -1,10 +1,6 @@
 import frappe
 from frappe import _
 from datetime import datetime
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 
 def execute(filters=None):
     if not filters:
@@ -45,8 +41,6 @@ def extract_year_month(serial_no):
                 return year, month
         except:
             pass
-    
-    
 
     # ----------------------------------------------------
     # RS format: RS + Y + CODE_LETTER  (RS4K6811 → 2024, 11)
@@ -91,14 +85,10 @@ def extract_year_month(serial_no):
 
 def get_columns():
     return [
-        {"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 120},
-        {"label": _("Brand Name"), "fieldname": "brand_name", "fieldtype": "Data", "width": 150},
-        {"label": _("Issue Type"), "fieldname": "issue_type", "fieldtype": "Data", "width": 150},
-        {"label": _("Sub Issue"), "fieldname": "sub_issue", "fieldtype": "Data", "width": 250},
         {"label": _("State"), "fieldname": "state", "fieldtype": "Data", "width": 120},
         {"label": _("Geyser Capacity"), "fieldname": "geyser_capacity", "fieldtype": "Data", "width": 140},
         {"label": _("Geyser Model"), "fieldname": "geyser_model", "fieldtype": "Data", "width": 150},
-        {"label": _("Serial No"), "fieldname": "serial_no", "fieldtype": "Data", "width": 120},
+
         {"label": _("Year"), "fieldname": "year", "fieldtype": "Int", "width": 80},
         {"label": _("Month"), "fieldname": "month", "fieldtype": "Int", "width": 80},
         {"label": _("Creation Date"), "fieldname": "creation_date", "fieldtype": "Date", "width": 120},
@@ -161,7 +151,7 @@ JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
 
     rows = frappe.db.sql(query, values, as_dict=True)
 
-<<<<<<< Updated upstream
+
     # Add Year + Month extracted fields
     for r in rows:
         year, month = extract_year_month(r.serial_no)
@@ -171,7 +161,7 @@ JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
         r.mfg_date = f"{year}-{month:02d}-01"
     else:
         r.mfg_date = None
-=======
+
     def get_mfg_date(year, month):
         if not isinstance(year, int) or not isinstance(month, int):
             return None
@@ -180,6 +170,5 @@ JOIN `tabIssueRapl Item` AS iri ON ir.name = iri.parent
         except:
             return None
 
->>>>>>> Stashed changes
 
     return rows
