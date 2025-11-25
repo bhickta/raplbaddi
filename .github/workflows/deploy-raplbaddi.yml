@@ -56,6 +56,7 @@ jobs:
           echo "export DEPLOY_RUN_BUILD=$RUN_BUILD" > .deploy_config
           echo "export DEPLOY_RUN_MIGRATE=$RUN_MIGRATE" >> .deploy_config
           echo "export DEPLOY_RUN_RESTART=$RUN_RESTART" >> .deploy_config
+          echo "export DEPLOY_BENCH_DIR=${DEST%/apps/*}" >> .deploy_config
 
           echo "--- Deployment Configuration ---"
           cat .deploy_config
