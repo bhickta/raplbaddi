@@ -3,22 +3,12 @@ import os
 import subprocess
 import sys
 import shutil
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, List
-from enum import Enum
-
-
-class DeploymentGroup(Enum):
-    PRODUCTION = "Rapl-Prod-Group"
-    DEVELOPMENT = "Rapl-Dev-Group"
-
 
 @dataclass
 class BenchConfig:
     path: str
-    site: Optional[str] = None
-
+    site: str = None
 
 @dataclass
 class DeploymentConfig:
@@ -27,241 +17,136 @@ class DeploymentConfig:
     production: BenchConfig
     development: BenchConfig
 
+def run_command(cmd, user="frappe", cwd=None, use_nvm=False):
+    prefix = f"sudo -u {user} bash -c"
+    if use_nvm:
+        prefix = f"sudo -i -u {user} bash -c"
+        nvm_load = 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"'
+        cmd = f"{nvm_load} && {cmd}"
+    
+    full_cmd = f"{prefix} 'cd {cwd or '.'} && {cmd}'"
+    print(f"EXEC: {full_cmd}")
 
-class CommandExecutor(ABC):
-    @abstractmethod
-    def execute(self, cmd: str, cwd: Optional[str] = None) -> subprocess.CompletedProcess:
-        pass
-
-
-class RootCommandExecutor(CommandExecutor):
-    def execute(self, cmd: str, cwd: Optional[str] = None) -> subprocess.CompletedProcess:
-        print(f"EXEC [ROOT]: {cmd}")
-        return subprocess.run(
-            cmd,
+    try:
+        result = subprocess.run(
+            full_cmd,
             shell=True,
             check=True,
             executable='/bin/bash',
-            cwd=cwd
+            capture_output=True,
+            text=True
         )
+        print(result.stdout)
+        return result
+    except subprocess.CalledProcessError as e:
+        print(f"\n[ERROR] Command failed with return code {e.returncode}")
+        print("--- STDOUT ---")
+        print(e.stdout)
+        print("--- STDERR ---")
+        print(e.stderr)
+        print("--------------\n")
+        raise e
 
-
-class UserCommandExecutor(CommandExecutor):
-    def __init__(self, user: str = "frappe"):
-        self.user = user
-
-    def execute(self, cmd: str, cwd: Optional[str] = None) -> subprocess.CompletedProcess:
-        full_cmd = f"sudo -u {self.user} bash -c 'cd {cwd} && {cmd}'"
-        print(f"EXEC [{self.user.upper()}]: {full_cmd}")
-        return subprocess.run(
-            full_cmd,
-            shell=True,
-            check=True,
-            executable='/bin/bash'
-        )
-
-
-class NvmCommandExecutor(CommandExecutor):
-    def __init__(self, user: str = "frappe"):
-        self.user = user
-        self.nvm_load = r'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"'
-
-    def execute(self, cmd: str, cwd: Optional[str] = None) -> subprocess.CompletedProcess:
-        full_cmd = f"sudo -i -u {self.user} bash -c '{self.nvm_load} && cd {cwd} && {cmd}'"
-        print(f"EXEC [NVM]: {full_cmd}")
-        return subprocess.run(
-            full_cmd,
-            shell=True,
-            check=True,
-            executable='/bin/bash'
-        )
-
-
-class DeploymentStep(ABC):
-    def __init__(self, executor: CommandExecutor, optional: bool = False):
-        self.executor = executor
-        self.optional = optional
-
-    @abstractmethod
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        pass
-
-    def safe_execute(self, config: DeploymentConfig, bench: BenchConfig) -> bool:
-        try:
-            self.execute(config, bench)
-            return True
-        except subprocess.CalledProcessError as e:
-            print(f"[ERROR] Step {self.__class__.__name__} failed")
-            print(f"[ERROR] Return code: {e.returncode}")
-            
-            if self.optional:
-                print(f"[WARNING] Optional step failed, continuing...")
-                return True
-            return False
-        except Exception as e:
-            print(f"[ERROR] Step {self.__class__.__name__} raised exception: {e}")
-            if self.optional:
-                print(f"[WARNING] Optional step failed, continuing...")
-                return True
-            return False
-
+class DeploymentStep:
+    def execute(self, config, bench):
+        raise NotImplementedError
 
 class InstallCodeStep(DeploymentStep):
-    def __init__(self, executor: CommandExecutor, root_executor: CommandExecutor):
-        super().__init__(executor)
-        self.root_executor = root_executor
-
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
+    def execute(self, config, bench):
         target = os.path.join(bench.path, "apps", config.app_name)
-        
         if os.path.exists(target):
             shutil.rmtree(target)
-        
         shutil.copytree(config.artifact_path, target)
-        self.root_executor.execute(f"chown -R frappe:frappe {target}")
         
-        self._validate_structure(target)
-
-    def _validate_structure(self, target: str) -> None:
-        print(f"--- Validating structure in {target} ---")
-        setup_path = os.path.join(target, "setup.py")
+        subprocess.run(f"chown -R frappe:frappe {target}", shell=True, check=True)
         
-        if os.path.exists(setup_path):
-            print(f"[OK] setup.py found")
-        else:
-            print(f"[ERROR] setup.py MISSING")
-            subprocess.run(f"ls -la {target}", shell=True)
+        if not os.path.exists(os.path.join(target, "setup.py")):
             raise FileNotFoundError(f"setup.py not found in {target}")
 
-
 class PipInstallStep(DeploymentStep):
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        self.executor.execute(
+    def execute(self, config, bench):
+        run_command(
             f"./env/bin/pip install -e apps/{config.app_name}",
             cwd=bench.path
         )
 
-
 class SetupRequirementsStep(DeploymentStep):
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        self.executor.execute(
+    def execute(self, config, bench):
+        run_command(
             "bench setup requirements",
-            cwd=bench.path
+            cwd=bench.path,
+            use_nvm=True
         )
-
 
 class MigrateStep(DeploymentStep):
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
+    def execute(self, config, bench):
         cmd = f"bench --site {bench.site} migrate" if bench.site else "bench migrate"
-        self.executor.execute(cmd, cwd=bench.path)
-
+        run_command(cmd, cwd=bench.path)
 
 class BuildStep(DeploymentStep):
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        self.executor.execute(
+    def execute(self, config, bench):
+        run_command(
             f"bench build --app {config.app_name}",
-            cwd=bench.path
+            cwd=bench.path,
+            use_nvm=True
         )
 
-
 class RestartStep(DeploymentStep):
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        self.executor.execute("bench restart", cwd=bench.path)
-
+    def execute(self, config, bench):
+        run_command("bench restart", cwd=bench.path)
 
 class ClearCacheStep(DeploymentStep):
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
+    def execute(self, config, bench):
         cmd = f"bench --site {bench.site} clear-cache" if bench.site else "bench clear-cache"
-        self.executor.execute(cmd, cwd=bench.path)
-
-
-class DeploymentPipeline:
-    def __init__(self, steps: List[DeploymentStep]):
-        self.steps = steps
-
-    def execute(self, config: DeploymentConfig, bench: BenchConfig) -> None:
-        for i, step in enumerate(self.steps, 1):
-            print(f"\n=== Step {i}/{len(self.steps)}: {step.__class__.__name__} ===")
-            if not step.safe_execute(config, bench):
-                raise RuntimeError(f"Pipeline failed at step: {step.__class__.__name__}")
-            print(f"[OK] {step.__class__.__name__} completed")
-
-
-class DeploymentPipelineFactory:
-    @staticmethod
-    def create_standard_pipeline() -> DeploymentPipeline:
-        root_executor = RootCommandExecutor()
-        user_executor = UserCommandExecutor()
-        nvm_executor = NvmCommandExecutor()
-
-        return DeploymentPipeline([
-            InstallCodeStep(user_executor, root_executor),
-            PipInstallStep(user_executor),
-            SetupRequirementsStep(nvm_executor),
-            MigrateStep(user_executor),
-            BuildStep(nvm_executor),
-            ClearCacheStep(user_executor, optional=True),
-            RestartStep(user_executor)
-        ])
-
-
-class DeploymentOrchestrator:
-    def __init__(self, config: DeploymentConfig, pipeline: DeploymentPipeline):
-        self.config = config
-        self.pipeline = pipeline
-
-    def deploy(self, group_name: str) -> None:
-        print(f"Deploying: {group_name}")
-        
         try:
-            group = DeploymentGroup(group_name)
-        except ValueError:
-            print(f"Unknown deployment group: {group_name}")
-            sys.exit(1)
+            run_command(cmd, cwd=bench.path)
+        except subprocess.CalledProcessError:
+            print("[WARN] Clear cache failed, ignoring...")
 
-        bench = self._get_bench_config(group)
-        
-        try:
-            self.pipeline.execute(self.config, bench)
-            print("\n" + "="*50)
-            print("=== Deployment completed successfully ===")
-            print("="*50)
-        except Exception as e:
-            print("\n" + "="*50)
-            print(f"=== Deployment failed: {e} ===")
-            print("="*50)
-            sys.exit(1)
-
-    def _get_bench_config(self, group: DeploymentGroup) -> BenchConfig:
-        if group == DeploymentGroup.PRODUCTION:
-            return self.config.production
-        elif group == DeploymentGroup.DEVELOPMENT:
-            return self.config.development
-        else:
-            raise ValueError(f"Unsupported deployment group: {group}")
-
+def get_bench_config(config, group_name):
+    if group_name == "Rapl-Prod-Group":
+        return config.production
+    elif group_name == "Rapl-Dev-Group":
+        return config.development
+    else:
+        raise ValueError(f"Unknown group: {group_name}")
 
 def main():
     config = DeploymentConfig(
         app_name="raplbaddi",
         artifact_path="/home/frappe/codedeploy-artifacts/raplbaddi",
         production=BenchConfig(path="/home/frappe/prod-bench"),
-        development=BenchConfig(
-            path="/home/frappe/dev-bench",
-            site="devrapl"
-        )
+        development=BenchConfig(path="/home/frappe/dev-bench", site="devrapl")
     )
-
-    pipeline = DeploymentPipelineFactory.create_standard_pipeline()
-    orchestrator = DeploymentOrchestrator(config, pipeline)
 
     group_name = os.environ.get('DEPLOYMENT_GROUP_NAME')
     if not group_name:
         print("DEPLOYMENT_GROUP_NAME environment variable not set")
         sys.exit(1)
 
-    orchestrator.deploy(group_name)
+    try:
+        bench = get_bench_config(config, group_name)
+        print(f"Deploying {config.app_name} to {group_name}...")
 
+        steps = [
+            InstallCodeStep(),
+            PipInstallStep(),
+            SetupRequirementsStep(),
+            MigrateStep(),
+            BuildStep(),
+            ClearCacheStep(),
+            RestartStep()
+        ]
+
+        for step in steps:
+            print(f"\n=== Running {step.__class__.__name__} ===")
+            step.execute(config, bench)
+            
+        print("\n=== Deployment Successful ===")
+
+    except Exception as e:
+        print(f"\n=== Deployment Failed: {e} ===")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
