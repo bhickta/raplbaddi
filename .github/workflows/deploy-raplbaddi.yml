@@ -1,0 +1,95 @@
+name: Deploy raplbaddi
+
+on:
+  push:
+    branches: [develop, production]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Determine Branch & Destination
+        id: vars
+        run: |
+          echo "Ref: $GITHUB_REF"
+          BRANCH=${GITHUB_REF#refs/heads/}
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          if [ "$BRANCH" = "develop" ]; then
+            DEST="/home/frappe/dev-bench/apps/raplbaddi"
+          elif [ "$BRANCH" = "production" ]; then
+            DEST="/home/frappe/prod-bench/apps/raplbaddi"
+          else
+            echo "Unsupported branch: $BRANCH"
+            exit 1
+          fi
+          echo "dest=$DEST" >> $GITHUB_OUTPUT
+
+      - name: Analyze Commit Message
+        id: flags
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          DEST: ${{ steps.vars.outputs.dest }}
+        run: |
+          echo "Commit Message: $COMMIT_MSG"
+
+          RUN_BUILD="true"
+          RUN_MIGRATE="true"
+          RUN_RESTART="true"
+
+          if [[ "$COMMIT_MSG" == *"[skip build]"* ]]; then RUN_BUILD="false"; fi
+          if [[ "$COMMIT_MSG" == *"[skip migrate]"* ]]; then RUN_MIGRATE="false"; fi
+          if [[ "$COMMIT_MSG" == *"[skip restart]"* ]]; then RUN_RESTART="false"; fi
+
+          if [[ "$COMMIT_MSG" == *"[restart only]"* ]]; then
+            RUN_BUILD="false"
+            RUN_MIGRATE="false"
+            RUN_RESTART="true"
+          fi
+
+          echo "export DEPLOY_RUN_BUILD=$RUN_BUILD" > .deploy_config
+          echo "export DEPLOY_RUN_MIGRATE=$RUN_MIGRATE" >> .deploy_config
+          echo "export DEPLOY_RUN_RESTART=$RUN_RESTART" >> .deploy_config
+          echo "export DEPLOY_BENCH_DIR=${DEST%/apps/*}" >> .deploy_config
+
+          echo "--- Deployment Configuration ---"
+          cat .deploy_config
+
+          # Substitute destination into appspec.yml for the current branch
+          sed -i "s|DEPLOY_DESTINATION|${DEST}|g" appspec.yml
+          echo "Updated appspec.yml with destination: ${DEST}"
+
+      - name: Create Zip Artifact
+        run: |
+          # include the repo content, appspec.yml and .deploy_config
+          zip -r deployment-artifact.zip . -x "*.git*" ".github/*"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload to S3
+        run: |
+          S3_KEY="raplbaddi/${{ github.sha }}.zip"
+          aws s3 cp deployment-artifact.zip s3://${{ secrets.S3_BUCKET_NAME }}/$S3_KEY
+          echo "S3_KEY=$S3_KEY" >> $GITHUB_ENV
+
+      - name: Create CodeDeploy Deployment
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ secrets.CODEDEPLOY_APP_NAME }} \
+            --deployment-group-name ${{ secrets.CODEDEPLOY_GROUP_NAME }} \
+            --deployment-config-name CodeDeployDefault.OneAtATime \
+            --description "Commit: $COMMIT_MSG" \
+            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},key=${{ env.S3_KEY }},bundleType=zip
