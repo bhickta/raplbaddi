@@ -10,3 +10,6 @@ hooks:
     - location: scripts/bench_deploy.sh
       timeout: 300
       runas: frappe
+      environment:
+        # Pass environment variables to the script
+        APP_DIR: "DEPLOY_DESTINATION"

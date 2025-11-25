@@ -21,6 +21,15 @@ if [ -f "$CONFIG_FILE" ]; then
     fi
 fi
 
+# Fallback: extract from appspec.yml if BENCH_DIR is still default
+if [ "$BENCH_DIR" = "/home/frappe/dev-bench" ] && [ -f "appspec.yml" ]; then
+    PARSED_DEST=$(grep "destination:" appspec.yml | head -1 | sed 's/.*destination: //g' | xargs)
+    if [[ "$PARSED_DEST" == *"prod-bench"* ]]; then
+        BENCH_DIR="/home/frappe/prod-bench"
+        log "Detected prod-bench from appspec.yml"
+    fi
+fi
+
 VENV_ACTIVATE="$BENCH_DIR/env/bin/activate"
 
 # Determine site name based on bench directory
@@ -42,12 +51,14 @@ RUN_RESTART="true"
 
 if [ -f "$CONFIG_FILE" ]; then
     log "Loading configuration from $CONFIG_FILE"
+    cat "$CONFIG_FILE"  # Debug: show what's in the config
     source "$CONFIG_FILE"
 else
     log "WARNING: No .deploy_config found. Defaulting to FULL deployment."
 fi
 
 log "Plan: Build=$RUN_BUILD | Migrate=$RUN_MIGRATE | Restart=$RUN_RESTART"
+log "BENCH_DIR=$BENCH_DIR | SITE_NAME=$SITE_NAME | APP=$APP"
 
 # --- 2. Environment Setup ---
 setup_env() {
