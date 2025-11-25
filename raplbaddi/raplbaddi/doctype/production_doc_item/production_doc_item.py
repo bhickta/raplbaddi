@@ -9,17 +9,21 @@ class ProductionDocItem(Document):
     if TYPE_CHECKING:
         from frappe.types import DF
 
-        actual_production: DF.Float
-        breakdown_time: DF.Float
-        end_time: DF.Time | None
         item_code: DF.Link | None
+        operator_name: DF.Link | None
+        operation_name: DF.Link | None
+        start_time: DF.Time | None
+        end_time: DF.Time | None
+        breakdown_time: DF.Float
+        standard_production_100: DF.Float
+        standard_production_80: DF.Float
+        actual_production: DF.Float
         manpower: DF.Int
-        operator_name: DF.Data | None
+        cycle_time: DF.Int
+        
         parent: DF.Data
         parentfield: DF.Data
         parenttype: DF.Data
-        standard_production_100: DF.Float
-        standard_production_80: DF.Float
-        start_time: DF.Time | None
+
     # end: auto-generated types
     pass
