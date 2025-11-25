@@ -1,8 +1,8 @@
-name: Deploy raplbaddi app
+name: Deploy raplbaddi
 
 on:
   push:
-    branches: [develop, prod]
+    branches: [develop, production]
 
 jobs:
   deploy:
