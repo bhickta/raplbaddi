@@ -1,7 +1,22 @@
 frappe.query_reports["DN Yearly Sales"] = {
+
+    filters: [],   // remove default filters
+
     onload: function (report) {
 
-        // ------------------ CUSTOMER GROUP VIEW BUTTON ONLY ------------------
+        // ---------------- ADD ITEM GROUP DROPDOWN ON TOP TOOLBAR ----------------
+        report.page.add_field({
+            fieldname: "item_group",
+            label: "Item Group",
+            fieldtype: "Link",
+            options: "Item Group",
+            default: "",
+            onchange: function() {
+                report.refresh();  // refresh report on selection
+            }
+        });
+
+        // ---------------- VIEW BY CUSTOMER GROUP BUTTON ----------------
         report.page.add_inner_button("View by Customer Group", function () {
 
             let data = frappe.query_report.data;
@@ -11,24 +26,19 @@ frappe.query_reports["DN Yearly Sales"] = {
                 return;
             }
 
-            // Group client-side
+            // Group by customer group
             let grouped = {};
 
             data.forEach(row => {
                 let group = row["customer_group"] || "No Group";
-
-                if (!grouped[group]) {
-                    grouped[group] = [];
-                }
-
+                if (!grouped[group]) grouped[group] = [];
                 grouped[group].push(row);
             });
 
-            // Prepare grouped output
             let final_output = [];
 
             Object.keys(grouped).forEach(group => {
-                // Group header row
+                // header row
                 final_output.push({
                     customer_name: "► " + group,
                     customer_group: "",
@@ -36,18 +46,16 @@ frappe.query_reports["DN Yearly Sales"] = {
                     fy_25_26: ""
                 });
 
-                // Add customer rows
+                // rows
                 grouped[group].forEach(r => final_output.push(r));
             });
 
-            // Replace report data with grouped result
-            frappe.query_report.raw_data = final_output;
             frappe.query_report.data = final_output;
-
-            // Refresh UI
+            frappe.query_report.raw_data = final_output;
             report.refresh();
 
             frappe.msgprint("Grouped by Customer Group.");
         });
+
     }
 };
