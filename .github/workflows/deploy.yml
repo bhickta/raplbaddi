@@ -1,63 +1,57 @@
-name: Deploy to production
+name: Deploy RaplBaddi
 
 on:
   push:
     branches:
       - production
+      - develop
+
+env:
+  CODEDEPLOY_APP_NAME: RaplBaddi-App
+  CD_GROUP_PROD:       Rapl-Prod-Group
+  CD_GROUP_DEV:        Rapl-Dev-Group
+  S3_FOLDER_PREFIX:    raplbaddi
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Debug SSH Key
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Determine Deployment Group
+        id: target
         run: |
-          echo "Debugging SSH Key:"
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -c 20
-          echo "Key length: $(echo "${{ secrets.SSH_PRIVATE_KEY }}" | wc -c) characters"
+          if [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
+            echo "group_name=${{ env.CD_GROUP_PROD }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "group_name=${{ env.CD_GROUP_DEV }}" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Setup SSH
+      - name: Zip Application
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.PROD_IP }} >> ~/.ssh/known_hosts
+          # Create zip, excluding the hidden .git folder to save space/time
+          zip -r deploy.zip . -x "*.git*"
 
-      - name: Deploy code to DigitalOcean
-        if: contains(github.event.head_commit.message, 'prod')
+      - name: Push to S3
         run: |
-          ssh -i ~/.ssh/id_ed25519 frappe@${{ secrets.PROD_IP }} "
-          cd /home/frappe/frappe-bench/apps/raplbaddi && \
-          PULL_OUTPUT=\$(git pull upstream production) && \
-          echo \"\$PULL_OUTPUT\" && \
-          if [[ \$PULL_OUTPUT != *'Already up to date.'* ]]; then
-              echo 'Changes detected.';
-          else
-              echo 'Already up-to-date.';
-          fi
+          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET_NAME }}/${{ env.S3_FOLDER_PREFIX }}/${{ github.sha }}.zip
 
-          # Migrate if 'migrate' keyword is in the commit message
-          if [[ \$(echo '${{ github.event.head_commit.message }}' | grep -i 'migrate') ]]; then
-              echo 'Running bench migrate...';
-              cd /home/frappe/frappe-bench && bench migrate;
-          fi
-
-          # Build if 'build' keyword is in the commit message
-          if [[ \$(echo '${{ github.event.head_commit.message }}' | grep -i 'build') ]]; then
-              echo 'Running bench build...';
-              cd /home/frappe/frappe-bench && bench build;
-          fi
-
-          # Restart if 'restart' keyword is in the commit message
-          if [[ \$(echo '${{ github.event.head_commit.message }}' | grep -i 'restart') ]]; then
-              echo 'Running bench restart...';
-              cd /home/frappe/frappe-bench && bench restart;
-          fi
-          "
-
-      - name: Skip deployment
-        if: ${{ !contains(github.event.head_commit.message, 'p2p') }}
-        run: echo "Commit message does not contain 'p2p'. Skipping deployment."
+      - name: Trigger CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODEDEPLOY_APP_NAME }} \
+            --deployment-group-name ${{ steps.target.outputs.group_name }} \
+            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},key=${{ env.S3_FOLDER_PREFIX }}/${{ github.sha }}.zip,bundleType=zip \
+            --description "Artifact Deploy ${{ github.sha }}"
