@@ -1,24 +1,19 @@
 frappe.query_reports["DN Yearly Sales"] = {
 
-    filters: [],   // remove default filters
-
-    onload: function (report) {
-
-        // ---------------- ADD ITEM GROUP DROPDOWN ON TOP TOOLBAR ----------------
-        report.page.add_field({
+    filters: [
+        {
             fieldname: "item_group",
             label: "Item Group",
             fieldtype: "Link",
-            options: "Item Group",
-            default: "",
-            onchange: function() {
-                report.refresh();  // refresh report on selection
-            }
-        });
+            options: "Item Group"
+        }
+    ],
 
-        // ---------------- VIEW BY CUSTOMER GROUP BUTTON ----------------
+    onload: function (report) {
+
+        // NO extra add_field needed now
+
         report.page.add_inner_button("View by Customer Group", function () {
-
             let data = frappe.query_report.data;
 
             if (!data || data.length === 0) {
@@ -26,9 +21,8 @@ frappe.query_reports["DN Yearly Sales"] = {
                 return;
             }
 
-            // Group by customer group
+            // Grouping logic
             let grouped = {};
-
             data.forEach(row => {
                 let group = row["customer_group"] || "No Group";
                 if (!grouped[group]) grouped[group] = [];
@@ -36,17 +30,13 @@ frappe.query_reports["DN Yearly Sales"] = {
             });
 
             let final_output = [];
-
             Object.keys(grouped).forEach(group => {
-                // header row
                 final_output.push({
                     customer_name: "► " + group,
                     customer_group: "",
                     fy_24_25: "",
                     fy_25_26: ""
                 });
-
-                // rows
                 grouped[group].forEach(r => final_output.push(r));
             });
 
@@ -56,6 +46,5 @@ frappe.query_reports["DN Yearly Sales"] = {
 
             frappe.msgprint("Grouped by Customer Group.");
         });
-
     }
 };

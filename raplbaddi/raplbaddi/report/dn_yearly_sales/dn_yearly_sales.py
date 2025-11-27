@@ -1,92 +1,88 @@
 import frappe
 
 def execute(filters=None):
-    if not filters:
-        filters = {}
+    filters = filters or {}
 
-    item_group = filters.get("item_group")
-
-    # FY ranges
     fy_24_25_start = "2024-04-01"
     fy_24_25_end   = "2025-03-31"
-
     fy_25_26_start = "2025-04-01"
     fy_25_26_end   = "2026-03-31"
 
-    # ---------------- FETCH CUSTOMERS WHO HAVE SALES IN SELECTED ITEM GROUP ----------------
-    customers = frappe.db.sql("""
-        SELECT DISTINCT 
-            dn.customer AS name,
+    item_group = filters.get("item_group")
+    brand = filters.get("brand")
+    customer = filters.get("customer")
+
+    # ---------------------------
+    # STEP 1: only filtered items ka data lo
+    # ---------------------------
+    conditions = ["dn.docstatus = 1"]
+
+    if item_group:
+        conditions.append("dni.item_group = %(item_group)s")
+    if brand:
+        conditions.append("dni.brand = %(brand)s")
+    if customer:
+        conditions.append("dn.customer = %(customer)s")
+
+    where_clause = " AND ".join(conditions)
+
+    rows = frappe.db.sql(f"""
+        SELECT
+            dn.customer,
             dn.customer_name,
-            c.customer_group,
-            dni.item_group
+            dn.customer_group,
+            dni.qty,
+            dn.posting_date
         FROM `tabDelivery Note Item` dni
         JOIN `tabDelivery Note` dn ON dn.name = dni.parent
-        JOIN `tabCustomer` c ON c.name = dn.customer
-        WHERE dn.docstatus = 1
-          {item_group_filter}
-    """.format(
-        item_group_filter = "AND dni.item_group = %s" if item_group else ""
-    ), ([item_group] if item_group else []), as_dict=True)
+        WHERE {where_clause}
+    """, {
+        "item_group": item_group,
+        "brand": brand,
+        "customer": customer
+    }, as_dict=True)
 
-    # Create customer map
-    cust_map = {c.name: c for c in customers}
+    # ---------------------------
+    # STEP 2: customer-wise yearly qty
+    # ---------------------------
+    cust_map = {}
 
-    # ---------------- FY 24-25 SALES ----------------
-    fy24_data = frappe.db.sql("""
-        SELECT 
-            dn.customer,
-            SUM(dni.qty) AS qty
-        FROM `tabDelivery Note Item` dni
-        JOIN `tabDelivery Note` dn ON dn.name = dni.parent
-        WHERE dn.docstatus = 1
-          AND dn.posting_date BETWEEN %s AND %s
-          {item_group_filter}
-        GROUP BY dn.customer
-    """.format(
-        item_group_filter = "AND dni.item_group = %s" if item_group else ""
-    ), ([fy_24_25_start, fy_24_25_end] + ([item_group] if item_group else [])), as_dict=True)
+    for r in rows:
+        cust = r.customer
 
-    fy24_map = {d.customer: d.qty for d in fy24_data}
+        if cust not in cust_map:
+            cust_map[cust] = {
+                "customer_name": r.customer_name,
+                "customer_group": r.customer_group,
+                "fy_24_25": 0,
+                "fy_25_26": 0
+            }
 
-    # ---------------- FY 25-26 SALES ----------------
-    fy25_data = frappe.db.sql("""
-        SELECT 
-            dn.customer,
-            SUM(dni.qty) AS qty
-        FROM `tabDelivery Note Item` dni
-        JOIN `tabDelivery Note` dn ON dn.name = dni.parent
-        WHERE dn.docstatus = 1
-          AND dn.posting_date BETWEEN %s AND %s
-          {item_group_filter}
-        GROUP BY dn.customer
-    """.format(
-        item_group_filter = "AND dni.item_group = %s" if item_group else ""
-    ), ([fy_25_26_start, fy_25_26_end] + ([item_group] if item_group else [])), as_dict=True)
+        posting = str(r.posting_date)
 
-    fy25_map = {d.customer: d.qty for d in fy25_data}
+        if fy_24_25_start <= posting <= fy_24_25_end:
+            cust_map[cust]["fy_24_25"] += r.qty
 
-    # ---------------- FINAL DATA ----------------
+        if fy_25_26_start <= posting <= fy_25_26_end:
+            cust_map[cust]["fy_25_26"] += r.qty
+
+    # ---------------------------
+    # FINAL DATA
+    # ---------------------------
     data = []
-    for cust_id, cust in cust_map.items():
+    for cust, val in cust_map.items():
         data.append({
-            "customer_name": cust.customer_name,
-            "customer_group": cust.customer_group,
-
-            # ⭐⭐⭐ MAIN FIX ⭐⭐⭐
-            "item_group": item_group if item_group else cust.item_group,
-
-            "fy_24_25": fy24_map.get(cust_id, 0) or 0,
-            "fy_25_26": fy25_map.get(cust_id, 0) or 0
+            "customer_name": val["customer_name"],
+            "customer_group": val["customer_group"],
+            "fy_24_25": val["fy_24_25"],
+            "fy_25_26": val["fy_25_26"]
         })
 
-    # ---------------- COLUMNS ----------------
     columns = [
-        {"label": "Customer Name", "fieldname": "customer_name", "fieldtype": "Data", "width": 200},
+        {"label": "Customer Name", "fieldname": "customer_name", "fieldtype": "Data", "width": 220},
         {"label": "Customer Group", "fieldname": "customer_group", "fieldtype": "Data", "width": 150},
-        {"label": "Item Group", "fieldname": "item_group", "fieldtype": "Data", "width": 150},
-        {"label": "FY 24-25 Qty", "fieldname": "fy_24_25", "fieldtype": "Float", "width": 130},
-        {"label": "FY 25-26 Qty", "fieldname": "fy_25_26", "fieldtype": "Float", "width": 130},
+        {"label": "FY 24-25 Qty", "fieldname": "fy_24_25", "fieldtype": "Float", "width": 140},
+        {"label": "FY 25-26 Qty", "fieldname": "fy_25_26", "fieldtype": "Float", "width": 140},
     ]
 
     return columns, data
