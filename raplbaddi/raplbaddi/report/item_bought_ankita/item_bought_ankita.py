@@ -20,14 +20,14 @@ def execute(filters=None):
 
 def get_columns():
     return [
-        {"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 120},
-        {"label": _("Accepted Qty"), "fieldname": "qty", "fieldtype": "Int", "width": 100},
-        {"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 130},
-        {"label": _("Rate"), "fieldname": "rate", "fieldtype": "Currency", "width": 100},
-        {"label": _("Supplier"), "fieldname": "supplier_name", "fieldtype": "Link", "options": "Supplier", "width": 140},
-        {"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 120},
-        {"label": _("Branch"), "fieldname": "branch", "fieldtype": "Link", "options": "Branch", "width": 100},
-        {"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 100},
+        {"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 150},
+        {"label": _("Accepted Qty"), "fieldname": "qty", "fieldtype": "Int", "width": 90},
+        {"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 120},
+        {"label": _("Rate"), "fieldname": "rate", "fieldtype": "Currency", "width": 80},
+        {"label": _("Supplier"), "fieldname": "supplier_name", "fieldtype": "Link", "options": "Supplier", "width": 250},
+        {"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 150},
+        {"label": _("Branch"), "fieldname": "branch", "fieldtype": "Link", "options": "Branch", "width": 200},
+        {"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
     ]
 
 
