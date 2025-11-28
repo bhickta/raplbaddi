@@ -12,7 +12,6 @@ custom_fields = {
             "options": "Department",
             "reqd": 1,                              
             "in_list_view": 1,
-            "in_standard_filter": 1,
             "fetch_from": "requested_by.department",
             "fetch_if_empty": 1,
             "allow_on_submit": 0,
