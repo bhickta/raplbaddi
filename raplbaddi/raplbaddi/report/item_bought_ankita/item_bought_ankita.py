@@ -17,16 +17,27 @@ def execute(filters=None):
     data = get_data(filters)
     return columns, data
 
+def short_branch(name):
+    if not name:
+        return ""
+
+    mapping = {
+        "real appliances private limited": "RAPL",
+        "red star unit 2": "RSU2"
+    }
+
+    return mapping.get(name.lower(), name)
 
 def get_columns():
     return [
         {"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 150},
-        {"label": _("Accepted Qty"), "fieldname": "qty", "fieldtype": "Int", "width": 90},
+        {"label": _("Qty"), "fieldname": "qty", "fieldtype": "Int", "width": 90},
         {"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 120},
         {"label": _("Rate"), "fieldname": "rate", "fieldtype": "Currency", "width": 80},
+        {"label": _("Tax %"), "fieldname": "custom_tax_rate", "fieldtype": "Float", "width": 90},
         {"label": _("Supplier"), "fieldname": "supplier_name", "fieldtype": "Link", "options": "Supplier", "width": 250},
         {"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 150},
-        {"label": _("Branch"), "fieldname": "branch", "fieldtype": "Link", "options": "Branch", "width": 200},
+        {"label": _("Branch"), "fieldname": "branch", "fieldtype": "Link", "options": "Branch", "width": 100},
         {"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
     ]
 
@@ -65,6 +76,7 @@ def get_data(filters):
             pri.qty,
             pri.warehouse,
             pri.rate,
+            pr.custom_tax_rate,
             pr.supplier_name,
             i.item_group,
             pr.branch,
@@ -84,4 +96,7 @@ def get_data(filters):
     """.format(where_clause=where_clause)
 
     data = frappe.db.sql(sql, params, as_dict=1)
+    for d in data:
+        d["branch"] = short_branch(d.get("branch"))
+
     return data
