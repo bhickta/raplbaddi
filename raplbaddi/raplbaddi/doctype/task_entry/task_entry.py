@@ -25,3 +25,22 @@ class TaskEntry(Document):
 		task_entry_item: DF.Table[TaskEntryItem]
 	# end: auto-generated types
 	pass
+
+def on_submit(self):
+    # For every row in child table, create an assignment
+    for row in self.task_entry_item:
+        if row.assigned_to:
+            self.assign_to_user(row)
+            
+
+def assign_to_user(self, row):
+    # Create an Assignment record
+    frappe.get_doc({
+        "doctype": "Assignment",
+        "assigned_to": row.assigned_to,
+        "reference_doctype": "Task Entry",
+        "reference_name": self.name,
+        "priority": "Medium",
+        "description": f"Task Assigned: {row.task_name}"
+    }).insert(ignore_permissions=True)
+
