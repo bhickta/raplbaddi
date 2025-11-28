@@ -37,7 +37,7 @@ custom_fields = {
             "fieldname": "supplier_section_clbrk1",
             "insert_after": "billing_rule",
             "fieldtype": "Column Break",
-                       "print_hide": 1,
+            "print_hide": 1,
         },
         {
             "is_system_generated": 1,
@@ -183,7 +183,7 @@ custom_fields = {
         },
         {
             "is_system_generated": 1,
-            "label": "Bilty/LR No,",
+            "label": "Bilty/LR No",
             "fieldname": "bilty_no",
             "insert_after": "driver_number",
             "fieldtype": "Data",
@@ -229,13 +229,12 @@ custom_fields = {
         }
     ],
 
-    # ⭐⭐⭐ ADDED MATERIAL REQUEST REMARKS (NEW) ⭐⭐⭐
     "Material Request": [
         {
             "is_system_generated": 1,
             "label": "Remarks",
             "fieldname": "buying_remarks",
-            "insert_after": "schedule_date",  # Change if you want another place
+            "insert_after": "schedule_date",
             "fieldtype": "Small Text",
             "allow_on_submit": 1,
         }
@@ -258,21 +257,20 @@ custom_fields = {
 def execute():
     create_custom_fields(custom_fields)
 
+    fields_to_hide = ["vehicle_no", "driver_name", "driver"]
 
-fields_to_hide = ["vehicle_no", "driver_name", "driver"]
-
-property_setters = [
-    {
-        "doctype": "Property Setter",
-        "name": f"Purchase Receipt-{field}-hidden",
-        "is_system_generated": 1,
-        "doctype_or_field": "DocField",
-        "module": "Raplbaddi",
-        "doc_type": "Purchase Receipt",
-        "field_name": field,
-        "property": "hidden",
-        "property_type": "Int",
-        "value": "1",
-    }
-    for field in fields_to_hide
-]
+    property_setters = [
+        {
+            "doctype": "Property Setter",
+            "name": f"Purchase Receipt-{field}-hidden",
+            "is_system_generated": 1,
+            "doctype_or_field": "DocField",
+            "module": "Raplbaddi",
+            "doc_type": "Purchase Receipt",
+            "field_name": field,
+            "property": "hidden",
+            "property_type": "Int",
+            "value": "1",
+        }
+        for field in fields_to_hide
+    ]
