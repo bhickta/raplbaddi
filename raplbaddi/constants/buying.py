@@ -37,7 +37,7 @@ custom_fields = {
             "fieldname": "supplier_section_clbrk1",
             "insert_after": "billing_rule",
             "fieldtype": "Column Break",
-            "print_hide": 1,
+                       "print_hide": 1,
         },
         {
             "is_system_generated": 1,
@@ -62,6 +62,7 @@ custom_fields = {
             "fieldtype": "Small Text",
         },
     ],
+
     "Purchase Receipt": [
         {
             "is_system_generated": 1,
@@ -227,6 +228,19 @@ custom_fields = {
             "reqd": 1,
         }
     ],
+
+    # ⭐⭐⭐ ADDED MATERIAL REQUEST REMARKS (NEW) ⭐⭐⭐
+    "Material Request": [
+        {
+            "is_system_generated": 1,
+            "label": "Remarks",
+            "fieldname": "buying_remarks",
+            "insert_after": "schedule_date",  # Change if you want another place
+            "fieldtype": "Small Text",
+            "allow_on_submit": 1,
+        }
+    ],
+
     "Supplier Group": [
         {
             "is_system_generated": 1,
@@ -243,6 +257,7 @@ custom_fields = {
 
 def execute():
     create_custom_fields(custom_fields)
+
 
 fields_to_hide = ["vehicle_no", "driver_name", "driver"]
 
