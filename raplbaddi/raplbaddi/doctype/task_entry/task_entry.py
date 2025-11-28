@@ -8,7 +8,6 @@ from frappe.model.document import Document
 class TaskEntry(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
-	
 
 	from typing import TYPE_CHECKING
 
@@ -44,3 +43,4 @@ def assign_to_user(self, row):
         "priority": "Medium",
         "description": f"Task Assigned: {row.task_name}"
     }).insert(ignore_permissions=True)
+
