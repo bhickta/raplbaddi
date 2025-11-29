@@ -62,6 +62,7 @@ custom_fields = {
             "fieldtype": "Small Text",
         },
     ],
+
     "Purchase Receipt": [
         {
             "is_system_generated": 1,
@@ -182,7 +183,7 @@ custom_fields = {
         },
         {
             "is_system_generated": 1,
-            "label": "Bilty/LR No,",
+            "label": "Bilty/LR No",
             "fieldname": "bilty_no",
             "insert_after": "driver_number",
             "fieldtype": "Data",
@@ -227,6 +228,18 @@ custom_fields = {
             "reqd": 1,
         }
     ],
+
+    "Material Request": [
+        {
+            "is_system_generated": 1,
+            "label": "Remarks",
+            "fieldname": "buying_remarks",
+            "insert_after": "schedule_date",
+            "fieldtype": "Small Text",
+            "allow_on_submit": 1,
+        }
+    ],
+
     "Supplier Group": [
         {
             "is_system_generated": 1,
@@ -240,24 +253,23 @@ custom_fields = {
     ],
 }
 
-
 def execute():
     create_custom_fields(custom_fields)
 
-fields_to_hide = ["vehicle_no", "driver_name", "driver"]
+    fields_to_hide = ["vehicle_no", "driver_name", "driver"]
 
-property_setters = [
-    {
-        "doctype": "Property Setter",
-        "name": f"Purchase Receipt-{field}-hidden",
-        "is_system_generated": 1,
-        "doctype_or_field": "DocField",
-        "module": "Raplbaddi",
-        "doc_type": "Purchase Receipt",
-        "field_name": field,
-        "property": "hidden",
-        "property_type": "Int",
-        "value": "1",
-    }
-    for field in fields_to_hide
-]
+    property_setters = [
+        {
+            "doctype": "Property Setter",
+            "name": f"Purchase Receipt-{field}-hidden",
+            "is_system_generated": 1,
+            "doctype_or_field": "DocField",
+            "module": "Raplbaddi",
+            "doc_type": "Purchase Receipt",
+            "field_name": field,
+            "property": "hidden",
+            "property_type": "Int",
+            "value": "1",
+        }
+        for field in fields_to_hide
+    ]
