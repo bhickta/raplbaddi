@@ -1,171 +1,178 @@
 {
- "actions": [],
- "allow_rename": 1,
- "creation": "2024-12-18 06:58:41.487770",
- "doctype": "DocType",
- "engine": "InnoDB",
- "field_order": [
-  "hrms_tab",
-  "holiday_section",
-  "holiday_sandwich",
-  "column_break_bdep",
-  "service_centre_tab",
-  "service_centre_customer_group",
-  "is_internal_receipt_for_service_centre_on_dn",
-  "column_break_iteq",
-  "service_centre_supplier_group",
-  "triggers_tab",
-  "purchase_section",
-  "is_create_purchase_invoice_via_purchase_receipt",
-  "column_break_hgoi",
-  "is_submit_purchase_invoice",
-  "selling_section",
-  "is_create_sales_invoice_via_delivery_note",
-  "column_break_fjkp",
-  "is_submit_sales_invoice",
-  "buying_tab",
-  "selling_tab",
-  "accounting_tab",
-  "is_create_journal_entry_for_transportation"
- ],
- "fields": [
-  {
-   "fieldname": "column_break_bdep",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "hrms_tab",
-   "fieldtype": "Tab Break",
-   "label": "Hrms"
-  },
-  {
-   "fieldname": "holiday_section",
-   "fieldtype": "Section Break",
-   "label": "Holiday"
-  },
-  {
-   "fieldname": "holiday_sandwich",
-   "fieldtype": "Table",
-   "label": "Holiday Sandwich",
-   "options": "Holiday Sandwich"
-  },
-  {
-   "fieldname": "service_centre_tab",
-   "fieldtype": "Tab Break",
-   "label": "Service Centre"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_internal_receipt_for_service_centre_on_dn",
-   "fieldtype": "Check",
-   "label": "Is Internal Receipt for Service Centre on DN"
-  },
-  {
-   "fieldname": "column_break_iteq",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "service_centre_customer_group",
-   "fieldtype": "Link",
-   "label": "Service Centre Customer Group",
-   "options": "Customer Group"
-  },
-  {
-   "fieldname": "service_centre_supplier_group",
-   "fieldtype": "Link",
-   "label": "Service Centre Supplier Group",
-   "options": "Supplier Group"
-  },
-  {
-   "fieldname": "triggers_tab",
-   "fieldtype": "Tab Break",
-   "label": "Triggers"
-  },
-  {
-   "fieldname": "purchase_section",
-   "fieldtype": "Section Break",
-   "label": "Purchase"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_create_purchase_invoice_via_purchase_receipt",
-   "fieldtype": "Check",
-   "label": "Is Create Purchase Invoice Via Purchase Receipt"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_submit_purchase_invoice",
-   "fieldtype": "Check",
-   "label": "Is Submit Purchase Invoice"
-  },
-  {
-   "fieldname": "selling_section",
-   "fieldtype": "Section Break",
-   "label": "Selling"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_create_sales_invoice_via_delivery_note",
-   "fieldtype": "Check",
-   "label": "Is Create Sales Invoice Via Delivery Note"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_submit_sales_invoice",
-   "fieldtype": "Check",
-   "label": "Is Submit Sales Invoice"
-  },
-  {
-   "fieldname": "column_break_hgoi",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "column_break_fjkp",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "buying_tab",
-   "fieldtype": "Tab Break",
-   "label": "Buying"
-  },
-  {
-   "fieldname": "selling_tab",
-   "fieldtype": "Tab Break",
-   "label": "Selling"
-  },
-  {
-   "fieldname": "accounting_tab",
-   "fieldtype": "Tab Break",
-   "label": "Accounting"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_create_journal_entry_for_transportation",
-   "fieldtype": "Check",
-   "label": "Create JE on DN and PR"
-  }
- ],
- "index_web_pages_for_search": 1,
- "issingle": 1,
- "links": [],
- "modified": "2025-03-29 09:05:26.138208",
- "modified_by": "Administrator",
- "module": "Raplbaddi",
- "name": "Raplbaddi Settings",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  }
- ],
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": []
+    "actions": [],
+    "allow_rename": 1,
+    "creation": "2024-12-18 06:58:41.487770",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "hrms_tab",
+        "holiday_section",
+        "holiday_sandwich",
+        "column_break_bdep",
+        "service_centre_tab",
+        "service_centre_customer_group",
+        "is_internal_receipt_for_service_centre_on_dn",
+        "column_break_iteq",
+        "service_centre_supplier_group",
+        "triggers_tab",
+        "purchase_section",
+        "is_create_purchase_invoice_via_purchase_receipt",
+        "column_break_hgoi",
+        "is_submit_purchase_invoice",
+        "restrict_pr_without_po",
+        "selling_section",
+        "is_create_sales_invoice_via_delivery_note",
+        "column_break_fjkp",
+        "is_submit_sales_invoice",
+        "buying_tab",
+        "selling_tab",
+        "accounting_tab",
+        "is_create_journal_entry_for_transportation"
+    ],
+    "fields": [
+        {
+            "fieldname": "column_break_bdep",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "hrms_tab",
+            "fieldtype": "Tab Break",
+            "label": "Hrms"
+        },
+        {
+            "fieldname": "holiday_section",
+            "fieldtype": "Section Break",
+            "label": "Holiday"
+        },
+        {
+            "fieldname": "holiday_sandwich",
+            "fieldtype": "Table",
+            "label": "Holiday Sandwich",
+            "options": "Holiday Sandwich"
+        },
+        {
+            "fieldname": "service_centre_tab",
+            "fieldtype": "Tab Break",
+            "label": "Service Centre"
+        },
+        {
+            "default": "0",
+            "fieldname": "is_internal_receipt_for_service_centre_on_dn",
+            "fieldtype": "Check",
+            "label": "Is Internal Receipt for Service Centre on DN"
+        },
+        {
+            "fieldname": "column_break_iteq",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "service_centre_customer_group",
+            "fieldtype": "Link",
+            "label": "Service Centre Customer Group",
+            "options": "Customer Group"
+        },
+        {
+            "fieldname": "service_centre_supplier_group",
+            "fieldtype": "Link",
+            "label": "Service Centre Supplier Group",
+            "options": "Supplier Group"
+        },
+        {
+            "fieldname": "triggers_tab",
+            "fieldtype": "Tab Break",
+            "label": "Triggers"
+        },
+        {
+            "fieldname": "purchase_section",
+            "fieldtype": "Section Break",
+            "label": "Purchase"
+        },
+        {
+            "default": "0",
+            "fieldname": "is_create_purchase_invoice_via_purchase_receipt",
+            "fieldtype": "Check",
+            "label": "Is Create Purchase Invoice Via Purchase Receipt"
+        },
+        {
+            "default": "0",
+            "fieldname": "is_submit_purchase_invoice",
+            "fieldtype": "Check",
+            "label": "Is Submit Purchase Invoice"
+        },
+        {
+            "default": "0",
+            "fieldname": "restrict_pr_without_po",
+            "fieldtype": "Check",
+            "label": "Restrict Purchase Receipt Without Purchase Order"
+        },
+        {
+            "fieldname": "selling_section",
+            "fieldtype": "Section Break",
+            "label": "Selling"
+        },
+        {
+            "default": "0",
+            "fieldname": "is_create_sales_invoice_via_delivery_note",
+            "fieldtype": "Check",
+            "label": "Is Create Sales Invoice Via Delivery Note"
+        },
+        {
+            "default": "0",
+            "fieldname": "is_submit_sales_invoice",
+            "fieldtype": "Check",
+            "label": "Is Submit Sales Invoice"
+        },
+        {
+            "fieldname": "column_break_hgoi",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "column_break_fjkp",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "buying_tab",
+            "fieldtype": "Tab Break",
+            "label": "Buying"
+        },
+        {
+            "fieldname": "selling_tab",
+            "fieldtype": "Tab Break",
+            "label": "Selling"
+        },
+        {
+            "fieldname": "accounting_tab",
+            "fieldtype": "Tab Break",
+            "label": "Accounting"
+        },
+        {
+            "default": "0",
+            "fieldname": "is_create_journal_entry_for_transportation",
+            "fieldtype": "Check",
+            "label": "Create JE on DN and PR"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "issingle": 1,
+    "links": [],
+    "modified": "2025-03-29 09:05:26.138208",
+    "modified_by": "Administrator",
+    "module": "Raplbaddi",
+    "name": "Raplbaddi Settings",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
 }

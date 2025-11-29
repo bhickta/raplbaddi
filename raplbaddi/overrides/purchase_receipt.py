@@ -25,6 +25,13 @@ def validate(doc, method):
     posting_datetime_same_as_creation(doc)
     calculate_freight_amount(doc)
 
+    if not frappe.db.get_single_value("Raplbaddi Settings", "restrict_pr_without_po"):
+        return
+
+    for item in doc.items:
+        if not item.purchase_order:
+            frappe.throw(_("Purchase Order is mandatory for item {0}").format(item.item_code))
+
 def on_submit(doc, method):
     pass
 
